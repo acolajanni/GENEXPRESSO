@@ -1,12 +1,11 @@
 # Nom               : make_comparison_table
 # Type              : Programme
 # Objet             : 
-
 # Input             : Fichier de données nanostrings
-# Output            : data.to.comp
+# Output            : data.to.comp.csv
 # Auteur            : EDarbo
-# R version         : 3.0.2
-# Date de cr?ation  : 04.03.2021
+# R version         : 3.6
+# Date de creation  : 04.03.2021
 #______________________________________________________________________________
 
 # go to the directory you downloaded
