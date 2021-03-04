@@ -10,7 +10,7 @@
 #______________________________________________________________________________
 
 # go to the directory you downloaded
-setwd("~/Documents/CPRD1")
+setwd("~/GIT/CPRD")
 # define path to usefull directories
 data.dir <- "./DATA/NANOSTRING"
 RCC.dir <- file.path(data.dir,"GSE146204_RAW")
@@ -27,7 +27,6 @@ GOIDs <- c("GSE146204")
 GEOdata <- getGEO(GOIDs,GSEMatrix=T, AnnotGPL=F)
 sample.annots <- get.annotations(GEOdata)
 sample.annots <- sample.annots[,c("title","tp53 status")]
-
 
 # get the names of the RCC files containing the raw data
 rcc.files <- system(paste("ls",RCC.dir),intern=T)
@@ -70,7 +69,7 @@ data.to.comp <- na.omit(data.to.comp)
 data.to.comp <- as.data.frame(t(data.to.comp))
 
 #Export as csv
-write.csv(data.to.comp,"~/Documents/CPRD1/OUTPUT/TABLE/data.to.comp.csv", row.names = TRUE)
+write.csv(data.to.comp,"~/GIT/CPRD/OUTPUT/TABLE/data.to.comp.csv", row.names = TRUE)
 
 ################################################################################
 ################################################################################

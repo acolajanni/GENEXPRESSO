@@ -14,7 +14,7 @@ if (!requireNamespace("nanoR", quietly = TRUE)){
 }
 
 if (!requireNamespace("NAPPA", quietly = TRUE)){
-  install.packages("~/Documents/CPRD1/NAPPA_2.0.tar.gz",repos=NULL,type="source")
+  install.packages("~/GIT/CPRD/NAPPA_2.0.tar.gz",repos=NULL,type="source")
 }
 
 
