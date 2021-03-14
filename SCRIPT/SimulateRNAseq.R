@@ -31,5 +31,18 @@ head(counts) #affiche le debut du tableau de donnees
 #Conversion en data.frame
 SimulRNASEQ <- as.data.frame(counts)
 
+#Renommer les colonnes 
+# Ne fonctionne comme il faut que si on a un nombre paire de colonnes
+for (i in 1:ncol(SimulRNASEQ)) {
+  if (i <= ncol(SimulRNASEQ)/2){
+    names(SimulRNASEQ)[i] = paste("control",i,sep='_')    
+  }else{
+    names(SimulRNASEQ)[i] = paste("test",i-ncol(SimulRNASEQ)/2,sep="_")
+  }
+}
+
+#help("simulateRnaSeqData")
+
 #Exportation du jeu de donnees dans ~/GIT/DATA/RNASEQ
 write.csv(SimulRNASEQ,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", row.names = TRUE)
+
