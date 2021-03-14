@@ -3,7 +3,7 @@
 # Objet             : Simule des données de type RNAseq
 # Input             : None
 # Output            : SimulRNASEQ.csv
-# Auteur            : Juliette Casemajor
+# Auteur            : Juliette Casemajor / Antonin COLAJANNI
 # R version         : 3.6
 # Date de creation  : 04.03.2021
 #______________________________________________________________________________
