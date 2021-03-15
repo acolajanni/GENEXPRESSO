@@ -45,4 +45,3 @@ for (i in 1:ncol(SimulRNASEQ)) {
 
 #Exportation du jeu de donnees dans ~/GIT/DATA/RNASEQ
 write.csv(SimulRNASEQ,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", row.names = TRUE)
-
