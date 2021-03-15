@@ -7,9 +7,11 @@
 # R version         : 3.6
 # Date de creation  : 15.03.2021
 #______________________________________________________________________________
+
 library(edgeR)
 library(DEFormats)
-help("read.csv")
+
+#help("read.csv")
 
 # importation de notre jeu de données
 data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
@@ -43,3 +45,19 @@ RLE_norm
 # méthode normalisation par rapport au 75% quantile
 upperquartile_norm <- calcNormFactors.DGEList(data, method = "upperquartile")
 upperquartile_norm
+
+#Maintenant, besoin d'estimer la dispersion puis tagwise dispersion ==> Se renseigner, je sais pas ce que c'est
+Disp = estimateCommonDisp(TMM_norm)
+Disp = estimateTagwiseDisp(Disp)
+
+help(exactTest)
+help(topTags)
+
+# Test des DEG avec une méthode proche du Test exact de fisher
+DEG = exactTest(Disp)
+DEG
+# on affiche par classement, les gènes les plus différentiellement exprimés
+topTags(DEG, sort.by = 'PValue')
+
+# page 22/122 sur la doc de EdgeR
+#j'ai pas fini si je veux tester des trucs
