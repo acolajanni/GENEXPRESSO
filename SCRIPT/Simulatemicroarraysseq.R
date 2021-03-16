@@ -27,13 +27,14 @@ rseed <- 50
 #Generation des donnees
 #n indique le nombre de genes, par defaut il est a 10000, on le met ici a 100
 mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed)
+mydata1
 
 #On recupere les donnees generees
 micro <- as.data.frame(mydata1)
 Simulmicro<-micro[,13:24]
 
 #Voir si les deux prochaines lignes sont utiles
-nomcolonne <- c("sample1","sample2","sample3","sample4","sample5","sample6","sample7","sample8","sample9","sample10","sample11","sample12")
+nomcolonne <- c("control1","control2","control3","control4","control5","control6","test1","test2","test3","test4","test5","test6")
 colnames(Simulmicro)<-nomcolonne
 
 #Exportation des donnees

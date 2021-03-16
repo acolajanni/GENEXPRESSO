@@ -1,4 +1,4 @@
-# Nom               : simulateRNAseq
+# Nom               : Test_norm_RNAseq
 # Type              : Programme
 # Objet             : Tester la normalisation (les fonctions iront dans functions.R)
 # Input             : dataset RNA-seq
@@ -46,9 +46,16 @@ RLE_norm
 upperquartile_norm <- calcNormFactors.DGEList(data, method = "upperquartile")
 upperquartile_norm
 
-#Maintenant, besoin d'estimer la dispersion puis tagwise dispersion ==> Se renseigner, je sais pas ce que c'est
+#Maintenant, besoin d'estimer la dispersion puis tagwise dispersion
+# Dispersion : permet d'établir un critère de dispersion des données de reads mappé sur un gène 
+# Sans ce paramètre on peut pas établir si la différence de read mappé est due à une différence de longueur de gène
+# Ensuite : Tagwise : établit la dispersion des données pour chacune des valeurs du dataset
 Disp = estimateCommonDisp(TMM_norm)
 Disp = estimateTagwiseDisp(Disp)
+
+
+help("estimateCommonDisp")
+help('estimateTagwiseDisp')
 
 help(exactTest)
 help(topTags)
@@ -60,4 +67,9 @@ DEG
 topTags(DEG, sort.by = 'PValue')
 
 # page 22/122 sur la doc de EdgeR
-#j'ai pas fini si je veux tester des trucs
+
+# Problème : Exporter la normalisation :
+# Sur edgeR, il calcule un "facteur de normalisation" qu'il applique dans les calculs (Dispersion, etc.)
+# Mais ce facteur ne transforme pas le jeu de données. Donc comment faire pour exporter un jeu de donnée transformé ?¨
+
+#Question : est ce qu'on s'embête vraiment à croiser les méthodes de normalisation avec les méthodes DEG pour la RNAseq ? (du moins pas maintenant je pense ?)
