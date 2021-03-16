@@ -48,23 +48,43 @@ upperquartile_norm
 
 #Maintenant, besoin d'estimer la dispersion puis tagwise dispersion
 # Dispersion : permet d'établir un critère de dispersion des données de reads mappé sur un gène 
-# Sans ce paramètre on peut pas établir si la différence de read mappé est due à une différence de longueur de gène
+# Sans ce paramètre on peut pas établir si la différence de read mappé est due à une différence de longueur de gène ou a une expression différentielle
 # Ensuite : Tagwise : établit la dispersion des données pour chacune des valeurs du dataset
 Disp = estimateCommonDisp(TMM_norm)
 Disp = estimateTagwiseDisp(Disp)
 
-
-help("estimateCommonDisp")
-help('estimateTagwiseDisp')
-
-help(exactTest)
-help(topTags)
+#help("estimateCommonDisp")
+#help('estimateTagwiseDisp')
+#help(exactTest)
+#help(topTags)
 
 # Test des DEG avec une méthode proche du Test exact de fisher
 DEG = exactTest(Disp)
 DEG
 # on affiche par classement, les gènes les plus différentiellement exprimés
 topTags(DEG, sort.by = 'PValue')
+
+tools_norm_RNAseq.inspect <- function(raw.data,tool){
+  data = as.matrix(raw.data)
+  Norm_factors = data.frame("Samples" = colnames(data))
+  tools_norm_RNAseq.fnc = switch(tool,
+         edgeR_TMM = {
+          DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
+          TMM_norm <- calcNormFactors.DGEList(DGE, method = "TMM")
+          tmp = data.frame("TMM_norm" = TMM_norm$samples$norm.factors)
+          Norm_factors = cbind(Norm_factors, tmp)
+         },
+         edgeR_RLE = {
+           DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
+           RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
+           tmp = data.frame("RLE_norm" = RLE_norm$samples$norm.factors)
+           Norm_factors = cbind(Norm_factors, tmp)
+         })
+  return(Norm_factors)
+}
+tool = c("edgeR_TMM", "edgeR_RLE")
+tools_norm_RNAseq(data,tool)
+# Test de la fonction, petite erreur à corriger 
 
 # page 22/122 sur la doc de EdgeR
 
