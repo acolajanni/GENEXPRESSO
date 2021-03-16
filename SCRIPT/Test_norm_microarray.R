@@ -11,12 +11,13 @@
 library(limma)
 library(madsim)
 
-mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed)
-micro <- as.data.frame(mydata1$xdata)
+#mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed)
+#micro <- as.data.frame(mydata1$xdata)
+#micro
+
+micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv",row.names = 1,header = T, sep = ',')
 micro
 
-data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv",row.names = 1,header = T, sep = ',')
-data
 targets = readTargets("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv", row.names= 1, sep = ',')
 targets
 
@@ -33,4 +34,16 @@ RG = read.maimages(targets, source = 'agilent', green.only = T)
 
 BiocManager::install("gcrma")
 library('gcrma')
+
+help("bg.adjust.gcrma")
+compute.affinities(micro)
+
+micro_gcrma = bg.adjust.gcrma(micro,)
+
+# gcRMA : Problème : besoin du format AffyBatch / fichier CDF
+# le dataset ne convient pas
+
+# Autres fonctions listées RMA / MAS5 : Même problème, prend un objet de type AffyBatch sort un "ExpressionSet"
+
+
 
