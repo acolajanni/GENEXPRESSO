@@ -67,23 +67,52 @@ topTags(DEG, sort.by = 'PValue')
 tools_norm_RNAseq.inspect <- function(raw.data,tool){
   data = as.matrix(raw.data)
   Norm_factors = data.frame("Samples" = colnames(data))
-  tools_norm_RNAseq.fnc = switch(tool,
-         edgeR_TMM = {
+  
+  tools_norm_RNAseq.fnc <- switch(tool,
+                                  
+        edgeR_TMM = {
           DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
           TMM_norm <- calcNormFactors.DGEList(DGE, method = "TMM")
           tmp = data.frame("TMM_norm" = TMM_norm$samples$norm.factors)
           Norm_factors = cbind(Norm_factors, tmp)
-         },
-         edgeR_RLE = {
+        },
+        
+        edgeR_RLE = {
            DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
            RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
            tmp = data.frame("RLE_norm" = RLE_norm$samples$norm.factors)
            Norm_factors = cbind(Norm_factors, tmp)
-         })
+        },
+        
+        edgeR_TMMwsp = {
+          DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
+          RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
+          tmp = data.frame("TMMwsp" = RLE_norm$samples$norm.factors)
+          Norm_factors = cbind(Norm_factors, tmp)
+        },
+        
+        edgeR_upperquartile = {
+          DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
+          RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
+          tmp = data.frame("upperquartile" = RLE_norm$samples$norm.factors)
+          Norm_factors = cbind(Norm_factors, tmp)
+        }
+        
+        )
+
   return(Norm_factors)
 }
-tool = c("edgeR_TMM", "edgeR_RLE")
-tools_norm_RNAseq(data,tool)
+data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
+
+tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
+for (tool in tools){
+  print(tool)
+  tmp = tools_norm_RNAseq.inspect(data,tool)
+  data_to_comp = merge(data_to_comp,tmp,by = "Samples",all=T)  
+}
+
+data_to_comp
+
 # Test de la fonction, petite erreur à corriger 
 
 # page 22/122 sur la doc de EdgeR
