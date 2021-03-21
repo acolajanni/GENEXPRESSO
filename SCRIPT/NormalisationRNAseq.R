@@ -1,0 +1,65 @@
+setwd("~/GIT/CPRD")
+
+BiocManager::install(c("Biobase","DESeq2", "cqn"))
+
+source(file.path("./SCRIPT","SimulateRNAseq.R"))
+
+library("DESeq2")
+library("Biobase")
+library("cqn")
+
+conditions <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+
+#il faut écrire single ou paired pour les reads, ça dépend du type de méthodologie utilisée, 12 car 12 échantillons dans ce jeu
+type = factor(rep("single-read",12))
+
+colData = data.frame(conditions,type,row.names=colnames(SimulRNASEQ))
+
+#Pour utiliser les fonctions de normaliser, de DE avec DESeq, il faut créer un objet où on doit mettre notre dataframe dedans
+dds<-DESeqDataSetFromMatrix(SimulRNASEQ,colData,design=~conditions)
+class(dds)
+colData(dds)
+design(dds)
+
+#petite visu sur les données si c'est toujours ok
+dim(counts(dds))
+head(counts(dds))
+summary(counts(dds))
+-----------------------------------------------------------------------------
+#Normalisation (median of ratio?)
+dds <- DESeq(dds)
+colData(dds)
+#
+sizeF=sizeFactors(dds)
+
+#J'ai chois de stocker les données dans une dataframe, car avec 100 gènes on dépasse la capacité d'affichage de la console de Rstudio
+#et c'est beaucoup plus clair
+StockVisuNorm = data.frame(counts(dds,normalized = TRUE))
+
+#simple stat descriptive
+summary( counts ( dds ,  normalized = TRUE))
+
+#comptage moyen gène et son log2 ratio
+par(mfrow=c(1 ,1))
+DESeq2::plotMA(dds)
+
+#------------------------------------------------------------------------------
+# Méthode CQN
+
+GC= round(runif(100, min=0.01, max=0.99), digits=4)
+Lenght = round(runif(100, min=1000, max=9000))
+
+cqn = cqn(SimulRNASEQ, x = GC,  lengths = Lenght, sizeFactors = sizeF, verbose = TRUE)
+
+cqnOffset <- cqn$glm.offset
+cqnNormFactors <- exp(cqnOffset)
+
+#normFactors_sameScale <- cqnNormFactors / exp(rowMeans(log(cqnNormFactors)))
+
+#fusion RPKM + CQN
+
+RPKM.cqn = cqn$y + cqn$offset
+
+#---------------------------------------------------------------------------------
+# RPKM ? génération nbR
+
