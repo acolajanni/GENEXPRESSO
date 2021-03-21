@@ -53,7 +53,7 @@ upperquartile_norm
 Disp = estimateCommonDisp(TMM_norm)
 Disp = estimateTagwiseDisp(Disp)
 
-#help("estimateCommonDisp")
+#help("estimateCommonDisp") 
 #help('estimateTagwiseDisp')
 #help(exactTest)
 #help(topTags)
