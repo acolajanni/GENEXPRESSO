@@ -19,7 +19,7 @@ data(madsim_test)
 mdata <- madsim_test$V1;
 fparams <- data.frame(m1 = 12, m2 = 12, shape2 = 4, lb = 4, ub = 14,pde=0.02,sym=0.5)
 #m1 et m2 indiquent respectivement le nombre d'echantillons controle et d'echantillons tests
-#on garde les autres parametres par defaut ?
+#on garde les autres parametres par defaut ? oui pour l'instant, ça a l'air trè spécifique d'après la doc
 dparams <- data.frame(lambda1 = 0.13, lambda2 = 2, muminde = 1, sdde = 0.5)
 sdn <- 0.4
 rseed <- 50
@@ -32,7 +32,7 @@ mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed
 micro <- as.data.frame(mydata1)
 Simulmicro<-micro[,13:24]
 
-#Voir si les deux prochaines lignes sont utiles
+#Voir si les deux prochaines lignes sont utiles +> oui je trouve que c'est plus propre sur les noms de colonnes
 nomcolonne <- c("sample1","sample2","sample3","sample4","sample5","sample6","sample7","sample8","sample9","sample10","sample11","sample12")
 colnames(Simulmicro)<-nomcolonne
 
