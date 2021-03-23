@@ -16,7 +16,7 @@ library(madsim)
 #micro
 
 micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv",row.names = 1,header = T, sep = ',')
-micro
+boxplot(micro)
 
 targets = readTargets("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv", row.names= 1, sep = ',')
 targets
