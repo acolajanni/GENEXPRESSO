@@ -9,6 +9,7 @@ library("Biobase")
 library("cqn")
 
 conditions <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 
 #il faut écrire single ou paired pour les reads, ça dépend du type de méthodologie utilisée, 12 car 12 échantillons dans ce jeu
 type = factor(rep("single-read",12))
