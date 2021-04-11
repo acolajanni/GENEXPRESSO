@@ -125,8 +125,4 @@ data_to_comp
 
 # page 22/122 sur la doc de EdgeR
 
-# Problème : Exporter la normalisation :
-# Sur edgeR, il calcule un "facteur de normalisation" qu'il applique dans les calculs (Dispersion, etc.)
-# Mais ce facteur ne transforme pas le jeu de données. Donc comment faire pour exporter un jeu de donnée transformé ?¨
 
-#Question : est ce qu'on s'embête vraiment à croiser les méthodes de normalisation avec les méthodes DEG pour la RNAseq ? (du moins pas maintenant je pense ?)
