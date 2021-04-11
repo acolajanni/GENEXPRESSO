@@ -30,6 +30,8 @@ data = DGEList(count = data,
 
 # On peut maintenant calculer des facteurs de normalisation : (on les calcule juste, on les applique pas donc voir comment faire ?)
 
+
+
 # Méthode par défaut : TMM
 TMM_norm <- calcNormFactors.DGEList(data, method = "TMM")
 TMM_norm
@@ -61,6 +63,12 @@ Disp = estimateTagwiseDisp(Disp)
 # Test des DEG avec une méthode proche du Test exact de fisher
 DEG = exactTest(Disp)
 DEG
+
+####
+#Récupérer les données normalisées en log2 : 
+# A = cpm(DEGlist, log = TRUE)
+# De cette manière on peut renvoyer un jeu de données normalisé analysable avec d'autres outils que edgeR
+
 # on affiche par classement, les gènes les plus différentiellement exprimés
 topTags(DEG, sort.by = 'PValue')
 
