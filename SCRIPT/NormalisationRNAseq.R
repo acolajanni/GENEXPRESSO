@@ -1,8 +1,6 @@
 setwd("~/GIT/CPRD")
 
-BiocManager::install(c("Biobase","DESeq2", "cqn"))
 
-source(file.path("./SCRIPT","SimulateRNAseq.R"))
 
 library("DESeq2")
 library("Biobase")
@@ -26,8 +24,8 @@ design(dds)
 dim(counts(dds))
 head(counts(dds))
 summary(counts(dds))
------------------------------------------------------------------------------
-#Normalisation (median of ratio?)
+#-----------------------------------------------------------------------------
+#Normalisation (median of ratio)
 dds <- DESeq(dds)
 colData(dds)
 #
@@ -39,7 +37,7 @@ StockVisuNorm = data.frame(counts(dds,normalized = TRUE))
 
 #simple stat descriptive
 summary( counts ( dds ,  normalized = TRUE))
-
+counts ( dds ,  normalized = TRUE)
 #comptage moyen gène et son log2 ratio
 par(mfrow=c(1 ,1))
 DESeq2::plotMA(dds)
@@ -63,4 +61,4 @@ RPKM.cqn = cqn$y + cqn$offset
 
 #---------------------------------------------------------------------------------
 # RPKM ? génération nbR
-
+# reads per kilobases per millions

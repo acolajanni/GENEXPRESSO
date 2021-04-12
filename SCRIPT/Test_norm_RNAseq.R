@@ -202,3 +202,40 @@ qlf <- glmQLFTest(fit, contrast=BvsA)
 topTags(qlf_tmm)
 topTags(qlf)
 
+
+################# DESeq(1)
+BiocManager::install("DESeq")
+library(DESeq)
+### Pareil que DESeq2
+SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+type = factor(rep("single-read",12))
+design = data.frame(condition,type,row.names=colnames(SimulRNASEQ))
+
+singleSamples = design$type == 'single-read'
+countTable = SimulRNASEQ[,singleSamples]
+conds = design$condition[singleSamples]
+conds
+### Absolument équivalent à DESeq2
+cds <- newCountDataSet(SimulRNASEQ, conds)
+cds = estimateSizeFactors(cds)
+sizeFactors(cds)
+# Normalized = True : Divise chaque valeur par le sizeFactor associé
+counts(cds, normalized = TRUE)
+# établir la dispersion
+cds = estimateDispersions(cds)
+
+cds
+res = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
+# les plus downregulated :
+head( res[ order( res$foldChange, -res$baseMean ), ] )
+
+# les plus upregulated
+head( res[ order( -res$foldChange, -res$baseMean ), ] )
+
+# On remarque que très peu de p-value sont significative
+# MAIS on a travaillé sur un jeu de donnée peu transformé
+# essayons avec le GLM
+# GLM : Ne fonctionne qu'en 2 facteurs (= ici qu'un facteur puisqu'on a réglé tout sur "single reads")
+
+# Conclusion : DESeq sert pas à grand chose
