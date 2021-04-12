@@ -68,7 +68,7 @@ data.to.comp <- na.omit(data.to.comp)
 
 # transpose the matrix to use the genes as descriptive values to compare the tools
 data.to.comp <- as.data.frame(t(data.to.comp))
-
+data.to.comp
 #Export as csv
 write.csv(data.to.comp,"~/GIT/CPRD/OUTPUT/TABLE/data.to.comp.csv", row.names = TRUE)
 
