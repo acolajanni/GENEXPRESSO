@@ -95,7 +95,7 @@ topTags(DEG, sort.by = 'PValue')
 
 
 tools_norm_RNAseq.inspect <- function(raw.data,tool){
-  #data = as.matrix(raw.data)
+  data = as.matrix(raw.data)
   DEG = data.frame("genes" = row.names(data))
   
   tools_norm_RNAseq.fnc <- switch(tool,
@@ -168,7 +168,8 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
         },
         deseq = {
           condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
-
+          colnames(data)
+          type = factor(rep("single-read",12))
           design = data.frame(condition,type,row.names=colnames(data))
           singleSamples = design$type == 'single-read'
           countTable = data[,singleSamples]
@@ -178,7 +179,7 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
           cds = estimateSizeFactors(cds)
           cds = estimateDispersions(cds)
           DEG = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
-          DEG <- data.frame(deseq = (DEG$padj),genes= DEG$id)
+          DEG <- data.frame(deseq = (DEG$padj),genes= (DEG$id))
             
         },
         stop("Enter something that switches me!") 
@@ -225,8 +226,13 @@ for (tool in tools){
   tmp = tools_norm_RNAseq.inspect(data,tool)
   data_to_comp = merge(data_to_comp,tmp,by = "genes",all=T)  
 }
+
+row.names(data_to_comp) <- data_to_comp$genes
+data_to_comp <- data_to_comp[,-1]
+data_to_comp = as.data.frame(t(data_to_comp))
 head(data_to_comp)
 colnames(data_to_comp)
+
 ################################################################
 
 # Comparaison des jeux de données : fonction qui renvoit cpm() vs ne renvoit pas cpm()
