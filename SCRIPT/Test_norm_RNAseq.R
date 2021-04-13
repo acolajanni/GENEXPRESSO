@@ -231,7 +231,7 @@ row.names(data_to_comp) <- data_to_comp$genes
 data_to_comp <- data_to_comp[,-1]
 data_to_comp = as.data.frame(t(data_to_comp))
 head(data_to_comp)
-colnames(data_to_comp)
+head(data_to_comp)
 
 ################################################################
 
