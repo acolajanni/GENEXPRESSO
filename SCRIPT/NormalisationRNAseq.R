@@ -6,7 +6,7 @@ library("DESeq2")
 library("Biobase")
 library("cqn")
 
-conditions <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
 SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 
 #il faut écrire single ou paired pour les reads, ça dépend du type de méthodologie utilisée, 12 car 12 échantillons dans ce jeu
@@ -25,8 +25,26 @@ dim(counts(dds))
 head(counts(dds))
 summary(counts(dds))
 #-----------------------------------------------------------------------------
-#Normalisation (median of ratio)
-dds <- DESeq(dds)
+#Normalisation (median of ratio) + DEG
+dds = estimateSizeFactors(dds)
+dds = estimateDispersions(dds)
+
+DEG_Wald <- DESeq(dds, test = "Wald")
+results(DEG_Wald)
+
+DEG_LRT <- DESeq(dds, test = "LRT",reduced = ~1)
+results(DEG_LRT)
+# Likelihood ratio test 
+
+# Lignes de codes issues de functions.R
+res.diff <- results(DEG_Wald)
+res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
+res.diff
+
+res.diff2 <- results(DEG_LRT)
+res.diff2 <- data.frame(deseq2=-log10(res.diff2$padj),SYMBOL=row.names(res.diff2))
+summary(res.diff2)
+
 colData(dds)
 #
 sizeF=sizeFactors(dds)
@@ -38,6 +56,8 @@ StockVisuNorm = data.frame(counts(dds,normalized = TRUE))
 #simple stat descriptive
 summary( counts ( dds ,  normalized = TRUE))
 counts ( dds ,  normalized = TRUE)
+
+
 #comptage moyen gène et son log2 ratio
 par(mfrow=c(1 ,1))
 DESeq2::plotMA(dds)

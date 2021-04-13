@@ -75,7 +75,7 @@ topTags(DEG, sort.by = 'PValue')
 
 
 tools_norm_RNAseq.inspect <- function(raw.data,tool){
-  data = as.matrix(raw.data)
+  #data = as.matrix(raw.data)
   DEG = data.frame("genes" = row.names(data))
 
   tools_norm_RNAseq.fnc <- switch(tool,
@@ -114,29 +114,79 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
           #tmp = data.frame("upperquartile" = RLE_norm$samples$norm.factors)
           #Norm_factors = cbind(Norm_factors, tmp)
           #res.norm = cpm(Upper)
-        }
+        },
+        
+        deseq2.Wald = {
+          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+          type = factor(rep("single-read",12))
+          colData = data.frame(conditions,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
+          #Normalisation (median of ratio) + DEG
+          #dds = estimateSizeFactors(dds)
+          #dds = estimateDispersions(dds)
+          DEG <- DESeq(dds, test = "Wald")
+          DEG <- results(DEG)
+          DEG
+          #DEG <- data.frame(deseq2_Wald=-log10(DEG$padj),SYMBOL=row.names(DEG))
+          # à voir : Quel format pour les pvalues : log2, -log10 ...?
+          DEG <- data.frame(deseq2_Wald=(DEG$padj),genes=row.names(DEG))
+            
+        },
+        deseq2.LRT = {
+          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+          type = factor(rep("single-read",12))
+          colData = data.frame(conditions,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
+            #Normalisation (median of ratio) + DEG
+          #dds = estimateSizeFactors(dds)
+          #dds = estimateDispersions(dds)
+          DEG <- DESeq(dds, test = "LRT",reduced = ~1)
+          DEG <- results(DEG)
+          #DEG <- data.frame(deseq2_Wald=-log10(DEG$padj),SYMBOL=row.names(DEG))
+          # à voir : Quel format pour les pvalues : log2, -log10 ...?
+          DEG <- data.frame(deseq2_LRT=(DEG$padj),genes=row.names(DEG))
+          
+        },
+        deseq = {
+          condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+
+          design = data.frame(condition,type,row.names=colnames(data))
+          singleSamples = design$type == 'single-read'
+          countTable = data[,singleSamples]
+          conds = design$condition[singleSamples]
+          
+          cds <- newCountDataSet(data, conds)
+          cds = estimateSizeFactors(cds)
+          cds = estimateDispersions(cds)
+          DEG = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
+          DEG <- data.frame(deseq = (DEG$padj),genes= DEG$id)
+            
+        },
+        stop("Enter something that switches me!") 
         
   )
-  colname1 = paste(tool_name,"ExactTest")
-  Disp = estimateCommonDisp(res.norm)
-  Disp = estimateTagwiseDisp(Disp)
-  pvalue = exactTest(Disp)$table$PValue
-  DEG = data.frame(DEG,pvalue)
+  if (!tool%in%c("deseq2.Wald","deseq2.LRT", "deseq")){
+   # méthode DEG : Exact Test (edgeR)
+    colname1 = paste(tool_name,"ExactTest")
+    Disp = estimateCommonDisp(res.norm)
+    Disp = estimateTagwiseDisp(Disp)
+    pvalue = exactTest(Disp)$table$PValue
+    DEG = data.frame(DEG,pvalue)
   
-  colname2 = paste(tool_name,"GLM")
-  design = model.matrix(~0+group, data = res.norm$samples)
-  colnames(design) <- c("Control","Test")
-  y = estimateDisp(res.norm,design)
-  fit <- glmQLFit(y, design)
-  BvsA <- makeContrasts(Control-Test, levels=design)
-  qlf <- glmQLFTest(fit, contrast=BvsA)
-  pvalue = qlf[["table"]][["PValue"]]
-  DEG = data.frame(DEG,pvalue)
+    #Méthode DEG : GLM (edgeR)
+    colname2 = paste(tool_name,"GLM")
+    design = model.matrix(~0+group, data = res.norm$samples)
+    colnames(design) <- c("Control","Test")
+    y = estimateDisp(res.norm,design)
+    fit <- glmQLFit(y, design)
+    BvsA <- makeContrasts(Control-Test, levels=design)
+    qlf <- glmQLFTest(fit, contrast=BvsA)
+    pvalue = qlf[["table"]][["PValue"]]
+    DEG = data.frame(DEG,pvalue)
   
-  names(DEG)[-1][-2] = colname1
-  names(DEG)[-1][-1] = colname2
-
- 
+    names(DEG)[-1][-2] = colname1
+    names(DEG)[-1][-1] = colname2
+  }
   return(DEG)
   
 }
@@ -151,13 +201,14 @@ head(data_to_comp)
 ################################################################ 
 # De cette manière, on calcule les pvalue pour chacune de ces méthodes de normalisation
 
-tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
+tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq")
 for (tool in tools){
   print(tool)
   tmp = tools_norm_RNAseq.inspect(data,tool)
   data_to_comp = merge(data_to_comp,tmp,by = "genes",all=T)  
 }
 head(data_to_comp)
+colnames(data_to_comp)
 ################################################################
 
 # Comparaison des jeux de données : fonction qui renvoit cpm() vs ne renvoit pas cpm()
@@ -197,8 +248,7 @@ topTags(DEG_no_norm, sort.by = 'PValue')
 # GLM 
 # Création de la matrice de design
 data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
-data = DGEList(count = data, 
-               group = rep(1:2,each=ncol(data)/2))
+data = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
 
 
 TMM_test <- calcNormFactors.DGEList(data, method = "TMM")
@@ -251,7 +301,7 @@ conds
 ### Absolument équivalent à DESeq2
 cds <- newCountDataSet(SimulRNASEQ, conds)
 cds = estimateSizeFactors(cds)
-sizeFactors(cds)
+
 # Normalized = True : Divise chaque valeur par le sizeFactor associé
 counts(cds, normalized = TRUE)
 # établir la dispersion
@@ -259,15 +309,17 @@ cds = estimateDispersions(cds)
 
 cds
 res = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
-# les plus downregulated :
+res
+help("nbinomTest")
+# most downregulated :
 head( res[ order( res$foldChange, -res$baseMean ), ] )
 
-# les plus upregulated
+# most upregulated
 head( res[ order( -res$foldChange, -res$baseMean ), ] )
-
 # On remarque que très peu de p-value sont significative
 # MAIS on a travaillé sur un jeu de donnée peu transformé
 # essayons avec le GLM
 # GLM : Ne fonctionne qu'en 2 facteurs (= ici qu'un facteur puisqu'on a réglé tout sur "single reads")
+# Le facteur uniuqe étant la condition : test vs control
 
 # Conclusion : DESeq sert pas à grand chose

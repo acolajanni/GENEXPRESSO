@@ -46,6 +46,7 @@ samples.IDs <- raw.data$samples.IDs
 # compute all comparisons: each tool will normalize the data and compute differentation expression
 # The function returns the data.frame with 2 columns : the log Fold Change and the SYMBOL of the gene
 tools <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","desq2","nanoR.top100","nanoR.total","nanostringR")
+
 data.to.comp <- tools.inspect(raw.data,tool="nappa.default",nanoR=F)
 
 for (tool in tools){
