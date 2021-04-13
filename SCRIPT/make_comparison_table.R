@@ -48,6 +48,7 @@ samples.IDs <- raw.data$samples.IDs
 tools <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","desq2","nanoR.top100","nanoR.total","nanostringR")
 
 data.to.comp <- tools.inspect(raw.data,tool="nappa.default",nanoR=F)
+data.to.comp
 
 for (tool in tools){
   print(tool)

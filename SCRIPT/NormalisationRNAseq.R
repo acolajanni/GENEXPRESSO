@@ -66,6 +66,7 @@ DESeq2::plotMA(dds)
 # Méthode CQN
 
 GC= round(runif(100, min=0.01, max=0.99), digits=4)
+GC
 Lenght = round(runif(100, min=1000, max=9000))
 help(cqn)
 cqn = cqn(SimulRNASEQ, x = GC,  lengths = Lenght, sizeFactors = sizeF, verbose = TRUE)

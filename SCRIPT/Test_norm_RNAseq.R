@@ -10,6 +10,10 @@
 
 library(edgeR)
 library(DEFormats)
+library(DESeq)
+library("DESeq2")
+
+
 
 #help("read.csv")
 
@@ -32,9 +36,25 @@ data = DGEList(count = data,
 
 
 
-# Méthode par défaut : TMM
+# Méthode par défaut : TMM  + comparaison avec / sans cpm
 TMM_norm <- calcNormFactors.DGEList(data, method = "TMM")
 TMM_norm
+A = cpm(TMM_norm)
+A
+A = DGEList(count = A, 
+               group = rep(1:2,each=ncol(data)/2))
+
+Disp = estimateCommonDisp(A)
+Disp = estimateTagwiseDisp(Disp)
+A = exactTest(Disp)
+topTags(A)
+
+
+B <- calcNormFactors.DGEList(data, method = "TMM")
+B = estimateCommonDisp(B)
+B = estimateTagwiseDisp(B)
+B = exactTest(B)
+topTags(B)
 
 # Methode utiles si le jeu de données est rempli de 0
 TMMwsp_norm <- calcNormFactors.DGEList(data, method = "TMMwsp") 
@@ -67,7 +87,7 @@ DEG
 ####
 #Récupérer les données normalisées en log2 : 
 # A = cpm(DEGlist, log = TRUE)
-#AveLogCPM ==> + ou - la meme chose
+
 # De cette manière on peut renvoyer un jeu de données normalisé analysable avec d'autres outils que edgeR
 
 # on affiche par classement, les gènes les plus différentiellement exprimés
@@ -77,7 +97,7 @@ topTags(DEG, sort.by = 'PValue')
 tools_norm_RNAseq.inspect <- function(raw.data,tool){
   #data = as.matrix(raw.data)
   DEG = data.frame("genes" = row.names(data))
-
+  
   tools_norm_RNAseq.fnc <- switch(tool,
                                   
         edgeR_TMM = {
@@ -126,7 +146,6 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
           #dds = estimateDispersions(dds)
           DEG <- DESeq(dds, test = "Wald")
           DEG <- results(DEG)
-          DEG
           #DEG <- data.frame(deseq2_Wald=-log10(DEG$padj),SYMBOL=row.names(DEG))
           # à voir : Quel format pour les pvalues : log2, -log10 ...?
           DEG <- data.frame(deseq2_Wald=(DEG$padj),genes=row.names(DEG))
@@ -172,7 +191,7 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
     Disp = estimateTagwiseDisp(Disp)
     pvalue = exactTest(Disp)$table$PValue
     DEG = data.frame(DEG,pvalue)
-  
+    
     #Méthode DEG : GLM (edgeR)
     colname2 = paste(tool_name,"GLM")
     design = model.matrix(~0+group, data = res.norm$samples)
@@ -183,9 +202,10 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
     qlf <- glmQLFTest(fit, contrast=BvsA)
     pvalue = qlf[["table"]][["PValue"]]
     DEG = data.frame(DEG,pvalue)
-  
+    
     names(DEG)[-1][-2] = colname1
     names(DEG)[-1][-1] = colname2
+    DEG
   }
   return(DEG)
   
