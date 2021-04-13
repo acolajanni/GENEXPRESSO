@@ -67,17 +67,37 @@ DESeq2::plotMA(dds)
 
 GC= round(runif(100, min=0.01, max=0.99), digits=4)
 Lenght = round(runif(100, min=1000, max=9000))
-
+help(cqn)
 cqn = cqn(SimulRNASEQ, x = GC,  lengths = Lenght, sizeFactors = sizeF, verbose = TRUE)
 
 cqnOffset <- cqn$glm.offset
 cqnNormFactors <- exp(cqnOffset)
+cqnNormFactors
 
 #normFactors_sameScale <- cqnNormFactors / exp(rowMeans(log(cqnNormFactors)))
 
 #fusion RPKM + CQN
-
+RPKM.cqn = cqn$offset
+RPKM.cqn
 RPKM.cqn = cqn$y + cqn$offset
+RPKM.cqn = as.data.frame(RPKM.cqn) # = jeu de données normalisé ???
+
+########################" Essai sans réussite
+
+conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+colData = data.frame(conditions,type,row.names=colnames(RPKM.cqn))
+print(class(RPKM.cqn))
+
+RPKM.cqn<-DESeqDataSetFromMatrix(RPKM.cqn,colData, ~conditions)
+RPKM.cqn <- DESeqDataSetFromMatrix(round(RPKM.cqn), 
+                                  colData=colData, 
+                                  design=~conditions)
+
+# DESeq2 a besoin de renormaliser derrière donc inutile
+# essayons avec EdgeR
+# MAis 
+d.mont <- DGEList(counts = montgomery.subset, lib.size = sizeFactors.subset,                   
+                    group = rep(1:2,each=ncol(data)/2))
 
 #---------------------------------------------------------------------------------
 # RPKM ? génération nbR

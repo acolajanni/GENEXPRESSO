@@ -191,8 +191,6 @@ tools_norm_RNAseq.inspect <- function(raw.data,tool){
   
 }
 
-# La fonction ci dessus retoure le jeu de données normalisé( ==> faire une fonction qui reprend la suite : calcul DEG)
-
 # importation de notre jeu de données
 data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 data.matrix(data)
