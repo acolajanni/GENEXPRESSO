@@ -92,6 +92,7 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
                         res.norm <- NAPPA(rcc.samples,tissueType = "tumour")
                         colnames(res.norm) <- samples.IDs$ID
                         res.norm
+
                       },  
                       
                       nappa.param1={

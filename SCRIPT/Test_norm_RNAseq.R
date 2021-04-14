@@ -1,8 +1,8 @@
 # Nom               : Test_norm_RNAseq
 # Type              : Programme
-# Objet             : Tester la normalisation (les fonctions iront dans functions.R)
+# Objet             : Normaliser + Analyser data RNAseq
 # Input             : dataset RNA-seq
-# Output            : ?
+# Output            : data_to_comp 
 # Auteur            : Antonin COLAJANNI
 # R version         : 3.6
 # Date de creation  : 15.03.2021
@@ -280,6 +280,7 @@ dds<-DESeqDataSetFromMatrix(SimulRNASEQ,colData,design=~conditions)
 
 ## Wald test for GLM coefficients :
 #--------------------------------
+
 #Normalisation + calcul des statistiques
 DEG_Wald <- DESeq(dds, test = "Wald")
 # Affichage des résultats DEG
