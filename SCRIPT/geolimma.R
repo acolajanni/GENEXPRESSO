@@ -7,6 +7,7 @@
 # R version         : 3.6
 # Date de creation  : 14.04.2021
 #______________________________________________________________________________
+
 library(limma)
 source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
 source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
@@ -37,9 +38,10 @@ cm <- makeContrasts(diff=Control-Test ,levels=design)
 fit2 <- contrasts.fit(fit, cm)
 fit2 <- eBayes(fit2)
 res.diff <- topTable(fit2, coef="diff",genelist=row.names(Micro), number=Inf)
-res.diff <- data.frame(PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-colnames(res.diff) <- c("Limma","Gene.ID")
-res.diff
+res.diff_limma <- data.frame(PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
+colnames(res.diff_limma) <- c("Limma","Gene.ID")
+head(res.diff_limma)
+tail(res.diff_limma)
 
 #________________________________________________
 # GEOlimma sur Micro array
@@ -50,13 +52,14 @@ status.test = rep("Test",ncol(Micro)/2)
 status = c(status.control,status.test)
 design = model.matrix(~0+status)
 colnames(design) <- c("Control","Test")
-design
 
 # Lignes de codes issues de DE_source.R : Application du modèle linéaire
 cont.matrix <- makeContrasts(compare="Control-Test",levels=design)
 fit2  <- contrasts.fit(fit, cont.matrix)
+load("~/GIT/CPRD/GEOlimma/GEOlimma_probabilities.rda")
 fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
 de <- topTable(fit22, number = nrow(Micro))
-res.diff <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
-colnames(res.diff) <- c("GEOlimma","Gene.ID")
-
+res.diff_geolimma <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
+colnames(res.diff_geolimma) <- c("GEOlimma","Gene.ID")
+head(res.diff_geolimma)
+tail(res.diff_geolimma)
