@@ -17,8 +17,6 @@ if (!requireNamespace("NAPPA", quietly = TRUE)){
   install.packages("~/GIT/CPRD/NAPPA_2.0.tar.gz",repos=NULL,type="source")
 }
 
-
-
 if (length(packages.cran)>0){
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -30,3 +28,6 @@ if (!requireNamespace("ggbiplot", quietly = TRUE)) {
   install_github("vqv/ggbiplot")
 }
 
+if (!requireNamespace("UpSetR", quietly = TRUE)){
+  install.packages("UpSetR")
+}
