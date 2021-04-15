@@ -71,5 +71,5 @@ ParaRP(Simulmicro,6,6,123,FALSE,TRUE)
 
 
 #NANOSRING (NAPPA DEFAULT)-faisable ???????-----------------------------------------------------------------------------------------------------------------
-Nano = read.csv("~/GIT/CPRD/DATA/NANOSTRING/NanoNormNappa.csv", h = T, row.names = 1)
+#Nano = read.csv("~/GIT/CPRD/DATA/NANOSTRING/NanoNormNappa.csv", h = T, row.names = 1)
 
