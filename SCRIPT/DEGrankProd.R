@@ -18,7 +18,7 @@ library("Rmpfr")
 library("RankProd")
 
 #MICROARRAY-DNA---------------------------------------------------------------------------------------------------------
-source(file.path("./SCRIPT","Simulatemicroarraysseq.R"))
+#source(file.path("./SCRIPT","Simulatemicroarraysseq.R"))
 
 # paramétrage : le nom de la matrice, label contrôle/étudié (pour 2 classes), resultat reproductible,
 # matrice log2 ou pas, devenir des NA, si nom de gènes dans la sortie, si rank product ou sum rank. Si sum rank,
