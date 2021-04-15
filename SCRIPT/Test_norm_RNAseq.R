@@ -155,7 +155,20 @@ row.names(data_to_comp) <- data_to_comp$genes
 data_to_comp <- data_to_comp[,-1]
 #on récupère le tableau semblable à MakeComparisonTable.R
 data_to_comp = as.data.frame(t(data_to_comp))
-data_to_comp
+
+############################################################
+# PCA : 
+library("factoextra")
+library("FactoMineR")
+res.pca <- PCA(data_to_comp)
+eig.val <- get_eigenvalue(res.pca)
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 90))
+var <- get_pca_var(res.pca)
+fviz_pca_var(res.pca, col.var = "cos2")
+fviz_pca_ind (res.pca, col.ind = "cos2",
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+
 
 #____________________________________________________________
 # Pipeline d'analyse en fonction des packages :
