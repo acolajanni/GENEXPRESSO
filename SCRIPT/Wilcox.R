@@ -22,7 +22,9 @@ micro
 #On a 100 genes et deux groupes de patients (2x6)
 
 #Creation d'un dataframe vide
-wilcoxmicro <- data.frame()
+wilcoxtsmicro <- data.frame()
+wilcoxlmicro <- data.frame()
+wilcoxgmicro <- data.frame()
 
 #Test de wilcoxon effectué sur chaque ligne du dataframe
 #Chaque valeur de pvalue est extraite puis rajoutée à un tableau de resultats
@@ -31,11 +33,31 @@ for (i in 1:nrow(micro)) {
   y = micro[i,7:12]
   test <- wilcox.test(as.numeric(x),as.numeric(y))
   pval <- test$p.value
-  wilcoxmicro <- rbind(wilcoxmicro,pval)
+  wilcoxtsmicro <- rbind(wilcoxtsmicro,pval)
 }
 
+for (i in 1:nrow(micro)) {
+  x = micro[i,1:6]
+  y = micro[i,7:12]
+  test <- wilcox.test(as.numeric(x),as.numeric(y),alternative="less")
+  pval <- test$p.value
+  wilcoxlmicro <- rbind(wilcoxlmicro,pval)
+}
+
+for (i in 1:nrow(micro)) {
+  x = micro[i,1:6]
+  y = micro[i,7:12]
+  test <- wilcox.test(as.numeric(x),as.numeric(y),alternative="greater")
+  pval <- test$p.value
+  wilcoxgmicro <- rbind(wilcoxgmicro,pval)
+}
+
+wilcoxmicro <- cbind(wilcoxtsmicro,wilcoxlmicro,wilcoxgmicro)
 #Changement du nom de la colonne en p-values
-colnames(wilcoxmicro)[1] <- "p-values"
+colnames(wilcoxmicro)[1] <- "wilcox two-sided"
+colnames(wilcoxmicro)[2] <- "wilcox less"
+colnames(wilcoxmicro)[3] <- "wilcox greater"
+
 
 ########## NANOSTRING
 
