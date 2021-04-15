@@ -171,6 +171,29 @@ fviz_pca_ind (res.pca, col.ind = "cos2",
               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
               repel = TRUE)
 
+############################################################
+# UpsetPlot : 
+library(UpSetR)
+library(data.table)
+
+Upset <- copy(data_to_comp)
+for (i in names(Upset)){
+  for (u in 1:nrow(Upset)){
+    if(data_to_comp[[i]][u] > 0.05){
+      Upset[[i]][u] = 0
+    }else{
+      Upset[[i]][u] = 1
+    }
+  }
+}
+Upset = as.data.frame(t(Upset))
+
+# Avec les non-intersections
+upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+      order.by = "freq", empty.intersections = "on" )
+# Sans les non-intersections
+upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+      order.by = "freq", empty.intersections = NULL )
 
 #____________________________________________________________
 # Pipeline d'analyse en fonction des packages :

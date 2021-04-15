@@ -92,4 +92,22 @@ fviz_pca_ind (res.pca, col.ind = "cos2",
 ################################################################################
 # compute intersection with upsetR
 
+Upset <- copy(data.to.comp)
+for (i in names(Upset)){
+  for (u in 1:nrow(Upset)){
+    if(data.to.comp[[i]][u] > 0.05){
+      Upset[[i]][u] = 0
+    }else{
+      Upset[[i]][u] = 1
+    }
+  }
+}
+Upset = as.data.frame(t(Upset))
+
+# Avec les non-intersections
+upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+      order.by = "freq", empty.intersections = "on" )
+# Sans les non-intersections
+upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+      order.by = "freq", empty.intersections = NULL )
 
