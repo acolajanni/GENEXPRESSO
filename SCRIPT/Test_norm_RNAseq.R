@@ -1,8 +1,8 @@
 # Nom               : Test_norm_RNAseq
 # Type              : Programme
-# Objet             : Tester la normalisation (les fonctions iront dans functions.R)
+# Objet             : Normaliser + Analyser data RNAseq
 # Input             : dataset RNA-seq
-# Output            : ?
+# Output            : data_to_comp 
 # Auteur            : Antonin COLAJANNI
 # R version         : 3.6
 # Date de creation  : 15.03.2021
@@ -10,115 +10,312 @@
 
 library(edgeR)
 library(DEFormats)
+library(DESeq)
+library(DESeq2)
 
-#help("read.csv")
-
-# importation de notre jeu de données
-data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
-#Besoin de stocker le jeu de données sous forme de matrice
-data.matrix(data)
-
-#help("readDGE")
-#help('DGEList')
-#help('simulateRnaSeqData')
-
-# On créer une DGElist pour pouvoir faire d'autres analyses
-data = DGEList(count = data, 
-        group = rep(1:2,each=ncol(data)/2)) #2 groupes (control / test) ==> 2 rep(1:2) / chaque grp a autant d'indiv chacun (ncol(data)/2)
-
-#help("calcNormFactors.DGEList")
-
-# On peut maintenant calculer des facteurs de normalisation : (on les calcule juste, on les applique pas donc voir comment faire ?)
-
-# Méthode par défaut : TMM
-TMM_norm <- calcNormFactors.DGEList(data, method = "TMM")
-TMM_norm
-
-# Methode utiles si le jeu de données est rempli de 0
-TMMwsp_norm <- calcNormFactors.DGEList(data, method = "TMMwsp") 
-TMMwsp_norm
-
-# Relative log expression ==> moyenne geometric
-RLE_norm <- calcNormFactors.DGEList(data, method = "RLE")
-RLE_norm
-
-# méthode normalisation par rapport au 75% quantile
-upperquartile_norm <- calcNormFactors.DGEList(data, method = "upperquartile")
-upperquartile_norm
-
-#Maintenant, besoin d'estimer la dispersion puis tagwise dispersion
-# Dispersion : permet d'établir un critère de dispersion des données de reads mappé sur un gène 
-# Sans ce paramètre on peut pas établir si la différence de read mappé est due à une différence de longueur de gène ou a une expression différentielle
-# Ensuite : Tagwise : établit la dispersion des données pour chacune des valeurs du dataset
-Disp = estimateCommonDisp(TMM_norm)
-Disp = estimateTagwiseDisp(Disp)
-
-#help("estimateCommonDisp")
-#help('estimateTagwiseDisp')
-#help(exactTest)
-#help(topTags)
-
-# Test des DEG avec une méthode proche du Test exact de fisher
-DEG = exactTest(Disp)
-DEG
-# on affiche par classement, les gènes les plus différentiellement exprimés
-topTags(DEG, sort.by = 'PValue')
-
-tools_norm_RNAseq.inspect <- function(raw.data,tool){
-  data = as.matrix(raw.data)
-  Norm_factors = data.frame("Samples" = colnames(data))
+# Fonction combinant la normalation + l'analyse DEG
+tools_norm_RNAseq.inspect <- function(data,tool){
+  # Besoin de mettre le jeu de données dans les bons formats
+  data = as.matrix(data)
+  # Créeation d'un tableau à une colonne : "Gènes" qui liste tous les gènes
+  res.diff = data.frame("genes" = row.names(data))
   
   tools_norm_RNAseq.fnc <- switch(tool,
                                   
         edgeR_TMM = {
+          # Jeu de données dans la classe de EdgeR (DGElist)
           DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-          TMM_norm <- calcNormFactors.DGEList(DGE, method = "TMM")
-          tmp = data.frame("TMM_norm" = TMM_norm$samples$norm.factors)
-          Norm_factors = cbind(Norm_factors, tmp)
+          # Normalisation :
+          res.norm <- calcNormFactors.DGEList(DGE, method = "TMM")
+          tool_name = "TMM"
         },
         
         edgeR_RLE = {
            DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-           RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
-           tmp = data.frame("RLE_norm" = RLE_norm$samples$norm.factors)
-           Norm_factors = cbind(Norm_factors, tmp)
+           res.norm <- calcNormFactors.DGEList(DGE, method = "RLE")
+           tool_name = "RLE"
         },
         
         edgeR_TMMwsp = {
           DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-          RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
-          tmp = data.frame("TMMwsp" = RLE_norm$samples$norm.factors)
-          Norm_factors = cbind(Norm_factors, tmp)
+          res.norm <- calcNormFactors.DGEList(DGE, method = "TMMwsp")
+          tool_name = "TMMwsp"
         },
         
         edgeR_upperquartile = {
           DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-          RLE_norm <- calcNormFactors.DGEList(DGE, method = "RLE")
-          tmp = data.frame("upperquartile" = RLE_norm$samples$norm.factors)
-          Norm_factors = cbind(Norm_factors, tmp)
-        }
+          res.norm <- calcNormFactors.DGEList(DGE, method = "upperquartile")
+          tool_name = "Upperquartile"
+        },
         
-        )
+        deseq2.Wald = {
+          # Mise en forme des données pour créer un DESeqDataSet :
+          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+          type = factor(rep("single-read",12))
+          colData = data.frame(conditions,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
+          
+          # Récupération des résultats avec l'analyse DEG (test Wald)
+          DEG <- DESeq(dds, test = "Wald")
+          DEG <- results(DEG)
+          
+          #DEG <- data.frame(deseq2_Wald=-log10(DEG$padj),SYMBOL=row.names(DEG))
+          # à voir : Quel format pour les pvalues : log2, -log10 ...?
+          # Rajout d'une colonne au tableau 
+          res.diff <- data.frame(deseq2_Wald=(DEG$padj),genes=row.names(DEG))
+            
+        },
+        
+        deseq2.LRT = {
+          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+          type = factor(rep("single-read",12))
+          colData = data.frame(conditions,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
 
-  return(Norm_factors)
+          DEG <- DESeq(dds, test = "LRT",reduced = ~1)
+          DEG <- results(DEG)
+          
+          res.diff <- data.frame(deseq2_LRT=(DEG$padj),genes=row.names(DEG))
+        },
+        
+        deseq = {
+          condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+          colnames(data)
+          type = factor(rep("single-read",12))
+          design = data.frame(condition,type,row.names=colnames(data))
+          singleSamples = design$type == 'single-read'
+          countTable = data[,singleSamples]
+          conds = design$condition[singleSamples]
+          
+          cds <- newCountDataSet(data, conds)
+          cds = estimateSizeFactors(cds)
+          cds = estimateDispersions(cds)
+          DEG = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
+          res.diff <- data.frame(deseq = (DEG$padj),genes= (DEG$id))
+            
+        },
+        stop("Enter something that switches me!") 
+        
+  )
+  # Tests DEG pour les données normalisées non traités (on exclut donc DESeq)
+  if (!tool%in%c("deseq2.Wald","deseq2.LRT", "deseq")){
+   # méthode DEG : Exact Test (edgeR)
+    colname1 = paste(tool_name,"ExactTest")
+    # Calculs des dispersions
+    Disp = estimateCommonDisp(res.norm)
+    Disp = estimateTagwiseDisp(Disp)
+    # Excat test + récupération des PValue + gènes correspondants
+    pvalue = exactTest(Disp)$table[3]
+    
+    # tableau 2 colonnes : Gènes - pvalue
+    res.diff1 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
+
+    #Méthode DEG : GLM (edgeR)
+    colname2 = paste(tool_name,"GLM")
+    # Matrice de design : 
+    design = model.matrix(~0+group, data = res.norm$samples)
+    colnames(design) <- c("Control","Test")
+    # caluls des dispersions
+    y = estimateDisp(res.norm,design)
+    fit <- glmQLFit(y, design)
+    BvsA <- makeContrasts(Control-Test, levels=design)
+    # Calcul des DEG :
+    qlf <- glmQLFTest(fit, contrast=BvsA)
+    # On récupère les PValue + gènes correspondants
+    pvalue = qlf[["table"]][4]
+    res.diff2 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
+    res.diff = merge(res.diff1,res.diff2,by = "genes",all=T)
+    
+    # On renomme les deux dernières colonnes créées
+    names(res.diff)[-1][-2] = colname1
+    names(res.diff)[-1][-1] = colname2
+  }
+  return(res.diff)
+  
 }
-data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
+################################################################ 
+# Appel de la fonction : 
 
-tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
+# importation de notre jeu de données
+data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+# Essai de la fonction sur un paramètre
+data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
+head(data_to_comp)
+################################################################ 
+
+# De cette manière, on calcule les pvalue pour chacune de ces méthodes de normalisation
+
+tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq")
 for (tool in tools){
   print(tool)
   tmp = tools_norm_RNAseq.inspect(data,tool)
-  data_to_comp = merge(data_to_comp,tmp,by = "Samples",all=T)  
+  data_to_comp = merge(data_to_comp,tmp,by = "genes",all=T)  
+}
+row.names(data_to_comp) <- data_to_comp$genes
+data_to_comp <- data_to_comp[,-1]
+#on récupère le tableau semblable à MakeComparisonTable.R
+data_to_comp = as.data.frame(t(data_to_comp))
+
+############################################################
+# PCA : 
+library("factoextra")
+library("FactoMineR")
+res.pca <- PCA(data_to_comp)
+eig.val <- get_eigenvalue(res.pca)
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 90))
+var <- get_pca_var(res.pca)
+var
+summary(res.pca)
+fviz_pca_var(res.pca, col.var = "cos2")
+fviz_pca_ind (res.pca, col.ind = "cos2",
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+
+
+#____________________________________________________________
+# Pipeline d'analyse en fonction des packages :
+
+################# ################# #################  EdgeR :
+
+# importation de notre jeu de données
+data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+
+# On créer une DGElist pour pouvoir faire d'autres analyses
+data = DGEList(count = data, group = rep(1:2,each=ncol(data)/2)) 
+#2 groupes (control / test) ==> 2 rep(1:2) / chaque grp a autant d'indiv chacun (ncol(data)/2)
+
+################################ Méthodes normalisation EdgeR :
+
+# Méthode TMM
+TMM_norm <- calcNormFactors.DGEList(data, method = "TMM")
+# Methode utiles si le jeu de données est rempli de 0
+TMMwsp_norm <- calcNormFactors.DGEList(data, method = "TMMwsp") 
+# Relative log expression ==> moyenne geometric
+RLE_norm <- calcNormFactors.DGEList(data, method = "RLE")
+# méthode normalisation par rapport au 75% quantile
+upperquartile_norm <- calcNormFactors.DGEList(data, method = "upperquartile")
+
+################################ Méthodes analyse DEG EdgeR :
+## Exact Test :
+#--------------
+
+# Analyse DEG necessite l'estimation des paramètres de dispersion : 
+Disp = estimateCommonDisp(TMM_norm)
+Disp = estimateTagwiseDisp(Disp)
+
+# Test des DEG avec une méthode proche du Test exact de fisher
+DEG = exactTest(Disp)
+# on affiche par classement, les gènes les plus différentiellement exprimés
+topTags(DEG, sort.by = 'PValue')
+
+##    GLM     :
+#--------------
+
+# a besoin d'un autre paramètre : matrice de "design"
+design = model.matrix(~0+group, data = TMM_norm$samples)
+colnames(design) <- c("Control","Test")
+
+# Estimation de la dispersion à partir du design
+y = estimateDisp(TMM_norm,design)
+fit <- glmQLFit(y, design)
+BvsA <- makeContrasts(Control-Test, levels=design)
+# Calcul des DEG
+qlf <- glmQLFTest(fit, contrast=BvsA)
+# on affiche par classement, les gènes les plus différentiellement exprimés
+topTags(qlf)
+
+#________________________________________________________
+# Test de la fonction cpm pour exportation des données normalisées
+# Méthode par défaut : TMM  + comparaison avec / sans cpm
+
+# Avec cpm() : 
+TMM_norm <- calcNormFactors.DGEList(data, method = "TMM")
+
+A = cpm(TMM_norm)
+A = DGEList(count = A, group = rep(1:2,each=ncol(data)/2))
+Disp = estimateCommonDisp(A)
+Disp = estimateTagwiseDisp(Disp)
+A = exactTest(Disp)
+topTags(A)
+
+# Avec cpm()
+B <- calcNormFactors.DGEList(data, method = "TMM")
+B = estimateCommonDisp(B)
+B = estimateTagwiseDisp(B)
+B = exactTest(B)
+topTags(B)
+#____________________________________________________
+
+
+################# ################# #################  DESeq(1)
+
+### On récupère le jeu de données :
+SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+# Besoin de créer un data frame de design :
+condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
+type = factor(rep("single-read",12))
+design = data.frame(condition,type,row.names=colnames(SimulRNASEQ))
+singleSamples = design$type == 'single-read'
+countTable = SimulRNASEQ[,singleSamples]
+conds = design$condition[singleSamples]
+
+### à partir du dataframe, on peut stocker le jeu de donnée dans la classe propre à DESeq
+cds <- newCountDataSet(SimulRNASEQ, conds)
+## Estimation des size factors (nécessaire pour l'analyse DEG)
+cds = estimateSizeFactors(cds)
+# établir la dispersion (nécessaire pour l'analyse DEG)
+cds = estimateDispersions(cds)
+
+# Récupérer le jeu de données normalisé :
+# Normalized = True : Divise chaque valeur par le sizeFactor associé
+counts(cds, normalized = TRUE)
+
+# Analyse DEG : 
+res = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
+res
+# most downregulated :
+head( res[ order( res$foldChange, -res$baseMean ), ] )
+# most upregulated
+head( res[ order( -res$foldChange, -res$baseMean ), ] )
+
+################# ################# #################  DESeq2
+
+### On récupère le jeu de données :
+set.seed(20210403) #permet d'obtenir toujours les memes donnees
+counts <- simulateRnaSeqData (n=1000,m=12)
+counts2=counts[sort(row.names(counts)),] 
+SimulRNASEQ <- as.data.frame(counts)
+for (i in 1:ncol(SimulRNASEQ)) {
+  if (i <= ncol(SimulRNASEQ)/2){
+    names(SimulRNASEQ)[i] = paste("control",i,sep='_')    
+  }else{
+    names(SimulRNASEQ)[i] = paste("test",i-ncol(SimulRNASEQ)/2,sep="_")
+  }
 }
 
-data_to_comp
+SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 
-# Test de la fonction, petite erreur à corriger 
+# Besoin d'énnoncer certains paramètres pour importer dans la classe propore à DESeq2 :
+conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
+type = factor(rep("single-read",12))
+colData = data.frame(conditions,type,row.names=colnames(SimulRNASEQ))
+# Importation du jeu de données dans la classe DESeqDataSet (nécessaire à l'analyse)
+dds<-DESeqDataSetFromMatrix(SimulRNASEQ,colData,design=~conditions)
 
-# page 22/122 sur la doc de EdgeR
+################################ Normalisation + analyse DEG :
+# Normalisation = Negative binomiale
 
-# Problème : Exporter la normalisation :
-# Sur edgeR, il calcule un "facteur de normalisation" qu'il applique dans les calculs (Dispersion, etc.)
-# Mais ce facteur ne transforme pas le jeu de données. Donc comment faire pour exporter un jeu de donnée transformé ?¨
+## Wald test for GLM coefficients :
+#--------------------------------
 
-#Question : est ce qu'on s'embête vraiment à croiser les méthodes de normalisation avec les méthodes DEG pour la RNAseq ? (du moins pas maintenant je pense ?)
+#Normalisation + calcul des statistiques
+DEG_Wald <- DESeq(dds, test = "Wald")
+# Affichage des résultats DEG
+results(DEG_Wald)
+
+## Likelihood ratio test (LRT) Chi2 pour GLM :
+#---------------------------------------------
+#Normalisation + calcul des statistiques
+DEG_LRT <- DESeq(dds, test = "LRT",reduced = ~1)
+# Affichage des résultats DEG
+results(DEG_LRT)
