@@ -164,6 +164,8 @@ res.pca <- PCA(data_to_comp)
 eig.val <- get_eigenvalue(res.pca)
 fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 90))
 var <- get_pca_var(res.pca)
+var
+summary(res.pca)
 fviz_pca_var(res.pca, col.var = "cos2")
 fviz_pca_ind (res.pca, col.ind = "cos2",
               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -279,6 +281,18 @@ head( res[ order( -res$foldChange, -res$baseMean ), ] )
 ################# ################# #################  DESeq2
 
 ### On récupère le jeu de données :
+set.seed(20210403) #permet d'obtenir toujours les memes donnees
+counts <- simulateRnaSeqData (n=1000,m=12)
+counts2=counts[sort(row.names(counts)),] 
+SimulRNASEQ <- as.data.frame(counts)
+for (i in 1:ncol(SimulRNASEQ)) {
+  if (i <= ncol(SimulRNASEQ)/2){
+    names(SimulRNASEQ)[i] = paste("control",i,sep='_')    
+  }else{
+    names(SimulRNASEQ)[i] = paste("test",i-ncol(SimulRNASEQ)/2,sep="_")
+  }
+}
+
 SimulRNASEQ = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 
 # Besoin d'énnoncer certains paramètres pour importer dans la classe propore à DESeq2 :
