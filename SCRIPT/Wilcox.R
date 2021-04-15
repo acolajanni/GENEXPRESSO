@@ -69,6 +69,5 @@ colnames(wilcoxmicro)[1] <- "wilcox two-sided"
 colnames(wilcoxmicro)[2] <- "wilcox less"
 colnames(wilcoxmicro)[3] <- "wilcox greater"
 
-
 ########## NANOSTRING
 
