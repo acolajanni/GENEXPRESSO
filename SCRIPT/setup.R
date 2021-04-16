@@ -35,3 +35,7 @@ if (!requireNamespace("UpSetR", quietly = TRUE)){
 if (!requireNamespace("reshape2", quietly = TRUE)){
   install.packages("reshape2")
 }
+
+if (!requireNamespace("WGCNA", quietly = TRUE)){
+  BiocManager::install("WGCNA") 
+}
