@@ -31,3 +31,7 @@ if (!requireNamespace("ggbiplot", quietly = TRUE)) {
 if (!requireNamespace("UpSetR", quietly = TRUE)){
   install.packages("UpSetR")
 }
+
+if (!requireNamespace("reshape2", quietly = TRUE)){
+  install.packages("reshape2")
+}
