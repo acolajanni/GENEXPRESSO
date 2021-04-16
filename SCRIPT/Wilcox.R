@@ -68,6 +68,7 @@ wilcoxmicro <- cbind(wilcoxtsmicro,wilcoxlmicro,wilcoxgmicro)
 colnames(wilcoxmicro)[1] <- "wilcox two-sided"
 colnames(wilcoxmicro)[2] <- "wilcox less"
 colnames(wilcoxmicro)[3] <- "wilcox greater"
+row.names(wilcoxmicro) = row.names(micro)
 
 ########## NANOSTRING
 #Fichier importe pour normalisation de donnees Nanostring avec la methode Nappa
@@ -126,3 +127,12 @@ colnames(wilcoxnanonappa)[2] <- "Nappa.wilcox less"
 colnames(wilcoxnanonappa)[3] <- "Nappa.wilcox greater"
 
 #Faire une fonction qui fait la même chose pour chaque tools utilise ??
+#___________________________________ Réponse : 
+# Faire en sorte que la fonction puisse être utilisé qu'importe la matrice donnée en paramètre
+#comme ça on peut passer en paramètre two sided, greater, lesser
+# two sided pour nanostring
+# greater/lesser pour microarray (comme ça il y aurait juste à faire un if, else)
+# On pourrait aussi passer en paramètre le nombre d'individu de chaque groupe 
+# Sinon faudra faire attention à bien garder les noms de gènes sur le tableau en output, parce qu'on "merge" les dataframes selon les noms de gènes.
+#   data.to.comp <- merge(data.to.comp,tmp,by="SYMBOL",all=T) ça c'est le code de E.darbo
+# merge by "SYMBOL" SYMBOL c'est la colonne des gènes
