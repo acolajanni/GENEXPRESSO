@@ -209,7 +209,7 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
     res.diff <- data.frame(nanoR.total=-log10(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
     colnames(res.diff) <- c(tool,"SYMBOL")
   }
-  return(res.diff)
+  return(res.norm)
 }
 
 make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(dataset)/2),ncond2=(ncol(dataset)/2)){
