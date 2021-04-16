@@ -10,10 +10,40 @@
 
 wilcoxDEG <- function(data, n1, n2, type){
   if (type == "nanostring") {
-    for (i in nrow(data)){
+    wilcoxnano <- data.frame()
+    for (i in 1:nrow(data)){
       x = data[i,1:n1]
-      y = data[i,n1+1:n1+n2]
+      y = data[i,(n1+1):(n1+n2)]
+      test <- wilcox.test(as.numeric(x),as.numeric(y))
+      pval <- test$p.value
+      wilcoxnano<- rbind(wilcoxnano,pval)
     }
+    colnames(wilcoxnano) <- "Wilcox two-sided"
+    row.names(wilcoxnano) = row.names(data)
+    return(wilcoxnano)
+  }
+  else {
+    wilcoxlessmicro <- data.frame()
+    for (i in 1:nrow(data)){
+      x = data[i,1:n1]
+      y = data[i,(n1+1):(n1+n2)]
+      test <- wilcox.test(as.numeric(x),as.numeric(y),alternative="less")
+      pval <- test$p.value
+      wilcoxlessmicro<- rbind(wilcoxlessmicro,pval)
+    }
+    wilcoxgreatermicro <- data.frame()
+    for (i in 1:nrow(data)){
+      x = data[i,1:n1]
+      y = data[i,(n1+1):(n1+n2)]
+      test <- wilcox.test(as.numeric(x),as.numeric(y),alternative="greater")
+      pval <- test$p.value
+      wilcoxgreatermicro<- rbind(wilcoxgreatermicro,pval)
+    }
+    wilcoxmicro <- cbind(wilcoxlessmicro,wilcoxgreatermicro)
+    colnames(wilcoxmicro)[1] <- "wilcox less"
+    colnames(wilcoxmicro)[2] <- "wilcox greater"
+    row.names(wilcoxmicro) = row.names(data)
+    return(wilcoxmicro)
   }
 }
 
