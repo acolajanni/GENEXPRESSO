@@ -38,7 +38,7 @@ for (i in 1:nrow(micro)) {
   #On recupere la pvalue
   pval <- test$p.value
   #On l'ajoute au tableau
-  wilcoxtsmicro <- rbind(wilcoxtsmicro,pval)
+  wilcoxtsmicro <- merge(wilcoxtsmicro,pval,by="SYMBOL",all=T) 
 }
 
 #Test de wilcoxon less effectue sur chaque ligne du dataframe :

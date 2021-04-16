@@ -33,14 +33,18 @@ mydata1
 micro <- as.data.frame(mydata1)
 Simulmicro<-micro[,13:24]
 
+#Generation de noms de gènes aléatoires
+listenom <- paste0(rep(LETTERS[1:10], each=10), rep(1:10, 10))
+row.names(Simulmicro) <- listenom
+
 <<<<<<< HEAD
 #Voir si les deux prochaines lignes sont utiles +> oui je trouve que c'est plus propre sur les noms de colonnes
 nomcolonne <- c("sample1","sample2","sample3","sample4","sample5","sample6","sample7","sample8","sample9","sample10","sample11","sample12")
 =======
-#Voir si les deux prochaines lignes sont utiles
+#Voir si les deux prochaines lignes sont utiles > Oui
 nomcolonne <- c("control1","control2","control3","control4","control5","control6","test1","test2","test3","test4","test5","test6")
 >>>>>>> 9cbb6688648df4f4ffd034d6c744a6316ea3e6e8
 colnames(Simulmicro)<-nomcolonne
 
 #Exportation des donnees
-write.csv(Simulmicro,"~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv", row.names = TRUE)
+write.csv(Simulmicro,"~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", row.names = TRUE)
