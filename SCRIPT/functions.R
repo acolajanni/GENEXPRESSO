@@ -12,12 +12,12 @@ library(ggrepel)
 library(DESeq2)
 source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
 source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
-library("factoextra")
-library("FactoMineR")
-library(edgeR)
-library(DEFormats)
-library(DESeq)
-library(UpSetR)
+suppressWarnings(library("factoextra"))
+suppressWarnings(library("FactoMineR"))
+suppressWarnings(library(edgeR))
+suppressWarnings(library(DEFormats))
+suppressWarnings(library(DESeq))
+suppressWarnings(library(UpSetR))
 
 get.annotations <- function(x){
   annots <- phenoData(x[[1]])@data
@@ -234,11 +234,11 @@ DEG_limma <- function(dataset,design){
 
 DEG_GEOlimma <- function(dataset,design){
   cont.matrix <- makeContrasts(constrast = A-B, levels=design)
-  fit <- lmFit(Micro,design)
+  fit <- lmFit(dataset,design)
   fit2  <- contrasts.fit(fit, cont.matrix)
   load("~/GIT/CPRD/GEOlimma/GEOlimma_probabilities.rda")
   fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
-  de <- topTable(fit22, number = nrow(Micro))
+  de <- topTable(fit22, number = nrow(dataset))
   res.diff_geolimma <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
   colnames(res.diff_geolimma) <- c("GEOlimma","Gene.ID")
   return(res.diff_geolimma)
