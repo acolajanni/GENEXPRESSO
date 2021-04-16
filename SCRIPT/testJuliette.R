@@ -25,10 +25,12 @@ sample.annots$tp53.status <- sub("Wild type/NA/ND","WildType",sample.annots$tp53
 raw.data <- import.raw.rcc(RCC.dir,sample.annots)
 samples.IDs <- raw.data$samples.IDs
 
-#nappaNS <- tools.inspect(raw.data, "nappa.NS", nanoR = F)
-#nappaNS <- as.data.frame(nappaNS)
+nappaNS <- tools.inspect(raw.data, "nappa.NS", nanoR = F)
+nappaNS <- as.data.frame(nappaNS)
 
-tools <- c("nanostringR", "nappa.NS", "nappa.default", "nappa.param1","nappa.param3", "nappa.param2", "nanostringnorm.default", "nanostringnorm.param1", "nanostringnorm.param2", "nanoR.top100", "nanoR.total")
-for (i in tools){
-  
-}
+nanostringR <- tools.inspect(raw.data, "nanostringR", nanoR = F)
+
+nappa.default <- tools.inspect(raw.data, "nappa.default", nanoR = F)
+nappa.default <- as.data.frame(nappa.default)
+
+test <- wilcoxDEG(nappa,42,22, "nanostring")
