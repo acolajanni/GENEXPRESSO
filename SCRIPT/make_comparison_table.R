@@ -77,9 +77,11 @@ write.csv(data.to.comp,"~/GIT/CPRD/OUTPUT/TABLE/data.to.comp.csv", row.names = T
 ################################################################################
 ################################################################################
 # compute PCA
-library("factoextra")
-library("FactoMineR")
-res.pca <- PCA(data.to.comp)
+PCA_tools(data.to.comp)
+
+
+### Appel complet
+res.pca <- PCA(data.to.comp,graph=F)
 eig.val <- get_eigenvalue(res.pca)
 fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 90))
 var <- get_pca_var(res.pca)
@@ -91,7 +93,11 @@ fviz_pca_ind (res.pca, col.ind = "cos2",
 ################################################################################
 ################################################################################
 # compute intersection with upsetR
+threshold = -log10(0.05)
 
+UpsetPlot(data.to.comp, threshold = threshold, log = T)
+
+# Appel complet
 Upset <- copy(data.to.comp)
 for (i in names(Upset)){
   for (u in 1:nrow(Upset)){

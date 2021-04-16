@@ -8,10 +8,8 @@
 # Date de creation  : 15.03.2021
 #______________________________________________________________________________
 
-library(edgeR)
-library(DEFormats)
-library(DESeq)
-library(DESeq2)
+source(file.path("./SCRIPT","functions.R"))
+
 
 # Fonction combinant la normalation + l'analyse DEG
 tools_norm_RNAseq.inspect <- function(data,tool){
@@ -158,42 +156,18 @@ data_to_comp = as.data.frame(t(data_to_comp))
 
 ############################################################
 # PCA : 
-library("factoextra")
-library("FactoMineR")
-res.pca <- PCA(data_to_comp)
-eig.val <- get_eigenvalue(res.pca)
-fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 90))
-var <- get_pca_var(res.pca)
-var
-summary(res.pca)
-fviz_pca_var(res.pca, col.var = "cos2")
-fviz_pca_ind (res.pca, col.ind = "cos2",
-              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-              repel = TRUE)
+
+PCA_tools(data_to_comp)
 
 ############################################################
 # UpsetPlot : 
 library(UpSetR)
 library(data.table)
 
-Upset <- copy(data_to_comp)
-for (i in names(Upset)){
-  for (u in 1:nrow(Upset)){
-    if(data_to_comp[[i]][u] > 0.05){
-      Upset[[i]][u] = 0
-    }else{
-      Upset[[i]][u] = 1
-    }
-  }
-}
-Upset = as.data.frame(t(Upset))
+UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
 
-# Avec les non-intersections
-upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
-      order.by = "freq", empty.intersections = "on" )
-# Sans les non-intersections
-upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
-      order.by = "freq", empty.intersections = NULL )
+
+
 
 #____________________________________________________________
 # Pipeline d'analyse en fonction des packages :

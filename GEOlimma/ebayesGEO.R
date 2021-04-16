@@ -25,7 +25,7 @@ eBayesGEO <- function(fit,proportion=0.01,stdev.coef.lim=c(0.1,4),trend=FALSE,ro
 		if (dim(proportion_vector)[2] == 1){
 			#p_avg <- median(proportion_vector[,1])
 			p_avg <- 0.06932688
-			print(p_avg)
+			#print(p_avg)
 
 			p = sapply(1:length(genes), function(x) {ifelse( genes[x] %in% rownames(proportion_vector), proportion_vector[genes[x],], p_avg )} )
 
