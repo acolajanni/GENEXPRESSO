@@ -2,7 +2,7 @@
 # Type              : Programme
 # Objet             : Analyse coexpression Pearson + WGCNA
 # Input             : Dataset (microarray, RNA-seq, Nanostring)
-# Output            : graphe d'adjacence / matrice carré ?
+# Output            : iplot
 # Auteur            : Antonin COLAJANNI
 # R version         : 3.6
 # Date de creation  : 16.04.2021
@@ -12,6 +12,7 @@ library("reshape2")
 library('igraph')
 library(data.table)
 
+data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv", header = TRUE,row.names = 1)
 
 data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
                             row.names = 1, quote="\"",header = T)
@@ -21,7 +22,7 @@ data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv",
 data_exprT=t(data_expr)
 # calculer la corrélation entre toutes les colonnes d'une matrice
 result_correlation=cor(data_exprT)
-??cor
+
 # on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
 # qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
 list_correlation=melt(result_correlation)
@@ -40,5 +41,10 @@ for (col in 1:ncol(Matrix)){
     }
   }
 }
+A = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
+Isolated = which(degree(A)==0)
+G2 = delete.vertices(A, Isolated)
+plot(G2)
 
-plot(graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F))
+
+
