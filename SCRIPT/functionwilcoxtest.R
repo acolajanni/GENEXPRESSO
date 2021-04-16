@@ -7,9 +7,7 @@
 # R version         : 3.6
 # Date de creation  : 16.04.2021
 #______________________________________________________________________________
-data <- nano
-n1 = 42
-n2 = 22
+
 wilcoxDEG <- function(data, n1, n2, type){
   if (type == "nanostring") {
     wilcoxnano <- data.frame()
