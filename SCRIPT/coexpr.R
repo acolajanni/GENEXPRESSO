@@ -12,7 +12,7 @@ library("reshape2")
 library('igraph')
 library(data.table)
 
-data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays.csv", header = TRUE,row.names = 1)
+data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 
 data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
                             row.names = 1, quote="\"",header = T)
@@ -44,7 +44,10 @@ for (col in 1:ncol(Matrix)){
 A = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
 Isolated = which(degree(A)==0)
 G2 = delete.vertices(A, Isolated)
-plot(G2)
+plot(G2,
+     edge.color = "black",
+     edge.width = 3,
+     frame = T)
 
 
 
