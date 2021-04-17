@@ -12,6 +12,8 @@ library("reshape2")
 library('igraph')
 library(data.table)
 
+Simulmicro <- read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header=T,row.names = 1)
+
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 
 data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 

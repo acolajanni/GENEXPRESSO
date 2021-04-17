@@ -30,12 +30,30 @@ g2 = 6
 cl = rep(c(0,1),c(g1,g2))
 cl # vérif'
 # FALSE pour NA
-outRPmic = RankProducts(Simulmicro, cl, rand = 123, logged = FALSE , na.rm = TRUE , calculateProduct = TRUE)
-?t.test
+outRPmic = RankProducts(Simulmicro, cl, rand = 123, logged = F , na.rm = T , calculateProduct = TRUE)
+outRPmic2 = RankProducts(Simulmicro, cl, rand = 123, logged = T , na.rm = T , calculateProduct = TRUE)
+outRPmic3 = RankProducts(Simulmicro, cl, rand = 123, logged = T , na.rm = F , calculateProduct = TRUE)
+outRPmic4 = RankProducts(Simulmicro, cl, rand = 123, logged = F , na.rm = F , calculateProduct = TRUE)
+
 valeur = outRPmic[["pfp"]]
 value = outRPmic[["pval"]]
+value
 
-#topGene(outRPmic,)
+A = topGene(outRPmic,num.gene = 100)
+head(A$Table1)
+head(A$Table2)
+
+B = topGene(outRPmic2,num.gene = 100)
+head(B$Table1)
+head(B$Table2)
+
+C = topGene(outRPmic3,num.gene = 100)
+head(C$Table1)
+head(C$Table2)
+
+D = topGene(outRPmic4,num.gene = 100)
+head(D$Table1)
+head(D$Table2)
 
 #Tentative fonction (fonctionne a priori)------------------------------------------
 
@@ -62,7 +80,7 @@ ParaRP = function(data,g1,g2,ran,ProdRank,logged) {
   }
 }
 
-ParaRP(Simulmicro,6,6,123,FALSE,TRUE)
+A = ParaRP(Simulmicro,6,6,123,FALSE,TRUE)
 
 #MICROARRAY-AFFY.----------------------------------------------------------------------------------------------
 

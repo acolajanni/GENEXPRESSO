@@ -39,3 +39,7 @@ if (!requireNamespace("reshape2", quietly = TRUE)){
 if (!requireNamespace("WGCNA", quietly = TRUE)){
   BiocManager::install("WGCNA") 
 }
+
+if (!requireNamespace("RankProd", quietly = TRUE)){
+  BiocManager::install("RankProd")
+}

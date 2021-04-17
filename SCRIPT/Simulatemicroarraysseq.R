@@ -28,7 +28,6 @@ rseed <- 50
 #n indique le nombre de genes, par defaut il est a 10000, on le met ici a 100
 mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed)
 mydata1
-
 #On recupere les donnees generees
 micro <- as.data.frame(mydata1)
 Simulmicro<-micro[,13:24]
