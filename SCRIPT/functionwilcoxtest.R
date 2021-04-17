@@ -56,6 +56,9 @@ wilcoxDEG <- function(data, n1, n2, type){
 ########### La fonction traite les deux types de donnees de la meme maniere et
 ########### donne un dataframe avec les 3 alternatives pour le test de Wilcox
 
+
+########## Je pense que tu peux tout faire rentrer dans une seule boucle (plutôt que d'en faire 3)
+
 wilcoxDEG4 <- function(data, n1, n2){
   wilcoxts <- data.frame()
   wilcoxless <- data.frame()

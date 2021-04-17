@@ -161,11 +161,8 @@ PCA_tools(data_to_comp)
 
 ############################################################
 # UpsetPlot : 
-library(UpSetR)
-library(data.table)
 
 UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
-
 
 
 

@@ -221,26 +221,41 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
   return(design)
 }  
 
-DEG_limma <- function(dataset,design){
-  cm <- makeContrasts(diff = A-B, levels=design)
-  fit <- lmFit(Micro,design)
+DEG_limma <- function(dataset,design,comp = "up"){
+  if (comp == "up"){
+    cm <- makeContrasts(diff = A-B, levels=design)
+    name = "limma.up"
+  }else if (comp == "down"){
+    cm <- makeContrasts(diff = B-A, levels=design)
+    name = "limma.down"
+  }else{
+    cont.matrix <- makeContrasts(constrast = A-B, levels=design)
+    name = "limma"
+  }
+  fit <- lmFit(dataset,design)
   fit2 <- contrasts.fit(fit, cm)
   fit2 <- eBayes(fit2)
   res.diff <- topTable(fit2, coef="diff",genelist=row.names(dataset), number=Inf)
   res.diff_limma <- data.frame(PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-  colnames(res.diff_limma) <- c("Limma","Gene.ID")
+  colnames(res.diff_limma) <- c(name,"Gene.ID")
   return(res.diff_limma)
 }
 
-DEG_GEOlimma <- function(dataset,design){
-  cont.matrix <- makeContrasts(constrast = A-B, levels=design)
+DEG_GEOlimma <- function(dataset,design, comp = "up"){
+  if (comp == "up"){
+    cont.matrix <- makeContrasts(constrast = A-B, levels=design)
+    name = "GEOlimma.up"
+  }else if (comp == "down"){
+    cont.matrix <- makeContrasts(constrast = B-A, levels=design)
+    name = "GEOlimma.down"
+  }
   fit <- lmFit(dataset,design)
   fit2  <- contrasts.fit(fit, cont.matrix)
   load("~/GIT/CPRD/GEOlimma/GEOlimma_probabilities.rda")
   fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
   de <- topTable(fit22, number = nrow(dataset))
   res.diff_geolimma <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
-  colnames(res.diff_geolimma) <- c("GEOlimma","Gene.ID")
+  colnames(res.diff_geolimma) <- c(name,"Gene.ID")
   return(res.diff_geolimma)
 }
 
@@ -277,9 +292,10 @@ UpsetPlot <- function(data.to.comp, threshold, log = FALSE){
   }
 
   Upset = as.data.frame(t(Upset))
-  upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
-          order.by = "freq", empty.intersections = "on" )
-
+  
+  
+  return(upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+               order.by = "freq", empty.intersections = "on" ))
 }
 
 
