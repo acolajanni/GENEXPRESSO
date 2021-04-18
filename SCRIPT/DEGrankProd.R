@@ -88,4 +88,4 @@ RS.outNano = RankProducts(as.matrix(NanoNorNappabis), cl, logged=TRUE, na.rm = F
 
 # write.csv(NanoNorNappabis,"~/Bureau/M1/ProjetRD/NanoNappaBis.csv", row.names = TRUE)
 
-# Ne marche pas ( pb données + matrice)
+# Ne marche pas ( pb données + matrice) 
