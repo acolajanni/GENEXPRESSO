@@ -17,8 +17,11 @@ library("gmp")
 library("Rmpfr")
 library("RankProd")
 
-#MICROARRAY-DNA---------------------------------------------------------------------------------------------------------
-#source(file.path("./SCRIPT","Simulatemicroarraysseq.R"))
+# Génération donnée microarray (afflymetrix non loggé ici)-----------------------------------------------------
+
+source(file.path("./SCRIPT","Simulatemicroarraysseq.R"))
+
+#MICROARRAY-DNA, pas pertinent ici car données affly------------------------------------------------------------------------------------------------
 
 # paramétrage : le nom de la matrice, label contrôle/étudié (pour 2 classes), resultat reproductible,
 # matrice log2 ou pas, devenir des NA, si nom de gènes dans la sortie, si rank product ou sum rank. Si sum rank,
@@ -28,68 +31,58 @@ library("RankProd")
 g1 = 6
 g2 = 6
 cl = rep(c(0,1),c(g1,g2))
-cl # vérif'
-# FALSE pour NA
-outRPmic = RankProducts(Simulmicro, cl, rand = 123, logged = F , na.rm = T , calculateProduct = TRUE)
-outRPmic2 = RankProducts(Simulmicro, cl, rand = 123, logged = T , na.rm = T , calculateProduct = TRUE)
-outRPmic3 = RankProducts(Simulmicro, cl, rand = 123, logged = T , na.rm = F , calculateProduct = TRUE)
-outRPmic4 = RankProducts(Simulmicro, cl, rand = 123, logged = F , na.rm = F , calculateProduct = TRUE)
-
-valeur = outRPmic[["pfp"]]
+cl
+# execution du calcul
+outRPmic = RankProducts(Simulmicro, cl, rand = 123, logged = FALSE , na.rm = FALSE , calculateProduct = TRUE)
+#recup des p-value
 value = outRPmic[["pval"]]
-value
 
-A = topGene(outRPmic,num.gene = 100)
-head(A$Table1)
-head(A$Table2)
+#MICROARRAY-AFFY.-----------------------------------------
 
-B = topGene(outRPmic2,num.gene = 100)
-head(B$Table1)
-head(B$Table2)
+#Une origin dans notre cas + 2 classes
+# Cl :
+g1 = 6
+g2 = 6
+cl = rep(c(0,1),c(g1,g2))
+#Origine
+origin = rep(1,g1+g2)
+origin
+#calcul DEG pour une origine, deux classes. Ces étapes sont inutiles si on a une seule origine, importante si plusieurs.
+Simulmicro.sub = Simulmicro[,which(origin==1)]
+Simulmicro.cl.sub = cl[which(origin==1)]
+Simulmicro.origin.sub = origin[which(origin==1)]
+#RP
+RP.out = RankProducts(Simulmicro.sub,Simulmicro.cl.sub, logged=FALSE, na.rm=FALSE,plot=FALSE,  rand=123)
+PvalueRPaffy = RP.out[["pval"]]
+colnames(PvalueRPaffy) = c("RP p-val surexpression (c1 < c2)","RP p-val sous-expression (c1 > c2)")
+#RS
+RS.out = RankProducts(Simulmicro.sub,Simulmicro.cl.sub, logged=FALSE, na.rm=FALSE,plot=FALSE,  rand=123, calculateProduct = FALSE)
+PvalueRSaffy = RS.out[["pval"]]
+colnames(PvalueRSaffy) = c("RS p-val surexpression (c1 < c2)","RS p-val sous-expression (c1 > c2)")
 
-C = topGene(outRPmic3,num.gene = 100)
-head(C$Table1)
-head(C$Table2)
+#comparaison
+PValueCompare = cbind(PvalueRPaffy,PvalueRSaffy)
+PValueCompare = PValueCompare[,c(1,3,2,4)]
 
-D = topGene(outRPmic4,num.gene = 100)
-head(D$Table1)
-head(D$Table2)
+#NANOSRING (NAPPA DEFAULT)-------------------------------------------------------------------------------------
 
-#Tentative fonction (fonctionne a priori)------------------------------------------
-
-ParaRP = function(data,g1,g2,ran,ProdRank,logged) {
-  cl = rep(c(0,1),c(g1,g2))
-  
-  if (ProdRank == FALSE) {
-      if (logged == TRUE) {
-      outRPmic = RankProducts(data, cl, rand = ran, logged = TRUE , na.rm = TRUE , calculateProduct = FALSE)
-    
-      } else {
-      outRPmic = RankProducts(data, cl, rand = ran, logged = FALSE , na.rm = TRUE , calculateProduct = FALSE) }
-
-# 2nd fonction avec juste Rank Sum plutôt que ça avec ajout de paramètre libre en argument de fonction pour les 2
-  } else {
-      if (logged == TRUE) {
-      outRPmic = RankProducts(data, cl, rand = ran, logged = TRUE , na.rm = TRUE) 
-    
-      } else {
-      outRPmic = RankProducts(data, cl, rand = ran, logged = FALSE , na.rm = TRUE) }
-
-  pvalue = outRPmic[["pval"]]
-  return(pvalue)
-  }
-}
-
-A = ParaRP(Simulmicro,6,6,123,FALSE,TRUE)
-
-#MICROARRAY-AFFY.----------------------------------------------------------------------------------------------
-
-#One origin dans notre cas 
-
-
-
-#NANOSRING (NAPPA DEFAULT)-faisable ???????-----------------------------------------------------------------------------------------------------------------
 library(readr)
 NanoNormNappa <- read_csv("DATA/NANOSTRING/NanoNormNappa.csv")
 View(NanoNormNappa)
+
+g1 = length(NanoNorNappabis)/2 #attention, pas toujours la même taille d'échantillonnage de part et d'autres !
+g2 = length(NanoNorNappabis)/2
+cl = rep(c(0,1),c(g1,g2))
+
+names.gene = NanoNormNappa[,1]
+NanoNorNappabis = NanoNormNappa[,-1]
+
+#RP
+RP.outNano = RankProducts(as.matrix(NanoNorNappabis), cl, logged=TRUE, na.rm = FALSE ,plot=FALSE, gene.names = names.gene, rand=123)
+#RS
+RS.outNano = RankProducts(as.matrix(NanoNorNappabis), cl, logged=TRUE, na.rm = FALSE ,plot=FALSE, gene.names = names.gene, rand=123)
+
+# summary(NanoNorNappabis) (V19 et V24 contiennent des valeurs négatives d'après les valeurs min)
+
+# write.csv(NanoNorNappabis,"~/Bureau/M1/ProjetRD/NanoNappaBis.csv", row.names = TRUE)
 
