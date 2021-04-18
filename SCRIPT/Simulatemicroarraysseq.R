@@ -45,5 +45,49 @@ nomcolonne <- c("control1","control2","control3","control4","control5","control6
 >>>>>>> 9cbb6688648df4f4ffd034d6c744a6316ea3e6e8
 colnames(Simulmicro)<-nomcolonne
 
+############## Gros jeu de données (10.000) : 
+fparams <- data.frame(m1 = 12, m2 = 12, shape2 = 4, lb = 4, ub = 14,pde=0.06,sym=0.5)
+dparams <- data.frame(lambda1 = 0.13, lambda2 = 2, muminde = 1, sdde = 0.5)
+sdn <- 0.4
+rseed <- 50
+Simulmicro.big <- madsim(mdata = NULL, n = 10000, ratio = 0, fparams, dparams, sdn, rseed)
+
+by(Simulmicro.big,Simulmicro.big$xid,nrow) 
+# 291 downreg
+# 296 upreg
+Simulmicro.big = Simulmicro.big$xdata
+
+listenom <- paste0(rep(LETTERS[1:26], each=400), rep(1:400, 26))
+listenom = listenom[1:10000]
+row.names(Simulmicro.big) <- listenom
+
+listecol1 = paste0(rep("Control",each = 12),rep(1:12, each = 1) )
+listecol2 = paste0(rep("Test",each = 12),rep(1:12, each = 1) )
+listecol = c(listecol1,listecol2)
+colnames(Simulmicro.big)<-listecol
+
+############## Plus petit jeu de données (1.000) : 
+fparams <- data.frame(m1 = 12, m2 = 12, shape2 = 4, lb = 4, ub = 14,pde=0.06,sym=0.5)
+dparams <- data.frame(lambda1 = 0.13, lambda2 = 2, muminde = 1, sdde = 0.5)
+sdn <- 0.4
+rseed <- 50
+Simulmicro.smaller <- madsim(mdata = NULL, n = 1000, ratio = 0, fparams, dparams, sdn, rseed)
+
+by(Simulmicro.big,Simulmicro.smaller$xid,nrow) 
+# 21 downreg
+# 35 upreg
+Simulmicro.smaller = Simulmicro.smaller$xdata
+
+listenom <- paste0(rep(LETTERS[1:26], each=40), rep(1:40, 26))
+listenom = listenom[1:1000]
+row.names(Simulmicro.smaller) <- listenom
+
+listecol1 = paste0(rep("Control",each = 12),rep(1:12, each = 1) )
+listecol2 = paste0(rep("Test",each = 12),rep(1:12, each = 1) )
+listecol = c(listecol1,listecol2)
+colnames(Simulmicro.smaller)<-listecol
+
 #Exportation des donnees
 write.csv(Simulmicro,"~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", row.names = TRUE)
+write.csv(Simulmicro.big,"~/GIT/CPRD/DATA/MICROARRAYS/SimulmicroarraysBIG.csv", row.names = TRUE)
+write.csv(Simulmicro.smaller,"~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", row.names = TRUE)

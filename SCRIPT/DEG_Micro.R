@@ -48,13 +48,13 @@ tools.microarrays.inspect <- function(data,tool,n1,n2){
                                         
                                       },
                                       RankProduct.param3 = {
-                                        res.diff = RankProducts(data, design, rand = 123,logged = FALSE ,na.rm = FALSE ,calculateProduct = TRUE)
+                                        res.diff = RankProducts(data, design, rand = 123,logged = FALSE ,na.rm = TRUE ,calculateProduct = FALSE)
                                         res.diff = res.diff[["pval"]]
                                         
                                       },
                                       
                                       RankProduct.param4 = {
-                                        res.diff = RankProducts(data, design, rand = 123,logged = TRUE ,na.rm = FALSE ,calculateProduct = TRUE)
+                                        res.diff = RankProducts(data, design, rand = 123,logged = TRUE ,na.rm = TRUE ,calculateProduct = FALSE)
                                         res.diff = res.diff[["pval"]]
                                         
                                       },
@@ -69,15 +69,16 @@ tools.microarrays.inspect <- function(data,tool,n1,n2){
   return(res.diff)
 }
 
-
-
 micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/SimulmicroarraysBIG.csv", header = TRUE,row.names = 1)
+micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
+head(micro)
 
-data_to_comp = tools.microarrays.inspect(micro,"limma", n1 = 6, n2 = 6)
+data_to_comp = tools.microarrays.inspect(micro,"limma", n1 = 12, n2 = 12)
 tools = c("GEOlimma", "Wilcox","RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")
 for (tool in tools){
   print(tool)
-  tmp = tools.microarrays.inspect(micro,tool,n1 = 6, n2 = 6)
+  tmp = tools.microarrays.inspect(micro,tool,n1 = 12, n2 = 12)
   data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
 }
 
@@ -112,5 +113,7 @@ PCA_tools(data_to_comp_Up)
 PCA_tools(data_to_comp_Down)
 
 ## Upsetplot : erreur (pas d'intesection car très peu de gènes DE)
+par(mfrow=c(1,2))
 UpsetPlot(data.to.comp = data_to_comp_Down,threshold = 0.05)
-
+dev.new()
+UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
