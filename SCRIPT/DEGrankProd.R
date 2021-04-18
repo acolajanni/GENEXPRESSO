@@ -64,6 +64,8 @@ colnames(PvalueRSaffy) = c("RS p-val surexpression (c1 < c2)","RS p-val sous-exp
 PValueCompare = cbind(PvalueRPaffy,PvalueRSaffy)
 PValueCompare = PValueCompare[,c(1,3,2,4)]
 
+#Résultat variable, ce n'est pas exactement la même chose.
+
 #NANOSRING (NAPPA DEFAULT)-------------------------------------------------------------------------------------
 
 library(readr)
@@ -86,3 +88,4 @@ RS.outNano = RankProducts(as.matrix(NanoNorNappabis), cl, logged=TRUE, na.rm = F
 
 # write.csv(NanoNorNappabis,"~/Bureau/M1/ProjetRD/NanoNappaBis.csv", row.names = TRUE)
 
+# Ne marche pas ( pb données + matrice)
