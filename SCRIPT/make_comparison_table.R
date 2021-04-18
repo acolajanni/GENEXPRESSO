@@ -40,6 +40,9 @@ sample.annots$tp53.status <- sub("Wild type/NA/ND","WildType",sample.annots$tp53
 raw.data <- import.raw.rcc(RCC.dir,sample.annots)
 samples.IDs <- raw.data$samples.IDs
 
+# save the object locally
+saveRDS(object = raw.data, file = "./DATA/NANOSTRING/Nanostring_Data.rds")
+
 # options for tools :
 # nappa.NS, nappa.param1, nappa.param2,nanostringnorm,desq2,nanoR.top100,nanostringR,nanoR.total
 
@@ -73,6 +76,20 @@ data.to.comp <- as.data.frame(t(data.to.comp))
 data.to.comp
 #Export as csv
 write.csv(data.to.comp,"~/GIT/CPRD/OUTPUT/TABLE/data.to.comp.csv", row.names = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ################################################################################
 ################################################################################

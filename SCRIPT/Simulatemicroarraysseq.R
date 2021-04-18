@@ -17,7 +17,7 @@ data(madsim_test)
 
 #Definition des paramètres
 mdata <- madsim_test$V1;
-fparams <- data.frame(m1 = 12, m2 = 12, shape2 = 4, lb = 4, ub = 14,pde=0.02,sym=0.5)
+fparams <- data.frame(m1 = 6, m2 = 6, shape2 = 4, lb = 4, ub = 14,pde=0.02,sym=0.5)
 #m1 et m2 indiquent respectivement le nombre d'echantillons controle et d'echantillons tests
 #on garde les autres parametres par defaut ? oui pour l'instant, ça a l'air trè spécifique d'après la doc
 dparams <- data.frame(lambda1 = 0.13, lambda2 = 2, muminde = 1, sdde = 0.5)
@@ -29,11 +29,14 @@ rseed <- 50
 mydata1 <- madsim(mdata = NULL, n = 100, ratio = 0, fparams, dparams, sdn, rseed)
 mydata1
 #On recupere les donnees generees
-micro <- as.data.frame(mydata1)
-Simulmicro<-micro[,13:24]
+Simulmicro <- as.data.frame(mydata1$xdata)
+
+
+
 
 #Generation de noms de gènes aléatoires
-listenom <- paste0(rep(LETTERS[1:10], each=10), rep(1:10, 10))
+listenom <- paste0(rep(LETTERS[1:12], each=9), rep(1:9, 10))
+listenom = listenom[1:100]
 row.names(Simulmicro) <- listenom
 
 <<<<<<< HEAD

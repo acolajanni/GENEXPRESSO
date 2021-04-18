@@ -1,78 +1,23 @@
-suppressWarnings(library(data.table))
-suppressWarnings(library(NAPPA))
-suppressWarnings(library(NanoStringNorm))
-suppressWarnings(library(nanostringr))
-suppressWarnings(library(nanoR))
-suppressWarnings(library(ggplot2))
-suppressWarnings(library(ggbiplot))
-suppressWarnings(library(limma))
-suppressWarnings(library(GEOquery))
-suppressWarnings(library(ggbiplot))
-suppressWarnings(library("factoextra"))
-suppressWarnings(library("FactoMineR"))
-suppressWarnings(library(edgeR))
-suppressWarnings(library(DEFormats))
-suppressWarnings(library(DESeq))
-suppressWarnings(library(UpSetR))
-suppressWarnings(library(RankProd))
-library(ggrepel)
-library(DESeq2)
-source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
-source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
+# Nom               : Nanostring_functions.R
+# Type              : Programme
+# Objet             : Normalisation + analyse DEG en 2 fonctions séparées
+# Input             : Dataset Nanostring
+# Output            : data.to.comp
+# Auteur            : Antonin COLAJANNI
+# R version         : 3.6
+# Date de creation  : 18.04.2021
+#______________________________________________________________________________
 
-get.annotations <- function(x){
-  annots <- phenoData(x[[1]])@data
-  characteristics_ch1 <- annots[,grepl("characteristics_ch1",colnames(annots))]
-  if (class(characteristics_ch1)=="factor"){
-    print("Analysing Factor")
-    characteristics_ch1 <- as.vector(characteristics_ch1)
-    characteristics_ch1 <- strsplit(characteristics_ch1,";")
-    OS <- unlist(sapply(characteristics_ch1,"[[",2))
-    STATUS <- unlist(sapply(characteristics_ch1,"[[",3))
-    OS <- as.numeric(as.vector(unlist(sapply(strsplit(OS,": "),"[[",2))))
-    OS_IND <- as.numeric(as.vector(unlist(sapply(strsplit(STATUS,": "),"[[",2))))
-    characteristics <- data.frame(OS,OS_IND)
-  }
-  else {
-    print("Analysing Matrix")
-    characteristics <- annots[,grepl(":ch1",colnames(annots))]
-    colnames(characteristics) <- gsub(":ch1","",colnames(characteristics))
-    print(head(characteristics))
-    characteristics <- as.data.frame(characteristics)
-  }
-  annots <- annots[,grepl("data_processing|platform_id|description|scan_protocol|title|contact_name",colnames(annots))]
-  annots$GSMID <- row.names(annots)
-  annots <- cbind(annots,characteristics)
-}
+source(file.path("./SCRIPT","functions.R"))
 
-import.raw.rcc <- function(data.dir,annots){
-  rcc <- read.markup.RCC(rcc.path = data.dir,rcc.pattern = "*.RCC|*.rcc",include = NULL,nprobes = -1)
-  rcc.df <- rcc[[1]]
-  gsm <- unlist(sapply(strsplit(colnames(rcc.df)[-c(1:3)],"_"),"[[",1))
-  m <- match(row.names(annots),gsm)
-  colnames(rcc.df)[-c(1:3)] <- as.vector(annots$title[m])
-  annots.df <- rcc.df[,1:3]
-  rcc.df <- rcc.df[,-c(1:3)]
-  row.names(rcc.df) <- annots.df$Name
-  temp <- rcc[[2]]
-  temp <- data.frame(CodeClass=row.names(temp),Name="",Accession="",temp)
-  temp <- rbind(temp,temp[c("FovCount","FovCounted"),])
-  temp$CodeClass <- as.vector(temp$CodeClass)
-  temp[c(nrow(temp)-1,nrow(temp)),"CodeClass"] <- c("FOV Count","FOV Counted")
-  colnames(temp)[-c(1:3)] <- colnames(rcc.df)
-  
-  #rcc.df <- rbind(temp,rcc.df)
-  return(list(samples.IDs=annots,rcc.df=rcc.df,annots.df=annots.df,FOV=temp))
-}
-
-tools.inspect <- function(raw.data,tool,nanoR=F){
+tools_norm.inspect <- function(raw.data,tool,nanoR=F){
   if (!nanoR){
     rcc.samples <- raw.data$rcc.df
     annots.df <- raw.data$annots.df
     samples.IDs <- raw.data$samples.IDs
     FOV <- raw.data$FOV
   }
-
+  
   tools.fnc <- switch(tool,
                       nanostringR={
                         rcc.samples <- cbind(annots.df,rcc.samples)
@@ -101,7 +46,7 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
                         res.norm <- NAPPA(rcc.samples,tissueType = "tumour")
                         colnames(res.norm) <- samples.IDs$ID
                         res.norm
-
+                        
                       },  
                       
                       nappa.param1={
@@ -153,30 +98,7 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
                         rcc.samples$CodeClass[rcc.samples$CodeClass=="Housekeeping"] <- "Endogenous"
                         #rcc.samples$CodeClass[rcc.samples$Name%in%test.samp] <- "Housekeeping"
                         res.norm <- NanoStringNorm(rcc.samples,Background = 'mean.2sd',SampleContent = 'low.cv.geo.mean',CodeCount="sum",traits=design,round.values = TRUE,take.log = TRUE,return.matrix.of.endogenous.probes = TRUE)
-                      },
-                      desq2={
-                        rcc.samples <- rcc.samples[!grepl("^Pos|^Neg",annots.df$CodeClass),]
-                        samples.IDs <- samples.IDs[match(colnames(rcc.samples),samples.IDs$title),]
-                        dds <- DESeqDataSetFromMatrix(countData = rcc.samples,
-                                                      colData = samples.IDs,
-                                                      design= ~ tp53.status)
-                        dds <- DESeq(dds)
-                        res.diff <- results(dds)
-                        res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
-                      },
-                      nanostringDiff={
-                        endogenous <- as.matrix(rcc.samples[grepl("Endog",annots.df$CodeClass),])
-                        positive <- as.matrix(rcc.samples[grepl("Pos",annots.df$CodeClass),])
-                        negative <- as.matrix(rcc.samples[grepl("Neg",annots.df$CodeClass),])
-                        housekeeping <- as.matrix(rcc.samples[grepl("House",annots.df$CodeClass),])
-                        NanoStringData <- createNanoStringSet(endogenous,positive,negative,housekeeping,samples.IDs)
-                        pheno <- pData(NanoStringData)
-                        group <- pheno$tp53.status
-                        design.full=model.matrix(~0+group)
-                        contrast <- c(1,-1)
-                        NanoStringData <- estNormalizationFactors(NanoStringData)
-                        result <- glm.LRT(NanoStringData,design.full,contrast=contrast)
-                        res.diff <- data.frame(NSDiff=result$table,SYMBOL=row.names(result$table))
+                     
                       },
                       nanoR.top100={
                         nano <- parseRCC(dir = raw.data)
@@ -199,108 +121,99 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
                       },
                       stop("Enter something that switches me!")          
   )
-  if (!tool%in%c("desq2","nanostringDiff")){
-    design <- model.matrix(~0+samples.IDs$tp53.status)
-    colnames(design) <- c("Mutated","WildType")
-    fit <- lmFit(res.norm,design)
-    cm <- makeContrasts(diff=Mutated-WildType ,levels=design)
-    fit2 <- contrasts.fit(fit, cm)
-    fit2 <- eBayes(fit2)
-    res.diff <- topTable(fit2, coef="diff",genelist=row.names(res.norm), number=Inf)
-    res.diff <- data.frame(nanoR.total=-log10(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-    colnames(res.diff) <- c(tool,"SYMBOL")
-  }
+  return(res.norm)
+}
+
+tools_DEG.inspect <- function(raw.data, tool, norm = T, data) {
+
+  rcc.samples <- raw.data$rcc.df
+  annots.df <- raw.data$annots.df
+  samples.IDs <- raw.data$samples.IDs
+  FOV <- raw.data$FOV
+  
+  design <- model.matrix(~0+samples.IDs$tp53.status)
+  colnames(design) <- c("Mutated","WildType")
+  cm <- makeContrasts(diff=Mutated-WildType ,levels=design)
+
+
+  tools.fnc <- switch(tool,
+                      desq2={
+                        rcc.samples <- rcc.samples[!grepl("^Pos|^Neg",annots.df$CodeClass),]
+                        samples.IDs <- samples.IDs[match(colnames(rcc.samples),samples.IDs$title),]
+                        dds <- DESeqDataSetFromMatrix(countData = rcc.samples,
+                                                      colData = samples.IDs,
+                                                      design= ~ tp53.status)
+                        dds <- DESeq(dds)
+                        res.diff <- results(dds)
+                        res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
+                      },
+                      
+                      nanostringDiff={
+                        endogenous <- as.matrix(rcc.samples[grepl("Endog",annots.df$CodeClass),])
+                        positive <- as.matrix(rcc.samples[grepl("Pos",annots.df$CodeClass),])
+                        negative <- as.matrix(rcc.samples[grepl("Neg",annots.df$CodeClass),])
+                        housekeeping <- as.matrix(rcc.samples[grepl("House",annots.df$CodeClass),])
+                        NanoStringData <- createNanoStringSet(endogenous,positive,negative,housekeeping,samples.IDs)
+                        pheno <- pData(NanoStringData)
+                        group <- pheno$tp53.status
+                        design.full=model.matrix(~0+group)
+                        contrast <- c(1,-1)
+                        NanoStringData <- estNormalizationFactors(NanoStringData)
+                        result <- glm.LRT(NanoStringData,design.full,contrast=contrast)
+                        res.diff <- data.frame(NSDiff=result$table,SYMBOL=row.names(result$table))
+                      },
+                      
+                      limma = {
+                        res.diff = DEG_limma(data, design, comp = 0 ,contrast.matrix =  cm, col.name = "SYMBOL")
+                      },
+                      
+                      Wilcox = {
+                        
+                      },
+                      
+                      stop("Enter something that switches me!") 
+          
+  )
   return(res.diff)
 }
 
-make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(dataset)/2),ncond2=(ncol(dataset)/2)){
-  status.control = rep(cond1,ncond1)
-  status.test = rep(cond2,ncond2)
-  status = c(status.control,status.test)
-  design = model.matrix(~0+status)
-  colnames(design) <- c(cond1,cond2)
-  return(design)
-}  
+# Appel de fonction
+# Load data
+raw.data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
 
-DEG_limma <- function(dataset,design,comp = "up", contrast.matrix = 0, col.name = "Gene.ID"){
-  if (comp == "up"){
-    cm <- makeContrasts(diff = A-B, levels=design)
-    name = "limma.up"
-  }else if (comp == "down"){
-    cm <- makeContrasts(diff = B-A, levels=design)
-    name = "limma.down"
-  }else if(is.matrix(contrast.matrix)) {
-    name = "limma"
+##
+design <- model.matrix(~0+samples.IDs$tp53.status)
+colnames(design) <- c("Mutated","WildType")
+##
+
+# if tools = NanoR
+data.dir <- "./DATA/NANOSTRING"
+RCC.dir <- file.path(data.dir,"GSE146204_RAW")
+raw <- RCC.dir
+samples.IDs <- raw.data$samples.IDs
+
+
+tools <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
+
+
+data.to.comp <- tools_norm.inspect(raw.data,nanoR = F,tool = "nappa.NS")
+head(data.to.comp)
+
+#data <- tools_norm.inspect(raw.data,nanoR = F,tool = "nappa.NS")
+
+
+###################"" Work in progress
+
+
+for (tool in tools){
+  print(tool)
+  nanoR=F
+  raw <- raw.data
+  if (tool%in%c("nanoR.top100","nanoR.total")){
+    nanoR <- T
+    raw <- file.path(data.dir,"GSE146204_RAW")
   }
-  fit <- lmFit(dataset,design)
-  fit2 <- contrasts.fit(fit, cm)
-  fit2 <- eBayes(fit2)
-  res.diff <- topTable(fit2, coef="diff",genelist=row.names(dataset), number=Inf)
-  res.diff_limma <- data.frame(PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-  
-  if (col.name == "Gene.ID"){
-    colnames(res.diff_limma) <- c(name,"Gene.ID")
-  } else {
-    colnames(res.diff_limma) <- c(name,"SYMBOL")
-  }
-  return(res.diff_limma)
+  tmp <- tools.inspect(raw,tool,nanoR)
+  data.to.comp <- merge(data.to.comp,tmp,by="SYMBOL",all=T)
 }
-
-DEG_GEOlimma <- function(dataset,design, comp = "up"){
-  if (comp == "up"){
-    cont.matrix <- makeContrasts(constrast = A-B, levels=design)
-    name = "GEOlimma.up"
-  }else if (comp == "down"){
-    cont.matrix <- makeContrasts(constrast = B-A, levels=design)
-    name = "GEOlimma.down"
-  }
-  fit <- lmFit(dataset,design)
-  fit2  <- contrasts.fit(fit, cont.matrix)
-  load("~/GIT/CPRD/GEOlimma/GEOlimma_probabilities.rda")
-  fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
-  de <- topTable(fit22, number = nrow(dataset))
-  res.diff_geolimma <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
-  colnames(res.diff_geolimma) <- c(name,"Gene.ID")
-  return(res.diff_geolimma)
-}
-
-
-
-### Visualisation
-PCA_tools <- function(data.to.comp){
-  res.pca <- PCA(data.to.comp,graph=F)
-  fviz_pca_ind (res.pca, col.ind = "cos2",
-                gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-                repel = TRUE)
-}
-
-UpsetPlot <- function(data.to.comp, threshold, log = FALSE){
-  if(missing(threshold)){
-    threshold = 0.05
-  }
-  Upset <- copy(data.to.comp)
-  for (i in names(Upset)){
-    for (u in 1:nrow(Upset)){
-      if (log == F){
-        if(data.to.comp[[i]][u] > threshold){
-          Upset[[i]][u] = 0}
-        else{
-          Upset[[i]][u] = 1}
-      }
-      else{
-        if(data.to.comp[[i]][u] < threshold){
-          Upset[[i]][u] = 0}
-        else{
-          Upset[[i]][u] = 1}
-      }
-    }
-  }
-
-  Upset = as.data.frame(t(Upset))
-  
-  
-  return(upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
-               order.by = "freq", empty.intersections = "on" ))
-}
-
 
