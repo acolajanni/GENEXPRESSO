@@ -14,16 +14,16 @@ library(data.table)
 
 
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
-data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+#data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 
-data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
-                            row.names = 1, quote="\"",header = T)
+#data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
+#                            row.names = 1, quote="\"",header = T)
 
 # la fonction cor() calcul les corrélation entre les colonnes et pas les lignes : 
 # il faut transposer la matrice et pour cela il existe la fonction t()
 data_exprT=as.data.frame(t(data_expr))
 # calculer la corrélation entre toutes les colonnes d'une matrice
-result_correlation=cor(data_exprT)
+result_correlation=cor(data_exprT, method = "kendall")
 
 # on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
 # qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
@@ -38,6 +38,7 @@ data_expr = as.matrix(data_expr)
 Cor_spe <- NULL
 Cor_ken <- NULL
 for (i in 1:nrow(interaction)){
+  print(i)
   A = toString(interaction[["Var1"]][i])
   A = as.vector(data_expr[A,])
   
@@ -64,6 +65,9 @@ for (col in 1:ncol(Matrix)){
     }
   }
 }
+
+
+
 A = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
 Isolated = which(degree(A)==0)
 G2 = delete.vertices(A, Isolated)
