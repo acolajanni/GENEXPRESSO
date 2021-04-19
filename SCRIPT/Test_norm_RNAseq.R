@@ -48,10 +48,10 @@ tools_norm_RNAseq.inspect <- function(data,tool){
         
         deseq2.Wald = {
           # Mise en forme des données pour créer un DESeqDataSet :
-          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
-          type = factor(rep("single-read",12))
-          colData = data.frame(conditions,type,row.names=colnames(data))
-          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
+          condition <-factor( rep(c("control","case"),each = (ncol(data)/2)) )
+          type = factor(rep("single-read",ncol(data)))
+          colData = data.frame(condition,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~condition)
           
           # Récupération des résultats avec l'analyse DEG (test Wald)
           DEG <- DESeq(dds, test = "Wald")
@@ -65,10 +65,10 @@ tools_norm_RNAseq.inspect <- function(data,tool){
         },
         
         deseq2.LRT = {
-          conditions <-factor(c("condition1","condition1","condition1","condition1","condition1","condition1","condition2", "condition2","condition2","condition2","condition2","condition2"))
-          type = factor(rep("single-read",12))
-          colData = data.frame(conditions,type,row.names=colnames(data))
-          dds<-DESeqDataSetFromMatrix(data,colData,design=~conditions)
+          condition <-factor( rep(c("control","case"),each = (ncol(data)/2)) )
+          type = factor(rep("single-read",ncol(data)))
+          colData = data.frame(condition,type,row.names=colnames(data))
+          dds<-DESeqDataSetFromMatrix(data,colData,design=~condition)
 
           DEG <- DESeq(dds, test = "LRT",reduced = ~1)
           DEG <- results(DEG)
@@ -77,9 +77,8 @@ tools_norm_RNAseq.inspect <- function(data,tool){
         },
         
         deseq = {
-          condition <-factor(c("condition 1","condition 1","condition 1","condition 1","condition 1","condition 1","condition 2", "condition 2","condition 2","condition 2","condition 2","condition 2"))
-          colnames(data)
-          type = factor(rep("single-read",12))
+          condition <- rep(c("control","case"),each = (ncol(data)/2) )
+          type = factor(rep("single-read",ncol(data)))
           design = data.frame(condition,type,row.names=colnames(data))
           singleSamples = design$type == 'single-read'
           countTable = data[,singleSamples]
@@ -88,7 +87,7 @@ tools_norm_RNAseq.inspect <- function(data,tool){
           cds <- newCountDataSet(data, conds)
           cds = estimateSizeFactors(cds)
           cds = estimateDispersions(cds)
-          DEG = nbinomTest(cds, condA = "condition 1", condB = "condition 2")
+          DEG = nbinomTest(cds, condA = "control", condB = "case")
           res.diff <- data.frame(deseq = (DEG$padj),genes= (DEG$id))
             
         },
@@ -133,9 +132,11 @@ tools_norm_RNAseq.inspect <- function(data,tool){
 }
 ################################################################ 
 # Appel de la fonction : 
-
 # importation de notre jeu de données
-data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+#data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
+
+
 # Essai de la fonction sur un paramètre
 data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
 head(data_to_comp)
@@ -163,8 +164,6 @@ PCA_tools(data_to_comp)
 # UpsetPlot : 
 
 UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
-
-
 
 #____________________________________________________________
 # Pipeline d'analyse en fonction des packages :

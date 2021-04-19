@@ -110,10 +110,10 @@ Make.adjacencyPVal <-function(data){
   for (i in 1:nrow(interaction)){
     #print(i)
     A = toString(interaction[["Var1"]][i])
-    A = as.vector(data_expr[A,])
+    A = as.vector(data[A,])
     
     B = toString(interaction[["Var2"]][i])
-    B = as.vector(data_expr[B,])
+    B = as.vector(data[B,])
     
     test_spe = cor.test(as.numeric(A),as.numeric(B), method = "spearman")
     Cor_spe = c(Cor_spe, test_spe$p.value)
@@ -131,7 +131,10 @@ Make.relation.graph <- function(data){
   Matrix = Cor.square.matrix(data)
   for (col in 1:ncol(Matrix)){
     for (row in 1:nrow(Matrix)){
-      if (Matrix[col,row] >= 0.75 || Matrix[col,row] <= -0.75){
+      if (is.na(Matrix[col,row])){
+        Matrix[col,row] = 0
+      }
+      else if (Matrix[col,row] >= 0.75 || Matrix[col,row] <= -0.75){
         Matrix[col,row] = 1
       }else{
         Matrix[col,row] = 0
@@ -177,7 +180,6 @@ data.Grp2 = data_expr[((N/2)+1):N]
 Grp1_Micro = Make.adjacencyPVal(data.Grp1)
 Grp2_Micro = Make.adjacencyPVal(data.Grp2)
 
-par()
 par(mfrow=c(1,3))
 # Plot total
 Plot.relation.graph(data_expr)
@@ -209,14 +211,16 @@ WT_Nano = Make.adjacency.graph(Nano_WildType)
 Plot.relation.graph(Nano_WildType)
 
 ########### Appel de fonctions
-RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
+RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
 
-Total_RNA = Make.adjacencyPVal(RNA)
+#Total_RNA = Make.adjacencyPVal(RNA)
+Total_RNA = Make.adjacency.graph(RNA)
 
 N = ncol(RNA)
 RNA_control = RNA[1:(N/2)]
 RNA_test = RNA[((N/2)+1):N]
 
+par(mfrow=c(1,3))
 # Plot total
 RNA_tot = Make.adjacency.graph(RNA)
 Plot.relation.graph(RNA)
@@ -226,3 +230,4 @@ Plot.relation.graph(RNA_control)
 #Plot gr2
 RNA_T = Make.adjacency.graph(RNA_test)
 Plot.relation.graph(RNA_test)
+

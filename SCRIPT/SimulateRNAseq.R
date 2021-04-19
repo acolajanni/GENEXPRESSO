@@ -12,7 +12,6 @@
 
 BiocManager::install(c("DEFormats","edgeR"))
 library("DEFormats")
-
 #Le data set de depart est un jeu de donnees simulees
 #NB : count = nombre de reads / genes
 
@@ -43,5 +42,12 @@ for (i in 1:ncol(SimulRNASEQ)) {
 
 #help("simulateRnaSeqData")
 
+### Plus gros jeu de données
+counts <- simulateRnaSeqData (n=1000,m=30, seed = 222)
+group = paste0(rep(c("control", "case"), each = 15),rep(c(1:15),each = 1))
+colnames(counts) = group
+counts = as.data.frame(counts)
+
 #Exportation du jeu de donnees dans ~/GIT/DATA/RNASEQ
 write.csv(SimulRNASEQ,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", row.names = TRUE)
+write.csv(counts,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", row.names = TRUE)
