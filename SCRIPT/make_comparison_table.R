@@ -41,7 +41,7 @@ raw.data <- import.raw.rcc(RCC.dir,sample.annots)
 samples.IDs <- raw.data$samples.IDs
 
 # save the object locally
-saveRDS(object = raw.data, file = "./DATA/NANOSTRING/Nanostring_Data.rds")
+#saveRDS(object = raw.data, file = "./DATA/NANOSTRING/Nanostring_Data.rds")
 
 # options for tools :
 # nappa.NS, nappa.param1, nappa.param2,nanostringnorm,desq2,nanoR.top100,nanostringR,nanoR.total

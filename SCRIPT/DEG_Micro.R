@@ -91,7 +91,7 @@ data_to_comp_Down = copy(data_to_comp)
 
 for (i in ncol(data_to_comp):1){
   if (i%%2 == 0){
-    # uprelated : condition A < condition B (donc upregulated = wilcox.test(A,B,"Less")) 
+    # upregulated : condition A < condition B (donc upregulated = wilcox.test(A,B,"Less")) 
     # Downregulated : condition A > condition B (si on prend A comme référence)
     data_to_comp_Up = data_to_comp_Up[,-i]
   }else{

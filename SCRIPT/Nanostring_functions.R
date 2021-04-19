@@ -8,6 +8,7 @@
 # Date de creation  : 18.04.2021
 #______________________________________________________________________________
 
+source(file.path("./SCRIPT","functionwilcoxtest.R"))
 source(file.path("./SCRIPT","functions.R"))
 
 tools_norm.inspect <- function(raw.data,tool,nanoR=F){
@@ -124,16 +125,14 @@ tools_norm.inspect <- function(raw.data,tool,nanoR=F){
   return(res.norm)
 }
 
-tools_DEG.inspect <- function(raw.data, tool, norm = T, data) {
+tools_DEG.inspect <- function(raw.data, tool, norm = T, data, tool_norm) {
 
   rcc.samples <- raw.data$rcc.df
   annots.df <- raw.data$annots.df
   samples.IDs <- raw.data$samples.IDs
   FOV <- raw.data$FOV
-  
-  design <- model.matrix(~0+samples.IDs$tp53.status)
-  colnames(design) <- c("Mutated","WildType")
-  cm <- makeContrasts(diff=Mutated-WildType ,levels=design)
+
+  method = paste0(tool_norm,"_",tool)
 
 
   tools.fnc <- switch(tool,
@@ -145,7 +144,9 @@ tools_DEG.inspect <- function(raw.data, tool, norm = T, data) {
                                                       design= ~ tp53.status)
                         dds <- DESeq(dds)
                         res.diff <- results(dds)
-                        res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
+                        #res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
+                        res.diff <- data.frame(deseq2=(res.diff$padj),SYMBOL=row.names(res.diff))
+                        colnames(res.diff) = c("DESeq2", "SYMBOL")
                       },
                       
                       nanostringDiff={
@@ -164,56 +165,95 @@ tools_DEG.inspect <- function(raw.data, tool, norm = T, data) {
                       },
                       
                       limma = {
-                        res.diff = DEG_limma(data, design, comp = 0 ,contrast.matrix =  cm, col.name = "SYMBOL")
+                        group = table(samples.IDs$tp53.status)
+                        n1 = as.integer(group[1])
+                        n2 = as.integer(group[2])
+                        
+                        design <- model.matrix(~0+samples.IDs$tp53.status)
+                        colnames(design) <- c("A","B")
+                        cm <- makeContrasts(diff=A-B ,levels=design)
+
+                        fit <- lmFit(data,design)
+                        fit2 <- contrasts.fit(fit, cm)
+                        fit2 <- eBayes(fit2)
+                        res.diff <- topTable(fit2, coef="diff",genelist=row.names(data), number=Inf)
+                        #res.diff <- data.frame(nanoR.total=-log10(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
+                        res.diff <- data.frame(nanoR.total=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
+                        colnames(res.diff) = c(method, "SYMBOL")
+
                       },
                       
                       Wilcox = {
-                        
+                        group = table(samples.IDs$tp53.status)
+                        n1 = as.integer(group[1])
+                        n2 = as.integer(group[2])
+                        res.diff = wilcoxDEG4(data, n1, n2)
+                        res.diff = res.diff[-(-1)]
+                        res.diff$SYMBOL = row.names(res.diff)
+                        colnames(res.diff) = c(method, "SYMBOL")
                       },
                       
                       stop("Enter something that switches me!") 
           
   )
+  
   return(res.diff)
 }
+
+
+#design <- model.matrix(~0+samples.IDs$tp53.status)
+#colnames(design) <- c("Mutated","WildType")
+##
+
+
 
 # Appel de fonction
 # Load data
 raw.data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
-
 ##
-design <- model.matrix(~0+samples.IDs$tp53.status)
-colnames(design) <- c("Mutated","WildType")
-##
-
-# if tools = NanoR
 data.dir <- "./DATA/NANOSTRING"
 RCC.dir <- file.path(data.dir,"GSE146204_RAW")
 raw <- RCC.dir
 samples.IDs <- raw.data$samples.IDs
+##
 
+tools_norm <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
+tools_diff = c("limma", "Wilcox" )
+data.to.comp <- tools_DEG.inspect(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
 
-tools <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
-
-
-data.to.comp <- tools_norm.inspect(raw.data,nanoR = F,tool = "nappa.NS")
-head(data.to.comp)
-
-#data <- tools_norm.inspect(raw.data,nanoR = F,tool = "nappa.NS")
-
-
-###################"" Work in progress
-
-
-for (tool in tools){
-  print(tool)
+for (tool_norm in tools_norm){
+  print(tool_norm)
   nanoR=F
   raw <- raw.data
-  if (tool%in%c("nanoR.top100","nanoR.total")){
+  if (tool_norm%in%c("nanoR.top100","nanoR.total")){
     nanoR <- T
-    raw <- file.path(data.dir,"GSE146204_RAW")
+    RCC.dir <- file.path(data.dir,"GSE146204_RAW")
+    raw <- RCC.dir
   }
-  tmp <- tools.inspect(raw,tool,nanoR)
-  data.to.comp <- merge(data.to.comp,tmp,by="SYMBOL",all=T)
+  tmp <- tools_norm.inspect(raw,tool_norm,nanoR)
+
+  for (tool_diff in tools_diff){
+    tmp2 = tools_DEG.inspect(raw.data = raw.data, data =  tmp, tool = tool_diff, tool_norm = tool_norm)
+    data.to.comp <- merge(data.to.comp,tmp2,by="SYMBOL",all=T) 
+  }
 }
 
+row.names(data.to.comp) <- data.to.comp$SYMBOL
+data.to.comp <- data.to.comp[,-1]
+
+# if you need to remove genes not present in all analyses: NA (missing) data
+data.to.comp <- na.omit(data.to.comp)
+data.to.comp <- as.data.frame(t(data.to.comp))
+
+################################################################################
+################################################################################
+# compute PCA
+PCA_tools(data.to.comp)
+
+################################################################################
+################################################################################
+# compute intersection with upsetR
+#UpsetPlot(data.to.comp, threshold = 0.05, log = F)
+
+### ATTENTION, si vous lancez comme ça, vous risquez de planter
+UpsetPlot(data.to.comp,threshold = 0.05)
