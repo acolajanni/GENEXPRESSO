@@ -13,7 +13,7 @@
 ########### du two-sided pour nanostring ou du less/great pour microarrays en
 ########### fonction du type donne par l'utilisateur
 
-wilcoxDEG <- function(data, n1, n2, type){
+wilcoxDEGoption1 <- function(data, n1, n2, type){
   if (type == "nanostring") {
     wilcoxnano <- data.frame()
     for (i in 1:nrow(data)){
@@ -59,7 +59,7 @@ wilcoxDEG <- function(data, n1, n2, type){
 
 ########## Je pense que tu peux tout faire rentrer dans une seule boucle (plutôt que d'en faire 3)
 
-wilcoxDEG4 <- function(data, n1, n2){
+wilcoxDEGoption2 <- function(data, n1, n2){
   wilcoxts <- data.frame()
   wilcoxless <- data.frame()
   wilcoxgreater <- data.frame()
@@ -92,3 +92,23 @@ wilcoxDEG4 <- function(data, n1, n2){
   return(wilcox)
 }
 
+########### OPTION 3
+########### Avec une seule boucle
+
+wilcoxDEG <- function(data, n1, n2){
+  wilcox <- data.frame()
+  for (i in 1:nrow(data)){
+    x = data[i,1:n1]
+    y = data[i,(n1+1):(n1+n2)]
+    test1 <- wilcox.test(as.numeric(x),as.numeric(y))
+    test2 <- wilcox.test(as.numeric(x),as.numeric(y),alternative = "less")
+    test3 <- wilcox.test(as.numeric(x),as.numeric(y), alternative = "greater")
+    pval <- c(test1$p.value,test2$p.value,test3$p.value)
+    wilcox <- rbind(wilcox,pval)
+  }
+  colnames(wilcox)[1] <- "wilcox two-sided"
+  colnames(wilcox)[2] <- "wilcox less"
+  colnames(wilcox)[3] <- "wilcox greater"
+  row.names(wilcox) = row.names(data)
+  return(wilcox)
+}

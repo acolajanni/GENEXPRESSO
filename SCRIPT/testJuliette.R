@@ -33,4 +33,6 @@ nanostringR <- tools.inspect(raw.data, "nanostringR", nanoR = F)
 nappa.default <- tools.inspect(raw.data, "nappa.default", nanoR = F)
 nappa.default <- as.data.frame(nappa.default)
 
-test <- wilcoxDEG(nappa,42,22, "nanostring")
+test <- read.csv("~/GIT/CPRD/DATA/MICROARRAYS/SimulmicroarraysBIG.csv", header = TRUE,row.names = 1)
+boucle1 <- wilcoxDEG(test, 12,12)
+bucle3 <- wilcoxDEGoption2(test,12,12)
