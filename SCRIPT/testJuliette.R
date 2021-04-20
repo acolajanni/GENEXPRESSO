@@ -33,4 +33,25 @@ nanostringR <- tools.inspect(raw.data, "nanostringR", nanoR = F)
 nappa.default <- tools.inspect(raw.data, "nappa.default", nanoR = F)
 nappa.default <- as.data.frame(nappa.default)
 
-test <- wilcoxDEG(nappa,42,22, "nanostring")
+test <- read.csv("~/GIT/CPRD/DATA/NANOSTRING/NanoNormNappa.csv", header = TRUE,row.names = 1)
+boucle1 <- wilcoxDEG(test, 42,22)
+bucle3 <- wilcoxDEGoption2(test,42,22)
+
+
+wilcox <- data.frame()
+for (i in 1:nrow(test)){
+  x = test[i,1:42]
+  y = test[i,43:64]
+  test1 <- wilcox.test(as.numeric(x),as.numeric(y))
+  test2 <- wilcox.test(as.numeric(x),as.numeric(y),alternative = "less")
+  test3 <- wilcox.test(as.numeric(x),as.numeric(y), alternative = "greater")
+  pval1 <- test1$p.value
+  pval2 <- test2$p.value
+  pval3 <- test3$p.value
+  pval <- c(pval1,pval2,pval3)
+  pval <- as.data.frame(pval)
+  pvat(pval)
+  wilcox <- rbind(wilcox,pval)
+}
+row.names(wilcox) = row.names(data)
+return(wilcox)
