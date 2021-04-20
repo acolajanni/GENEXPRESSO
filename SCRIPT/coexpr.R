@@ -24,14 +24,20 @@ data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", hea
 data_exprT=as.data.frame(t(data_expr))
 # calculer la corrélation entre toutes les colonnes d'une matrice
 result_correlation=cor(data_exprT)
-
+A = corAndPvalue(result_correlation)
 # on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
 # qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
 list_correlation=melt(result_correlation)
+A = melt(A$p)
 # Matrice symétrique : supprimer les paires redondantes (ex : geneA - geneB et geneB - geneA)
 # il faut utiliser la fonction as.charater() pour comparer des chaines
 filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
-interaction = list_correlation[filtre,]
+filtre2 = as.character(A[,1])<as.character(A[,2])
+interaction1 = list_correlation[filtre,]
+interaction2 = A[filtre2,]
+
+interaction = merge(interaction,interaction2, by = c("Var1","Var2"))
+colnames(interaction) = c("Gene1","Gene2","Statistic","PValue")
 
 # Calcul des pvalue de corrélation pour le graphe de coexpression
 data_expr = as.matrix(data_expr)

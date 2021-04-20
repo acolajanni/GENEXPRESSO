@@ -10,11 +10,14 @@ design = as.numeric(rep(c(1,2),each = 6)) #y
 plotClusterTreeSamples(datExpr=data, y=design)
 
 cor.matrix= as.numeric(cor(design, data, use="p")) #GS1
+cor.matrix2 = cor(design,data,use='p')
+
 P=corPvalueFisher(cor.matrix, nSamples =length(design) )
 
 P2=P
 P2[is.na(P)]=1
 Q.std=qvalue(P2)$qvalues     
+
 
 # Pas possible de déterminer le bruit on utilise des données traitées
 GeneScreening=data.frame(Names,PearsonCorrelation=cor.matrix, P, Q.std)
