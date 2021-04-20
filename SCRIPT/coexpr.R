@@ -82,9 +82,16 @@ plot(G2, layout=LO2,
      label.color = "black",
      label.font = 2)
 
+############################################################################
+# WGCNA
+############################################################################
+library(WGCNA)
+
+#data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+
 
 ############################################################################
-# Fonction
+# Fonctions
 ############################################################################
 
 Cor.square.matrix <- function(data){
