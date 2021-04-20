@@ -76,14 +76,15 @@ sdn <- 0.4
 rseed <- 50
 Simulmicro.smaller <- madsim(mdata = NULL, n = 1000, ratio = 0, fparams, dparams, sdn, rseed)
 
-by(Simulmicro.big,Simulmicro.smaller$xid,nrow) 
+by(Simulmicro.smaller2,Simulmicro.smaller$xid,rownames) # Noms des DEG
+by(Simulmicro.smaller2,Simulmicro.smaller$xid,nrow) # nombre de gènes
 # 21 downreg
 # 35 upreg
-Simulmicro.smaller = Simulmicro.smaller$xdata
+Simulmicro.smaller2 = Simulmicro.smaller$xdata
 
 listenom <- paste0(rep(LETTERS[1:26], each=40), rep(1:40, 26))
 listenom = listenom[1:1000]
-row.names(Simulmicro.smaller) <- listenom
+row.names(Simulmicro.smaller2) <- listenom
 
 listecol1 = paste0(rep("Control",each = 12),rep(1:12, each = 1) )
 listecol2 = paste0(rep("Test",each = 12),rep(1:12, each = 1) )
