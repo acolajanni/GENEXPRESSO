@@ -222,48 +222,53 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
   return(design)
 }  
 
-DEG_limma <- function(dataset,design,comp = "up", contrast.matrix = 0, col.name = "Gene.ID"){
-  if (comp == "up"){
-    cm <- makeContrasts(diff = A-B, levels=design)
-    name = "limma.up"
-  }else if (comp == "down"){
+DEG_limma <- function(dataset,design, contrast.matrix = cm){
+  if(missing(contrast.matrix)){
     cm <- makeContrasts(diff = B-A, levels=design)
-    name = "limma.down"
-  }else if(is.matrix(contrast.matrix)) {
-    name = "limma"
   }
   fit <- lmFit(dataset,design)
   fit2 <- contrasts.fit(fit, cm)
   fit2 <- eBayes(fit2)
   res.diff <- topTable(fit2, coef="diff",genelist=row.names(dataset), number=Inf)
-  res.diff_limma <- data.frame(PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
+  res.diff_limma <- data.frame(FoldChange = (res.diff$logFC) ,PValue=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
   
-  if (col.name == "Gene.ID"){
-    colnames(res.diff_limma) <- c(name,"Gene.ID")
-  } else {
-    colnames(res.diff_limma) <- c(name,"SYMBOL")
-  }
+  colnames(res.diff_limma) <- c("logFC","PValue","SYMBOL")
+  
   return(res.diff_limma)
 }
 
-DEG_GEOlimma <- function(dataset,design, comp = "up"){
-  if (comp == "up"){
-    cont.matrix <- makeContrasts(constrast = A-B, levels=design)
-    name = "GEOlimma.up"
-  }else if (comp == "down"){
-    cont.matrix <- makeContrasts(constrast = B-A, levels=design)
-    name = "GEOlimma.down"
+DEG_GEOlimma <- function(dataset,design, contrast.matrix = cm){
+  if(missing(contrast.matrix)){
+    cm <- makeContrasts(diff = B-A, levels=design)
   }
+  
   fit <- lmFit(dataset,design)
-  fit2  <- contrasts.fit(fit, cont.matrix)
+  fit2  <- contrasts.fit(fit, cm)
   load("~/GIT/CPRD/GEOlimma/GEOlimma_probabilities.rda")
   fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
   de <- topTable(fit22, number = nrow(dataset))
-  res.diff_geolimma <- data.frame(PValue=(de$adj.P.Val),genes=row.names(de))
-  colnames(res.diff_geolimma) <- c(name,"Gene.ID")
+  res.diff_geolimma <- data.frame(FoldChange = (de$logFC), PValue=(de$adj.P.Val),genes=row.names(de))
+  
+  colnames(res.diff_geolimma) <- c("logFC","PValue","SYMBOL")
+  
   return(res.diff_geolimma)
 }
 
+DEG_limma_alternative <- function(res.diff_limma){
+  
+  res.up = copy(res.diff_limma)
+  res.down = copy(res.diff_limma)
+  for (row in 1:nrow(res.diff_limma)){
+    if (res.diff_limma[['logFC']][row] > 0 && res.diff_limma[['PValue']][row] <= 0.05){
+      res.down[['PValue']][row] = 1 
+      
+    }else if (res.diff_limma[['logFC']][row] < 0 && res.diff_limma[['PValue']][row] <= 0.05){
+      res.up[['PValue']][row] = 1
+    }
+  }
+  res = data.frame(PValue_Up = res.up$PValue, Pvalue_Down = res.down$PValue, SYMBOL = res.diff_limma$SYMBOL)
+  return(res)
+}
 
 
 ### Visualisation
@@ -297,10 +302,10 @@ UpsetPlot <- function(data.to.comp, threshold, log = FALSE){
   }
 
   Upset = as.data.frame(t(Upset))
+  return(Upset)
   
-  
-  return(upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
-               order.by = "freq", empty.intersections = "on" ))
+  #return(upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9",
+  #             order.by = "freq", empty.intersections = "on" ))
 }
 
 

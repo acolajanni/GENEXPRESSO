@@ -24,7 +24,8 @@ data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", hea
 data_exprT=as.data.frame(t(data_expr))
 # calculer la corrélation entre toutes les colonnes d'une matrice
 result_correlation=cor(data_exprT)
-A = corAndPvalue(result_correlation)
+A = corAndPvalue(result_correlation) ## Package WGCNA
+
 # on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
 # qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
 list_correlation=melt(result_correlation)

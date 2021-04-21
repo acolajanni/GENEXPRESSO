@@ -125,7 +125,7 @@ tools_norm.inspect <- function(raw.data,tool,nanoR=F){
   return(res.norm)
 }
 
-tools_DEG.inspect <- function(raw.data, tool, norm = T, data, tool_norm) {
+tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
 
   rcc.samples <- raw.data$rcc.df
   annots.df <- raw.data$annots.df
@@ -171,14 +171,15 @@ tools_DEG.inspect <- function(raw.data, tool, norm = T, data, tool_norm) {
                         
                         design <- model.matrix(~0+samples.IDs$tp53.status)
                         colnames(design) <- c("A","B")
-                        cm <- makeContrasts(diff=A-B ,levels=design)
+                        
+                        res.diff = DEG_limma(data,design)
 
-                        fit <- lmFit(data,design)
-                        fit2 <- contrasts.fit(fit, cm)
-                        fit2 <- eBayes(fit2)
-                        res.diff <- topTable(fit2, coef="diff",genelist=row.names(data), number=Inf)
+                        #fit <- lmFit(data,design)
+                        #fit2 <- contrasts.fit(fit, cm)
+                        #fit2 <- eBayes(fit2)
+                        #res.diff <- topTable(fit2, coef="diff",genelist=row.names(data), number=Inf)
                         #res.diff <- data.frame(nanoR.total=-log10(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-                        res.diff <- data.frame(nanoR.total=(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
+                        res.diff <- data.frame(limma=(res.diff$PValue),SYMBOL=res.diff$SYMBOL)
                         colnames(res.diff) = c(method, "SYMBOL")
 
                       },
@@ -187,7 +188,7 @@ tools_DEG.inspect <- function(raw.data, tool, norm = T, data, tool_norm) {
                         group = table(samples.IDs$tp53.status)
                         n1 = as.integer(group[1])
                         n2 = as.integer(group[2])
-                        res.diff = wilcoxDEG4(data, n1, n2)
+                        res.diff = wilcoxDEG(data, n1, n2)
                         res.diff = res.diff[-(-1)]
                         res.diff$SYMBOL = row.names(res.diff)
                         colnames(res.diff) = c(method, "SYMBOL")
@@ -222,7 +223,6 @@ tools_diff = c("limma", "Wilcox" )
 data.to.comp <- tools_DEG.inspect(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
 
 for (tool_norm in tools_norm){
-  print(tool_norm)
   nanoR=F
   raw <- raw.data
   if (tool_norm%in%c("nanoR.top100","nanoR.total")){
@@ -233,6 +233,7 @@ for (tool_norm in tools_norm){
   tmp <- tools_norm.inspect(raw,tool_norm,nanoR)
 
   for (tool_diff in tools_diff){
+    print(paste(c(tool_norm, tool_diff)))
     tmp2 = tools_DEG.inspect(raw.data = raw.data, data =  tmp, tool = tool_diff, tool_norm = tool_norm)
     data.to.comp <- merge(data.to.comp,tmp2,by="SYMBOL",all=T) 
   }
@@ -256,4 +257,13 @@ PCA_tools(data.to.comp)
 #UpsetPlot(data.to.comp, threshold = 0.05, log = F)
 
 ### ATTENTION, si vous lancez comme ça, vous risquez de planter
-UpsetPlot(data.to.comp,threshold = 0.05)
+A = UpsetPlot(data.to.comp,threshold = 0.05)
+names = colnames(A)
+
+upset(A, sets = names[1:11], sets.bar.color = "#56B4E9",
+             order.by = "freq", 
+      empty.intersections = "on" )
+
+upset(A, sets = names[12:21], sets.bar.color = "#56B4E9",
+      order.by = "freq", empty.intersections = "on" )
+

@@ -76,10 +76,6 @@ sdn <- 0.4
 rseed <- 50
 Simulmicro.smaller <- madsim(mdata = NULL, n = 1000, ratio = 0, fparams, dparams, sdn, rseed)
 
-by(Simulmicro.smaller2,Simulmicro.smaller$xid,rownames) # Noms des DEG
-by(Simulmicro.smaller2,Simulmicro.smaller$xid,nrow) # nombre de gènes
-# 21 downreg
-# 35 upreg
 Simulmicro.smaller2 = Simulmicro.smaller$xdata
 
 listenom <- paste0(rep(LETTERS[1:26], each=40), rep(1:40, 26))
@@ -89,7 +85,14 @@ row.names(Simulmicro.smaller2) <- listenom
 listecol1 = paste0(rep("Control",each = 12),rep(1:12, each = 1) )
 listecol2 = paste0(rep("Test",each = 12),rep(1:12, each = 1) )
 listecol = c(listecol1,listecol2)
-colnames(Simulmicro.smaller)<-listecol
+colnames(Simulmicro.smaller2)<-listecol
+
+by(Simulmicro.smaller2,Simulmicro.smaller$xid,rownames) # Noms des DEG
+by(Simulmicro.smaller2,Simulmicro.smaller$xid,nrow) # nombre de gènes
+# 21 downreg
+# 35 upreg
+
+
 
 #Exportation des donnees
 write.csv(Simulmicro,"~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", row.names = TRUE)

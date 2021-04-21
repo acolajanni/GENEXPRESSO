@@ -19,19 +19,20 @@ tools.microarrays.inspect <- function(data,tool,n1,n2){
   
   DEG_Microarrays_tools.fnc <- switch(tool,
                                       GEOlimma = {
-                                        res.diff_up= DEG_GEOlimma(data,design, comp = "up")
-                                        res.diff_down= DEG_GEOlimma(data,design, comp = "down")
-                                        res.diff = merge(res.diff_up,res.diff_down,by = "Gene.ID",all=T)
+                                        res.diff = DEG_GEOlimma(data,design)
+                                        res.diff = DEG_limma_alternative(res.diff)
+                                        colnames(res.diff) = c("GEOlimma Up","GEOlimma Down","Gene.ID")
                                       },
                                       
                                       limma = {
-                                        res.diff_up = DEG_limma(data,design, comp = "up")
-                                        res.diff_down = DEG_limma(data,design, comp = "down")
-                                        res.diff = merge(res.diff_up,res.diff_down,by = "Gene.ID",all=T)
+                                        res.diff = DEG_limma(data,design)
+                                        res.diff = DEG_limma_alternative(res.diff)
+                                        colnames(res.diff) = c("limma Up","limma Down","Gene.ID")
+                                        
                                       },
                                       
                                       Wilcox = {
-                                        res.diff = wilcoxDEG4(data, n1, n2)
+                                        res.diff = wilcoxDEG(data, n1, n2)
                                         res.diff$Gene.ID = row.names(res.diff)
                                         res.diff = res.diff[,-1]
                                       },
@@ -82,6 +83,7 @@ for (tool in tools){
   data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
 }
 
+
 row.names(data_to_comp) <- data_to_comp$Gene.ID
 data_to_comp <- data_to_comp[,-1]
 head(data_to_comp)
@@ -107,13 +109,28 @@ head(data_to_comp_Up)
 data_to_comp_Up = as.data.frame(t(data_to_comp_Up))
 data_to_comp_Down = as.data.frame(t(data_to_comp_Down))
 
-## PCA : erreur (que deux méthodes)
-
+## PCA : 
+#data_to_comp = t(data_to_comp)
+#PCA_tools(data_to_comp)
 PCA_tools(data_to_comp_Up)
 PCA_tools(data_to_comp_Down)
 
-## Upsetplot : erreur (pas d'intesection car très peu de gènes DE)
+## Upsetplot : si erreur (pas d'intesection car très peu de gènes DE)
 par(mfrow=c(1,2))
-UpsetPlot(data.to.comp = data_to_comp_Down,threshold = 0.05)
-dev.new()
-UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
+A = UpsetPlot(data.to.comp = data_to_comp_Down,threshold = 0.05)
+names = colnames(A)
+
+upset(A, sets = names, sets.bar.color = "#56B4E9",
+      order.by = "freq", 
+      empty.intersections = "on" )
+
+B = UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
+names = colnames(B)
+
+upset(B, sets = names, sets.bar.color = "#56B4E9",
+      order.by = "freq", 
+      empty.intersections = NULL )
+
+
+
+#UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
