@@ -21,6 +21,7 @@ Q.std=qvalue(P2)$qvalues
 
 # Pas possible de déterminer le bruit on utilise des données traitées
 GeneScreening=data.frame(Names,PearsonCorrelation=cor.matrix, P, Q.std)
+head(GeneScreening)
 
 # here we define the adjacency matrix using soft thresholding with beta=6
 adjacency=abs(cor(data,use="p"))^6
@@ -41,7 +42,6 @@ diss.Adj=1-adjacency
 diss.tom=TOMdist(diss.Adj)
 
 
-# Suite infaisable : pas de données d'activitation en fonctions des couleurs (microarray)
 
 ###
 
@@ -55,7 +55,8 @@ plot(cmd,  main="MDS plot",
 power=6
 diss=1-TOMsimilarityFromExpr( data, power = 6 )
 hier=hclust(as.dist(diss), method="average" )
-diag(diss1) = NA;
+plot(hier)
+diag(diss) = NA;
 sizeGrWindow(7,7)
 TOMplot(diss^4, hier, 
         main = "TOM heatmap plot, module genes" )
@@ -70,24 +71,21 @@ TOMplot(diss^4, hier,
         main = "Adjacency heatmap plot, module genes" )
 
 #heatmap 3
-topList=rank(NS1$p.Weighted,ties.method="first")<=30
-top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=30
+#topList=rank(NS1$p.Weighted,ties.method="first")<=150
+top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=50
 topGene= names(data)[top]
 
-#methode 1
+#methode 1 : Nous intéresse c'est la corrélation, pas forcément le signe  
+# On peut comparer la méthode utilisant des coeff de corr. de Pearson 
+# Avec TOM Topological overlap matrix
 plotNetworkHeatmap(data, plotGenes = topGene,
                    networkType="unsigned", useTOM=FALSE,
                    power=1, main="signed correlations")
-#Méthode 2
-plotNetworkHeatmap(data, plotGenes = topGene,
-                   networkType="signed", useTOM=FALSE,
-                   power=1, main="signed correlations")
 
-# The following shows the TOM heatmap in a signed network
-plotNetworkHeatmap(data, plotGenes = topGene,
-                   networkType="signed", useTOM=TRUE,
-                   power=12, main="C. TOM in a signed network")
+
+
 # The following shows the TOM heatmap in a unsigned network
 plotNetworkHeatmap(data, plotGenes = topGene,
                    networkType="unsigned", useTOM=TRUE,
                    power=6, main="D. TOM in an unsigned network")
+#??plotNetworkHeatmap
