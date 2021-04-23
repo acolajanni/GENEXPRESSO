@@ -330,6 +330,23 @@ DEG_limma_alternative <- function(res.diff_limma){
   return(res)
 }
 
+wilcoxDEG <- function(data, n1, n2){
+  wilcox <- data.frame()
+  for (i in 1:nrow(data)){
+    x = data[i,1:n1]
+    y = data[i,(n1+1):(n1+n2)]
+    test1 <- wilcox.test(as.numeric(x),as.numeric(y))
+    test2 <- wilcox.test(as.numeric(x),as.numeric(y),alternative = "less")
+    test3 <- wilcox.test(as.numeric(x),as.numeric(y), alternative = "greater")
+    pval <- c(test1$p.value,test2$p.value,test3$p.value)
+    wilcox <- rbind(wilcox,pval)
+  }
+  colnames(wilcox)[1] <- "wilcox two-sided"
+  colnames(wilcox)[2] <- "wilcox less"
+  colnames(wilcox)[3] <- "wilcox greater"
+  row.names(wilcox) = row.names(data)
+  return(wilcox)
+}
 
 ### Visualisation
 PCA_tools <- function(data.to.comp){
