@@ -1,0 +1,30 @@
+Scripts de tests : (à supprimer à terme)
+
+- DEGRankProd.R
+- Wilcox.R 
+- geolimma.R
+- NormalisationRNAseq.R
+- Test_norm_microarray.R
+- testPaul.R
+- tesTJuliette.R
+(- SimulateNanostring.R)
+___________________________________________________
+Scripts de fonctions à déplacer dans functions.R : 
+
+- functionwilcoxtest.R
+- Nanostring_functions.R ==> à faire valider à la prochaine réunion
+- coexpr.R (pas tout à fait fini)
+
+___________________________________________________
+à finir : 
+
+- WGCNA.R
+- coexpr.R
+___________________________________________________
+scripts finaux (pipeline pour les 3 types de données): certains sont à renommer
+- DEG_micro.R ==> Analyse MicroArrays
+- functions.R
+- make_comparison_table.R ==> Analyse Nanostring
+- Test_norm_RNAseq.R ==> Analyse RNA-seq
+- Coexpression / WGCNA ? (finir la coexpression avant)
+(- setup.R)

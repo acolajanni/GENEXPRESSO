@@ -213,6 +213,66 @@ tools.inspect <- function(raw.data,tool,nanoR=F){
   return(res.diff)
 }
 
+tools.microarrays.inspect <- function(data,tool,n1,n2){
+  if (tool == "GEOlimma" || tool == "limma"){
+    design = make_designMatrix(dataset = data)
+  } else if (tool%in%c("RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")){
+    design = rep(c(0,1),c(n1,n2)) 
+  }
+  
+  DEG_Microarrays_tools.fnc <- switch(tool,
+                                      GEOlimma = {
+                                        res.diff = DEG_GEOlimma(data,design)
+                                        res.diff = DEG_limma_alternative(res.diff)
+                                        colnames(res.diff) = c("GEOlimma Up","GEOlimma Down","Gene.ID")
+                                      },
+                                      
+                                      limma = {
+                                        res.diff = DEG_limma(data,design)
+                                        res.diff = DEG_limma_alternative(res.diff)
+                                        colnames(res.diff) = c("limma Up","limma Down","Gene.ID")
+                                        
+                                      },
+                                      
+                                      Wilcox = {
+                                        res.diff = wilcoxDEG(data, n1, n2)
+                                        res.diff$Gene.ID = row.names(res.diff)
+                                        res.diff = res.diff[,-1]
+                                      },
+                                      
+                                      RankProduct.param1 = {
+                                        res.diff = RankProducts(data, design, rand = 123, logged = FALSE, na.rm = TRUE ,calculateProduct = TRUE)
+                                        res.diff = res.diff[["pval"]]
+                                        
+                                      },
+                                      
+                                      RankProduct.param2 = {
+                                        res.diff = RankProducts(data, design, rand = 123, logged = TRUE , na.rm = TRUE , calculateProduct = TRUE)
+                                        res.diff = res.diff[["pval"]]
+                                        
+                                      },
+                                      RankProduct.param3 = {
+                                        res.diff = RankProducts(data, design, rand = 123,logged = FALSE ,na.rm = TRUE ,calculateProduct = FALSE)
+                                        res.diff = res.diff[["pval"]]
+                                        
+                                      },
+                                      
+                                      RankProduct.param4 = {
+                                        res.diff = RankProducts(data, design, rand = 123,logged = TRUE ,na.rm = TRUE ,calculateProduct = FALSE)
+                                        res.diff = res.diff[["pval"]]
+                                        
+                                      },
+                                      stop("Enter something that switches me!")
+  )
+  if (!tool%in%c("limma","GEOlimma","Wilcox")){
+    res.diff = as.data.frame(res.diff)
+    res.diff$Gene.ID = row.names(data)
+    colnames(res.diff) = c(paste(tool,"Up"), paste(tool,"Down"),"Gene.ID")
+    res.diff
+  }
+  return(res.diff)
+}
+
 make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(dataset)/2),ncond2=(ncol(dataset)/2)){
   status.control = rep(cond1,ncond1)
   status.test = rep(cond2,ncond2)
