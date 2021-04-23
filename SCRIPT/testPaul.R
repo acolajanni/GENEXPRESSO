@@ -13,235 +13,37 @@ library('igraph')
 library(data.table)
 source(file.path("./SCRIPT","functions.R"))
 
-data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
-data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 
-#data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
-#                            row.names = 1, quote="\"",header = T)
+#Transposition de la matrice car cor() agit sur les colonnes et non les lignes
+data = as.data.frame(t(data))
 
-# La fonction cor() calcul les corrélations entre les colonnes et non les lignes : 
-# il faut alors transposer la matrice à l'aide de la fonction t()
-data_exprT=as.data.frame(t(data_expr))
+################# KENDALL ######################
+testKendall <- cor(data, method = "kendall")
 
-# calculer la corrélation entre toutes les colonnes d'une matrice
-result_correlation=cor(data_exprT)
-A = corAndPvalue(result_correlation)
-# on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
-# qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
-list_correlation=melt(result_correlation)
-A = melt(A$p)
-# Matrice symétrique : supprimer les paires redondantes (ex : geneA - geneB et geneB - geneA)
-# il faut utiliser la fonction as.charater() pour comparer des chaines
-filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
-filtre2 = as.character(A[,1])<as.character(A[,2])
-interaction1 = list_correlation[filtre,]
-interaction2 = A[filtre2,]
+################# SPEARMAN #####################
 
-interaction = merge(interaction,interaction2, by = c("Var1","Var2"))
-colnames(interaction) = c("Gene1","Gene2","Statistic","PValue")
+testSpearman <- cor(data, method = "spearman")
 
-# Calcul des pvalue de corrélation pour le graphe de coexpression
-data_expr = as.matrix(data_expr)
-Cor_spe <- NULL
-Cor_ken <- NULL
-for (i in 1:nrow(interaction)){
-  print(i)
-  A = toString(interaction[["Var1"]][i])
-  A = as.vector(data_expr[A,])
-  
-  B = toString(interaction[["Var2"]][i])
-  B = as.vector(data_expr[B,])
-  
-  test_spe = cor.test(A,B, method = "spearman")
-  Cor_spe = c(Cor_spe, test_spe$p.value)
-  
-  test_ken = cor.test(A,B, method = "kendall")
-  Cor_ken = c(Cor_ken, test_ken$p.value)
-}
+################################################################################
 
-interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
+################# WGCNA ####################
+##### corAndPvalue #####
+library("WGCNA")
+testWGCNA <- corAndPvalue(data)
 
-Matrix = copy(result_correlation)
-for (col in 1:ncol(Matrix)){
-  for (row in 1:nrow(Matrix)){
-    #print(Matrix[col,row])
-    if (Matrix[col,row] >= 0.75 || Matrix[col,row] <= -0.75){
-      Matrix[col,row] = 1
-    }else{
-      Matrix[col,row] = 0
-    }
-  }
-}
-
-# Affichage avec igraph
-set.seed(12)
-G = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
-LO = layout_with_fr(G)
-
-Isolated = which(degree(G)==0)
-G2 = delete.vertices(G, Isolated)
-LO2 = LO[-Isolated,]
-plot(G2, layout=LO2,
-     edge.color = "black",
-     edge.width = 5,
-     vertex.size = 10,
-     vertex.color = "white",
-     label.color = "black",
-     label.font = 2)
-
-############################################################################
-# WGCNA
-############################################################################
-library(WGCNA)
-
-#data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+##### TOM #####
+# Mesure de chevauchement topologique (TOM) :
+# est une mesure de similarité par paire entre les nœuds du réseau (gènes).
+# TOM(i,j ) est élevé si les gènes i,j ont de nombreux voisins communs (le chevauchement de leurs voisins de réseau est important).
+# TOM(i,j ) élevé implique que les gènes ont des profils d'expression similaires.
+# TOM, en tant que mesure de similarité, peut être transformé en une mesure de dissimilarité distTOM = 1-TOM.
+TOMsimilarityFromExpr()
+TOMsimilarity()
+hierarchicalConsensusTOM()
+TOMplot()
 
 
-############################################################################
-# Fonctions
-############################################################################
 
-Cor.square.matrix <- function(data){
-  data_expr=as.data.frame(t(data))
-  result_correlation=cor(data_expr)
-  return(result_correlation)
-}
 
-Make.adjacency.graph <- function(data){
-  #data=as.data.frame(t(data))
-  result_correlation = Cor.square.matrix(data)
-  list_correlation=melt(result_correlation)
-  filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
-  interaction = list_correlation[filtre,]
-  return(interaction)
-}
-
-Make.adjacencyPVal <-function(data){
-  interaction = Make.adjacency.graph(data)
-  Cor_spe <- NULL
-  Cor_ken <- NULL
-  
-  for (i in 1:nrow(interaction)){
-    #print(i)
-    A = toString(interaction[["Var1"]][i])
-    A = as.vector(data[A,])
-    
-    B = toString(interaction[["Var2"]][i])
-    B = as.vector(data[B,])
-    
-    test_spe = cor.test(as.numeric(A),as.numeric(B), method = "spearman")
-    Cor_spe = c(Cor_spe, test_spe$p.value)
-    
-    test_ken = cor.test(as.numeric(A),as.numeric(B), method = "kendall")
-    Cor_ken = c(Cor_ken, test_ken$p.value)
-  }
-  
-  interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
-  return(interaction)
-}
-
-Make.relation.graph <- function(data){
-  data = as.matrix(data)
-  Matrix = Cor.square.matrix(data)
-  for (col in 1:ncol(Matrix)){
-    for (row in 1:nrow(Matrix)){
-      if (is.na(Matrix[col,row])){
-        Matrix[col,row] = 0
-      }
-      else if (Matrix[col,row] >= 0.75 || Matrix[col,row] <= -0.75){
-        Matrix[col,row] = 1
-      }else{
-        Matrix[col,row] = 0
-      }
-    }
-  }
-  return(Matrix)
-}
-
-Plot.relation.graph <-function(data){
-  Matrix = Make.relation.graph(data)
-  set.seed(12)
-  G = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
-  LO = layout_with_fr(G)
-  
-  Isolated = which(degree(G)==0)
-  G2 = delete.vertices(G, Isolated)
-  LO2 = LO[-Isolated,]
-  plot(G2, 
-       edge.color = "black",
-       edge.width = 5,
-       vertex.size = 10,
-       vertex.color = "white",
-       label.color = "black",
-       label.font = 2)
-  
-}
-
-########### Appel de fonctions
-data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
-data_expr = data_expr[1:100,]
-## Co-expression totale
-Total_Micro = Make.adjacencyPVal(data_expr)
-Plot.relation.graph(data_expr)
-
-#Co-expression grp1 - grp 2
-# Formation des groupes
-N = ncol(data_expr)
-data.Grp1 = data_expr[1:(N/2)]
-data.Grp2 = data_expr[((N/2)+1):N]
-
-#Graph d'adjacence
-Grp1_Micro = Make.adjacencyPVal(data.Grp1)
-Grp2_Micro = Make.adjacencyPVal(data.Grp2)
-
-par(mfrow=c(1,3))
-# Plot total
-Plot.relation.graph(data_expr)
-#Plot gr1
-Plot.relation.graph(data.Grp1)
-#Plot gr2
-Plot.relation.graph(data.Grp2)
-
-### Nanostring
-raw.data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
-group = table(raw.data$samples.IDs$tp53.status)
-n1 = as.integer(group[1])
-n2 = as.integer(group[2])
-Nano = raw.data[["rcc.df"]]
-
-#Co-expression grp1 - grp 2
-# Formation des groupes
-Nano_Mutated = Nano[1:n1]
-Nano_WildType = Nano[(n1+1):(n1+n2)]
-
-# Plot total
-Total_Nano = Make.adjacency.graph(Nano)
-Plot.relation.graph(Nano)
-#Plot gr1
-Nano_Mutated = Make.adjacency.graph(Nano_Mutated)
-Plot.relation.graph(Nano_Mutated)
-#Plot gr2
-WT_Nano = Make.adjacency.graph(Nano_WildType)
-Plot.relation.graph(Nano_WildType)
-
-########### Appel de fonctions
-RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
-
-#Total_RNA = Make.adjacencyPVal(RNA)
-Total_RNA = Make.adjacency.graph(RNA)
-
-N = ncol(RNA)
-RNA_control = RNA[1:(N/2)]
-RNA_test = RNA[((N/2)+1):N]
-
-par(mfrow=c(1,3))
-# Plot total
-RNA_tot = Make.adjacency.graph(RNA)
-Plot.relation.graph(RNA)
-#Plot gr1
-RNA_C = Make.adjacency.graph(RNA_control)
-Plot.relation.graph(RNA_control)
-#Plot gr2
-RNA_T = Make.adjacency.graph(RNA_test)
-Plot.relation.graph(RNA_test)
 
