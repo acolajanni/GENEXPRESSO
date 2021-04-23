@@ -1,6 +1,6 @@
 # Nom               : Main.R
 # Type              : Programme
-# Objet             : 
+# Objet             : Proposition de programme principal appelant tous les autres
 # Input             : 
 # Output            : 
 # Auteur            : Juliette Casemajor
@@ -15,14 +15,14 @@
 setwd(.PROGRAMS)
 source("setup.R")
 source("functions.R")
-#______________________________________________________________________Programme
+#___________________________________________________Normalisation et analyse DEG
 #Chargement des donnees brutes
-.DATA <- file.path(.ROOT,"DATA/RNASEQ")
+.DATA <- file.path(.ROOT,"DATA/MICROARRAYS")
 setwd(.DATA)
-DataIn <- read.csv("SimulRNASEQ1000x30.csv", header = TRUE, row.names = 1)
+DataIn <- read.csv("Simulmicroarrays1000.csv", header = TRUE, row.names = 1)
 
 #Type de donnees : "nanostring", "microarrays" ou "rna-seq"
-type <- "rna-seq"
+type <- "microarrays"
 
 #Indiquer nombre d'individus du groupe 1 et du groupe 2
 n1 <- 6
@@ -37,7 +37,7 @@ setwd(.PROGRAMS)
 
 if (type == "microarrays") {
   #Pas de normalisation, execution du programme d'analyse de microarrays
-  source("testbis.R") #Je l'ai rajoute dans les scripts, a supprimer plus tard bien sur
+  source("testmainmicroarrays.R") #Je l'ai rajoute dans les scripts, a supprimer plus tard bien sur
   } else if (type == "nanostring") {
   #script d'analyse nanostring avec les variables deja implementees ici
   #le fichier source d'analyse ne devra contenir que norm, DataIn, tools, etc
@@ -52,3 +52,12 @@ if (type == "microarrays") {
 #Type de donnees (type)
 #Nombre d'individus (n1 et n2)
 #Outils de normalisation et de DEG utilisés (norm et tools)
+
+#__________________________________________________________________Visualisation
+#Peut être que la visualisation pourrait être integree dans l'analyse DEG ou 
+#Bien la sortir pourrait être utile à l'utilisateur s'il veut faire lui-même
+#sa visualisation a partir des p-value ?
+#__________________________________________________________________Co-expression
+
+#_________________________________________________________________________Output
+#Enregistrement des fichiers .csv et img dans un dossier output
