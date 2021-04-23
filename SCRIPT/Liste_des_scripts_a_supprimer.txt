@@ -11,7 +11,7 @@ Scripts de tests : (à supprimer à terme)
 ___________________________________________________
 Scripts de fonctions à déplacer dans functions.R : 
 
-- functionwilcoxtest.R
+- functionwilcoxtest.R  OK
 - Nanostring_functions.R ==> à faire valider à la prochaine réunion
 - coexpr.R (pas tout à fait fini)
 
