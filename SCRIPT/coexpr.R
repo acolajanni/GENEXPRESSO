@@ -15,7 +15,6 @@ source(file.path("./SCRIPT","functions.R"))
 
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
-data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", row.names = 1, quote="\"",header = T)
 
 # la fonction cor() calcul les corrélation entre les colonnes et pas les lignes : 
 # il faut transposer la matrice et pour cela il existe la fonction t()
@@ -27,7 +26,7 @@ A = corAndPvalue(result_correlation) ## Package WGCNA
 # on veut passer d'une matrice à une liste de paires: on va utiliser la fonction "melt" 
 # qui est disponible dans la library  reshape2 du package reshape2: il faut donc l'installer
 list_correlation=melt(result_correlation)
-A = melt(A$p)
+
 # Matrice symétrique : supprimer les paires redondantes (ex : geneA - geneB et geneB - geneA)
 # il faut utiliser la fonction as.charater() pour comparer des chaines
 filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
@@ -37,6 +36,20 @@ interaction2 = A[filtre2,]
 
 interaction = merge(interaction,interaction2, by = c("Var1","Var2"))
 colnames(interaction) = c("Gene1","Gene2","Statistic","PValue")
+
+###
+data = as.matrix(t(data_expr))
+Cor = corAndPvalue(data) 
+Pval = melt(Cor$p)
+Cor = melt(Cor$cor)
+interaction = cbind(Cor,PValue = Pval$value)
+colnames(interaction) = c("Gene1","Gene2","cor.level","PValue")
+
+filtre = as.character(interaction[,1])<as.character(interaction[,2])
+filtre2 = as.character(A[,1])<as.character(A[,2])
+interaction = interaction[filtre,]
+###
+
 
 # Calcul des pvalue de corrélation pour le graphe de coexpression
 data_expr = as.matrix(data_expr)
@@ -114,27 +127,43 @@ Make.adjacency.graph <- function(data){
   return(interaction)
 }
 
-Make.adjacencyPVal <-function(data){
-  interaction = Make.adjacency.graph(data)
-  Cor_spe <- NULL
-  Cor_ken <- NULL
+Make.adjacencyPVal <-function(data, Fast = F){
   
-  for (i in 1:nrow(interaction)){
-    #print(i)
-    A = toString(interaction[["Var1"]][i])
-    A = as.vector(data[A,])
+  if (Fast == F){
+    interaction = Make.adjacency.graph(data)
+    Cor_spe <- NULL
+    Cor_ken <- NULL
+  
+    for (i in 1:nrow(interaction)){
+      #print(i)
+      A = toString(interaction[["Var1"]][i])
+      A = as.vector(data[A,])
     
-    B = toString(interaction[["Var2"]][i])
-    B = as.vector(data[B,])
+      B = toString(interaction[["Var2"]][i])
+      B = as.vector(data[B,])
     
-    test_spe = cor.test(as.numeric(A),as.numeric(B), method = "spearman")
-    Cor_spe = c(Cor_spe, test_spe$p.value)
+      test_spe = cor.test(as.numeric(A),as.numeric(B), method = "spearman")
+      Cor_spe = c(Cor_spe, test_spe$p.value)
     
-    test_ken = cor.test(as.numeric(A),as.numeric(B), method = "kendall")
-    Cor_ken = c(Cor_ken, test_ken$p.value)
+      test_ken = cor.test(as.numeric(A),as.numeric(B), method = "kendall")
+      Cor_ken = c(Cor_ken, test_ken$p.value)
+    }
+    interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
+    colnames(interaction) = c("Gene1","Gene2","cor.level","PVal.Kendall","PVal.Spearman")
+  } 
+  else if (Fast == T){
+    data = as.matrix(t(data))
+    Cor = corAndPvalue(data) 
+    Pval = melt(Cor$p)
+    Cor = melt(Cor$cor)
+    interaction = cbind(Cor,PValue = Pval$value)
+    colnames(interaction) = c("Gene1","Gene2","cor.level","PValue")
+    
+    filtre = as.character(interaction[,1])<as.character(interaction[,2])
+    filtre2 = as.character(A[,1])<as.character(A[,2])
+    interaction = interaction[filtre,]
   }
   
-  interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
   return(interaction)
 }
 
@@ -179,7 +208,7 @@ Plot.relation.graph <-function(data){
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
 data_expr = data_expr[1:100,]
 ## Co-expression totale
-Total_Micro = Make.adjacencyPVal(data_expr)
+Total_Micro = Make.adjacencyPVal(data_expr, Fast = T)
 Plot.relation.graph(data_expr)
 
 #Co-expression grp1 - grp 2

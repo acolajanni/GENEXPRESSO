@@ -193,4 +193,4 @@ Coexpression<-function(datatype, plot, gene.number){
 }
 Coexpression("RNAseq","TOM network", 50)
 Coexpression("Microarrays","TOM heatmap plot", 50)
-Coexpression("Nanostring","TOM network", 100)
+Coexpression("Nanostring","TOM network", 750)
