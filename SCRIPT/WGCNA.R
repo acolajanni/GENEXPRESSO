@@ -1,12 +1,35 @@
 library(WGCNA)
 library(cluster)
 
+## Microarray
 data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
+design = as.numeric(rep(c(1,2),each = 6)) #y
 data = as.data.frame(t(data))
+## Nanostring
+raw.data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
+#data.dir <- "./DATA/NANOSTRING"
+#RCC.dir <- file.path(data.dir,"GSE146204_RAW")
+#raw <- RCC.dir
+samples.IDs <- raw.data$samples.IDs
+rcc.samples <- raw.data$rcc.df
+annots.df <- raw.data$annots.df
+samples.IDs <- raw.data$samples.IDs
+# design matrix for nanostring
+group = table(samples.IDs$tp53.status)
+n1 = as.integer(group[1])
+n2 = as.integer(group[2])
+design = as.numeric(c(rep(1,n1),rep(2,n2)))
+data <- as.data.frame(rcc.samples[grepl("Endog",annots.df$CodeClass),])
+
+data = as.data.frame(t(data))
+#data[1:784] = lapply(data[1:784], as.numeric) 
+data[1:750] = lapply(data[1:750], as.numeric) 
+
+##
+
 
 Names = colnames(data)
 
-design = as.numeric(rep(c(1,2),each = 6)) #y
 plotClusterTreeSamples(datExpr=data, y=design)
 
 cor.matrix= as.numeric(cor(design, data, use="p")) #GS1
@@ -35,8 +58,7 @@ scaleFreePlot(K, main="Check scale free topology\n")
 
 
 
-data=data[, rank(-K,ties.method="first" )<=100]
-
+#data=data[, rank(-K,ties.method="first" )<=100]
 # Turn adjacency into a measure of dissimilarity
 diss.Adj=1-adjacency
 diss.tom=TOMdist(diss.Adj)
@@ -53,7 +75,7 @@ plot(cmd,  main="MDS plot",
 
 ## Heatmap : TOM = topological overlap matrix similarity and dissimilarity
 power=6
-diss=1-TOMsimilarityFromExpr( data, power = 6 )
+diss=1-TOMsimilarityFromExpr( data)
 hier=hclust(as.dist(diss), method="average" )
 plot(hier)
 diag(diss) = NA;
@@ -67,12 +89,12 @@ diss=1-adjacency( data, power = 6 )
 hier=hclust(as.dist(diss), method="average" )
 diag(diss) = NA;
 sizeGrWindow(7,7)
-TOMplot(diss^4, hier, 
+TOMplot(diss^4, hier,
         main = "Adjacency heatmap plot, module genes" )
 
 #heatmap 3
 #topList=rank(NS1$p.Weighted,ties.method="first")<=150
-top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=50
+top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=750
 topGene= names(data)[top]
 
 #methode 1 : Nous intéresse c'est la corrélation, pas forcément le signe  
@@ -80,12 +102,95 @@ topGene= names(data)[top]
 # Avec TOM Topological overlap matrix
 plotNetworkHeatmap(data, plotGenes = topGene,
                    networkType="unsigned", useTOM=FALSE,
-                   power=1, main="signed correlations")
+                   power=6, main="unsigned correlations")
 
 
 
 # The following shows the TOM heatmap in a unsigned network
 plotNetworkHeatmap(data, plotGenes = topGene,
                    networkType="unsigned", useTOM=TRUE,
-                   power=6, main="D. TOM in an unsigned network")
-#??plotNetworkHeatmap
+                   power=6, main="TOM in an unsigned network")
+
+# _________________________________________________________________________
+
+Coexpression<-function(datatype, plot, gene.number){
+  if(datatype == "Nanostring"){
+    raw.data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
+    samples.IDs <- raw.data$samples.IDs
+    rcc.samples <- raw.data$rcc.df
+    annots.df <- raw.data$annots.df
+    samples.IDs <- raw.data$samples.IDs
+    # design matrix for nanostring
+    group = table(samples.IDs$tp53.status)
+    n1 = as.integer(group[1])
+    n2 = as.integer(group[2])
+    design = as.numeric(c(rep(1,n1),rep(2,n2)))
+    data <- as.data.frame(rcc.samples[grepl("Endog",annots.df$CodeClass),])
+    
+    data = as.data.frame(t(data))
+    #data[1:784] = lapply(data[1:784], as.numeric) 
+    data[1:750] = lapply(data[1:750], as.numeric) 
+  } 
+  else if (datatype == "Microarrays"){
+    data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
+    design = as.numeric(rep(c(1,2),each = 12)) #y
+    data = as.data.frame(t(data))
+    data[1:1000] = lapply(data[1:1000], as.numeric) 
+  }
+  else if (datatype == "RNAseq"){
+    data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
+    design = as.numeric(rep(c(1,2),each = 15)) #y
+    data = as.data.frame(t(data))
+    data[1:1000] = lapply(data[1:1000], as.numeric) 
+  }
+  else{
+    stop("Enter something that switches me!")   
+  }
+  gene.names = colnames(data)
+  cor.matrix= as.numeric(cor(design, data, use="p"))
+  cor.matrix2 = cor(design,data,use='p')
+  P=corPvalueFisher(cor.matrix, nSamples =length(design) )
+  P2=P
+  P2[is.na(P)]=1
+  Q.std=qvalue(P2)$qvalues     
+  GeneScreening=data.frame(gene.names,PearsonCorrelation=cor.matrix, P, Q.std)
+  
+  # 
+  top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=gene.number
+  topGene= names(data)[top]
+  
+  if (plot == "TOM heatmap plot"){
+    diss=1-TOMsimilarityFromExpr( data)
+    hier=hclust(as.dist(diss), method="average" )
+    plot(hier)
+    diag(diss) = NA;
+    sizeGrWindow(7,7)
+    TOMplot(diss^4, hier, 
+            main = "TOM heatmap plot, module genes" )
+  }
+  else if (plot == "Adjacency"){
+    diss=1-adjacency( data, power = 6 )
+    hier=hclust(as.dist(diss), method="average" )
+    diag(diss) = NA;
+    sizeGrWindow(7,7)
+    TOMplot(diss^4, hier,
+            main = "Adjacency heatmap plot, module genes" )
+  }
+  else if (plot == "Adjacency network"){
+    plotNetworkHeatmap(data, plotGenes = topGene,
+                       networkType="unsigned", useTOM=FALSE,
+                       power=6, main="unsigned correlations")
+  }
+  else if (plot == "TOM network"){
+    plotNetworkHeatmap(data, plotGenes = topGene,
+                       networkType="unsigned", useTOM=TRUE,
+                       power=6, main="TOM in an unsigned network")
+  }
+  else{
+    stop("Enter something that switches me!")   
+  }
+  
+}
+Coexpression("RNAseq","TOM network", 50)
+Coexpression("Microarrays","TOM heatmap plot", 50)
+Coexpression("Nanostring","TOM network", 100)

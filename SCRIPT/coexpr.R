@@ -15,9 +15,7 @@ source(file.path("./SCRIPT","functions.R"))
 
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
-
-#data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", 
-#                            row.names = 1, quote="\"",header = T)
+data_expr <- read.table("~/GIT/CPRD/DATA/TEST_COEXPR/data_expression.csv", row.names = 1, quote="\"",header = T)
 
 # la fonction cor() calcul les corrélation entre les colonnes et pas les lignes : 
 # il faut transposer la matrice et pour cela il existe la fonction t()
