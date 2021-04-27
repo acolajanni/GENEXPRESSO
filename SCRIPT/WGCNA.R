@@ -77,9 +77,6 @@ power=6
 diss=1-TOMsimilarityFromExpr( data)
 hier=hclust(as.dist(diss), method="average" )
 plot(hier)
-H=cutree(hier,5)
-H
-
 diag(diss) = NA;
 sizeGrWindow(7,7)
 TOMplot(diss^4, hier, 
