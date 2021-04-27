@@ -58,11 +58,10 @@ scaleFreePlot(K, main="Check scale free topology\n")
 
 
 
-#data=data[, rank(-K,ties.method="first" )<=100]
+data=data[, rank(-K,ties.method="first" )<=50]
 # Turn adjacency into a measure of dissimilarity
 diss.Adj=1-adjacency
 diss.tom=TOMdist(diss.Adj)
-
 
 
 ###
@@ -78,17 +77,20 @@ power=6
 diss=1-TOMsimilarityFromExpr( data)
 hier=hclust(as.dist(diss), method="average" )
 plot(hier)
+H=cutree(hier,5)
+H
+
 diag(diss) = NA;
 sizeGrWindow(7,7)
 TOMplot(diss^4, hier, 
         main = "TOM heatmap plot, module genes" )
-
+help(TOMplot)
 # Heatmap 2
 power=6
 diss=1-adjacency( data, power = 6 )
 hier=hclust(as.dist(diss), method="average" )
 diag(diss) = NA;
-sizeGrWindow(7,7)
+sizeGrWindow(9,7)
 TOMplot(diss^4, hier,
         main = "Adjacency heatmap plot, module genes" )
 
@@ -129,23 +131,26 @@ Coexpression<-function(datatype, plot, gene.number){
     
     data = as.data.frame(t(data))
     #data[1:784] = lapply(data[1:784], as.numeric) 
-    data[1:750] = lapply(data[1:750], as.numeric) 
+    size = dim(data)[2]
+
   } 
   else if (datatype == "Microarrays"){
     data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
     design = as.numeric(rep(c(1,2),each = 12)) #y
     data = as.data.frame(t(data))
-    data[1:1000] = lapply(data[1:1000], as.numeric) 
+    size = dim(data)[2]
   }
   else if (datatype == "RNAseq"){
     data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
     design = as.numeric(rep(c(1,2),each = 15)) #y
     data = as.data.frame(t(data))
-    data[1:1000] = lapply(data[1:1000], as.numeric) 
+    size = dim(data)[2]
+    
   }
   else{
     stop("Enter something that switches me!")   
   }
+  data[1:size] = lapply(data[1:size], as.numeric) 
   gene.names = colnames(data)
   cor.matrix= as.numeric(cor(design, data, use="p"))
   cor.matrix2 = cor(design,data,use='p')
@@ -159,16 +164,21 @@ Coexpression<-function(datatype, plot, gene.number){
   top = rank(GeneScreening$PearsonCorrelation,ties.method = "first")<=gene.number
   topGene= names(data)[top]
   
-  if (plot == "TOM heatmap plot"){
+  if (plot == "TOM module genes"){
+    data=data[, rank(-K,ties.method="first" )<=gene.number]
+    
     diss=1-TOMsimilarityFromExpr( data)
     hier=hclust(as.dist(diss), method="average" )
     plot(hier)
     diag(diss) = NA;
     sizeGrWindow(7,7)
-    TOMplot(diss^4, hier, 
+    TOMplot(diss^4, 
+            hier, 
             main = "TOM heatmap plot, module genes" )
   }
-  else if (plot == "Adjacency"){
+  else if (plot == "Adj module genes"){
+    data=data[, rank(-K,ties.method="first" )<=gene.number]
+    
     diss=1-adjacency( data, power = 6 )
     hier=hclust(as.dist(diss), method="average" )
     diag(diss) = NA;
@@ -191,6 +201,7 @@ Coexpression<-function(datatype, plot, gene.number){
   }
   
 }
-Coexpression("RNAseq","TOM network", 50)
-Coexpression("Microarrays","TOM heatmap plot", 50)
-Coexpression("Nanostring","TOM network", 750)
+Coexpression("RNAseq","TOM module genes", 5)
+Coexpression("Microarrays","Adj module genes", 5)
+Coexpression("Nanostring","TOM network", 50)
+Coexpression("Nanostring","Adjacency network", 50)
