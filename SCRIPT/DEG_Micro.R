@@ -29,7 +29,11 @@ for (tool in tools){
 row.names(data_to_comp) <- data_to_comp$Gene.ID
 data_to_comp <- data_to_comp[,-1]
 #head(data_to_comp)
+## test log10
+#data_to_comp = -log10(data_to_comp)
 
+
+##
 data_to_comp_Up = copy(data_to_comp)
 data_to_comp_Down = copy(data_to_comp)
 

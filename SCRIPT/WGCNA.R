@@ -162,6 +162,7 @@ Coexpression<-function(datatype, plot, gene.number){
   topGene= names(data)[top]
   
   if (plot == "TOM module genes"){
+    K=softConnectivity(datE=data,power=6) 
     data=data[, rank(-K,ties.method="first" )<=gene.number]
     
     diss=1-TOMsimilarityFromExpr( data)
@@ -174,6 +175,7 @@ Coexpression<-function(datatype, plot, gene.number){
             main = "TOM heatmap plot, module genes" )
   }
   else if (plot == "Adj module genes"){
+    K=softConnectivity(datE=data,power=6) 
     data=data[, rank(-K,ties.method="first" )<=gene.number]
     
     diss=1-adjacency( data, power = 6 )
@@ -198,7 +200,9 @@ Coexpression<-function(datatype, plot, gene.number){
   }
   
 }
-Coexpression("RNAseq","TOM module genes", 5)
-Coexpression("Microarrays","Adj module genes", 5)
-Coexpression("Nanostring","TOM network", 50)
-Coexpression("Nanostring","Adjacency network", 50)
+sizeGrWindow(10,5)
+par(mfrow=c(1,2))
+Coexpression("Nanostring","TOM module genes", 500)
+Coexpression("Nanostring","Adj module genes", 500)
+Coexpression("Nanostring","TOM network", 500)
+Coexpression("Nanostring","Adjacency network", 500)

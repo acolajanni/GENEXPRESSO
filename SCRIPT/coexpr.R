@@ -101,14 +101,6 @@ plot(G2, layout=LO2,
      label.font = 2)
 
 ############################################################################
-# WGCNA
-############################################################################
-library(WGCNA)
-
-#data = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
-
-
-############################################################################
 # Fonctions
 ############################################################################
 
@@ -208,7 +200,7 @@ Plot.relation.graph <-function(data){
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
 data_expr = data_expr[1:100,]
 ## Co-expression totale
-Total_Micro = Make.adjacencyPVal(data_expr, Fast = T)
+Total_Micro = Make.adjacencyPVal(data_expr, Fast = F)
 Plot.relation.graph(data_expr)
 
 #Co-expression grp1 - grp 2

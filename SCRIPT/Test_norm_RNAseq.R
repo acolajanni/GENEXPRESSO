@@ -163,7 +163,12 @@ PCA_tools(data_to_comp)
 ############################################################
 # UpsetPlot : 
 
-UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
+A = UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
+names = colnames(A)
+
+upset(A, sets = names, sets.bar.color = "#56B4E9",
+      order.by = "freq", 
+      empty.intersections = NULL )
 
 #____________________________________________________________
 # Pipeline d'analyse en fonction des packages :
@@ -238,6 +243,7 @@ B = estimateTagwiseDisp(B)
 B = exactTest(B)
 topTags(B)
 #____________________________________________________
+
 
 
 ################# ################# #################  DESeq(1)
