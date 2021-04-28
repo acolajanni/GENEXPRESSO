@@ -67,3 +67,6 @@ if (!requireNamespace("DESeq2", quietly = TRUE)){
 if (!requireNamespace("DESeq", quietly = TRUE)){
   BiocManager::install("DESeq")
 }
+if (!requireNamespace("madsim", quietly = TRUE)){
+  BiocManager::install("madsim")
+}

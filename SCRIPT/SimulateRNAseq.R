@@ -48,6 +48,17 @@ group = paste0(rep(c("control", "case"), each = 15),rep(c(1:15),each = 1))
 colnames(counts) = group
 counts = as.data.frame(counts)
 
+### V3 jeu de données
+counts1 <- as.data.frame(simulateRnaSeqData (n=100000,m=15,seed = 222))
+counts2 <- as.data.frame(simulateRnaSeqData (n=100000,m=15,seed = 200))
+counts=merge(counts1, counts2, by = "row.names", all = TRUE)
+row.names(counts)=counts$Row.names
+counts=counts[,-1]
+group = paste0(rep(c("control", "case"), each = 15),rep(c(1:15),each = 1))
+colnames(counts) = group
+data = as.data.frame(counts)
+
 #Exportation du jeu de donnees dans ~/GIT/DATA/RNASEQ
 write.csv(SimulRNASEQ,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", row.names = TRUE)
 write.csv(counts,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", row.names = TRUE)
+write.csv(counts,"~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", row.names = TRUE)

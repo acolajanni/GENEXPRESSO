@@ -188,15 +188,45 @@ Plot.relation.graph <-function(data){
   Isolated = which(degree(G)==0)
   G2 = delete.vertices(G, Isolated)
   LO2 = LO[-Isolated,]
-  plot(G2, 
+  plot = plot(G2, 
        edge.color = "black",
-       edge.width = 5,
+       edge.width = 3,
        vertex.size = 10,
        vertex.color = "white",
        label.color = "black",
        label.font = 2)
-  
+  return(G2)
 }
+
+########### Appel de fonctions
+RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
+RNA = RNA[1:50,]
+
+#Total_RNA = Make.adjacencyPVal(RNA)
+Total_RNA = Make.adjacency.graph(RNA)
+
+N = ncol(RNA)
+RNA_control = RNA[1:(N/2)]
+RNA_test = RNA[((N/2)+1):N]
+
+par(mfrow=c(1,3))
+# Plot total
+RNA_tot = Make.adjacency.graph(RNA)
+Plot.relation.graph(RNA)
+#Plot gr1
+RNA_C = Make.adjacency.graph(RNA_control)
+A = Plot.relation.graph(RNA_control)
+#Plot gr2
+RNA_T = Make.adjacency.graph(RNA_test)
+B = Plot.relation.graph(RNA_test)
+
+A$densite = graph.density(A)
+B$densite = graph.density(B)
+
+V(A)$degre = degree(A)
+E(A)$betw = edge.betweenness(A)
+
+
 
 ########### Appel de fonctions
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
@@ -245,24 +275,5 @@ Plot.relation.graph(Nano_Mutated)
 WT_Nano = Make.adjacency.graph(Nano_WildType)
 Plot.relation.graph(Nano_WildType)
 
-########### Appel de fonctions
-RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
 
-#Total_RNA = Make.adjacencyPVal(RNA)
-Total_RNA = Make.adjacency.graph(RNA)
-
-N = ncol(RNA)
-RNA_control = RNA[1:(N/2)]
-RNA_test = RNA[((N/2)+1):N]
-
-par(mfrow=c(1,3))
-# Plot total
-RNA_tot = Make.adjacency.graph(RNA)
-Plot.relation.graph(RNA)
-#Plot gr1
-RNA_C = Make.adjacency.graph(RNA_control)
-Plot.relation.graph(RNA_control)
-#Plot gr2
-RNA_T = Make.adjacency.graph(RNA_test)
-Plot.relation.graph(RNA_test)
 

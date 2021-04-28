@@ -135,7 +135,8 @@ tools_norm_RNAseq.inspect <- function(data,tool){
 # importation de notre jeu de données
 #data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ.csv", header = TRUE,row.names = 1)
 data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ1000x30.csv", header = TRUE,row.names = 1)
-
+data = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
+data = data[1:1000,]
 
 # Essai de la fonction sur un paramètre
 data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
