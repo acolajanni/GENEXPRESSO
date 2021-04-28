@@ -200,7 +200,7 @@ Coexpression<-function(datatype, plot, gene.number){
   }
   
 }
-sizeGrWindow(10,5)
+sizeGrWindow(5,5)
 par(mfrow=c(1,2))
 Coexpression("Nanostring","TOM module genes", 500)
 Coexpression("Nanostring","Adj module genes", 500)

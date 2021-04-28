@@ -353,7 +353,9 @@ PCA_tools <- function(data.to.comp){
   res.pca <- PCA(data.to.comp,graph=F)
   fviz_pca_ind (res.pca, col.ind = "cos2",
                 gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-                repel = TRUE)
+                repel = TRUE,
+                ggrepel.max.overlaps = 3)
+                
 }
 
 UpsetPlot <- function(data.to.comp, threshold, log = FALSE){

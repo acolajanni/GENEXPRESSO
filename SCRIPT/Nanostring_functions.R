@@ -133,10 +133,12 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
 
   method = paste0(tool_norm,"_",tool)
   
-  if (tool%in%c("RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")){
+  if (!tool%in%c("desq2")){
     group = table(samples.IDs$tp53.status)
     n1 = as.integer(group[1])
     n2 = as.integer(group[2])
+  }
+  if (tool%in%c("RankProduct", "RankSum")){
     design = rep(c(0,1),c(n1,n2))
   }
 
@@ -153,22 +155,19 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
 
                         resG <- results(dds, altHypothesis="greater", format = "DataFrame")
                         resL <- results(dds, altHypothesis="less", format = "DataFrame")
-                        
-                        res.diff = data.frame("DESeq2_greater"=(resG$padj),"DESeq2_less"=(resL$padj), "SYMBOL" = row.names(resG))
+                        head(resG)
+                        res.diff = data.frame("DESeq2_Up"=(resG$padj),"DESeq2_Down"=(resL$padj), "SYMBOL" = row.names(resG))
                         
                         #res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
                       },
 
                       limma = {
-                        group = table(samples.IDs$tp53.status)
-                        n1 = as.integer(group[1])
-                        n2 = as.integer(group[2])
-                        
+
                         design <- model.matrix(~0+samples.IDs$tp53.status)
                         colnames(design) <- c("A","B")
                         
                         res.diff = DEG_limma(data,design)
-                        res.diff = DEG_limma_alternative(res.diff)
+                        res.diff = DEG_alternative(res.diff)
                         
                         method_Up = paste0(tool_norm,"_",tool,"_Up")
                         method_Down = paste0(tool_norm,"_",tool,"_Down")
@@ -184,9 +183,6 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
                       },
                       
                       Wilcox = {
-                        group = table(samples.IDs$tp53.status)
-                        n1 = as.integer(group[1])
-                        n2 = as.integer(group[2])
                         res.diff = wilcoxDEG(data, n1, n2)
                         res.diff = res.diff[(-1)]
                         
@@ -196,33 +192,27 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
                         colnames(res.diff) = c(method_less, method_greater, "SYMBOL")
                       },
                       
-                      RankProduct.param1 = {
-                        res.diff = RankProducts(data, design, rand = 123, logged = FALSE, na.rm = TRUE ,calculateProduct = TRUE)
-                        res.diff = res.diff[["pval"]]
-                        
-                      },
-                      
-                      RankProduct.param2 = {
+                      RankProduct = {
                         res.diff = RankProducts(data, design, rand = 123, logged = TRUE , na.rm = TRUE , calculateProduct = TRUE)
                         res.diff = res.diff[["pval"]]
                         
                       },
-                      RankProduct.param3 = {
-                        res.diff = RankProducts(data, design, rand = 123,logged = FALSE ,na.rm = TRUE ,calculateProduct = FALSE)
-                        res.diff = res.diff[["pval"]]
-                        
-                      },
                       
-                      RankProduct.param4 = {
+                      RankSum = {
                         res.diff = RankProducts(data, design, rand = 123,logged = TRUE ,na.rm = TRUE ,calculateProduct = FALSE)
                         res.diff = res.diff[["pval"]]
-                        
                       },
                       
                       stop("Enter something that switches me!") 
           
   )
-  
+  if (tool%in%c("RankProduct","RankSum")){
+    res.diff = as.data.frame(res.diff)
+    res.diff$SYMBOL = row.names(data)
+    method_Up = paste0(method,"_Up")
+    method_Down = paste0(method,"_Down")
+    colnames(res.diff) = c(method_Up,method_Down,"SYMBOL")
+  }
   return(res.diff)
 }
 
@@ -242,11 +232,14 @@ RCC.dir <- file.path(data.dir,"GSE146204_RAW")
 raw <- RCC.dir
 samples.IDs <- raw.data$samples.IDs
 ##
-#tool = "nappa.NS" 
+#tool_norm = "nappa.NS" 
+#tool = "RankSum"
 #data = tools_norm.inspect(raw.data, "nappa.NS")
 
 tools_norm <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
-tools_diff = c("limma","Wilcox" )
+tools_norm <- c("nappa.NS","nanostringnorm.default","nanoR.top100","nanoR.total","nanostringR")
+
+tools_diff = c("limma","Wilcox","RankProduct","RankSum" )
 data.to.comp <- tools_DEG.inspect(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
 
 for (tool_norm in tools_norm){
@@ -292,5 +285,5 @@ upset(A, sets = names[1:11], sets.bar.color = "#56B4E9",
       empty.intersections = "on" )
 
 upset(A, sets = names[12:21], sets.bar.color = "#56B4E9",
-      order.by = "freq", empty.intersections = "on" )
+      order.by = "freq", empty.intersections = NULL)
 
