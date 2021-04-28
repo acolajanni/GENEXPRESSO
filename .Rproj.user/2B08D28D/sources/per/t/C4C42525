@@ -1,0 +1,24 @@
+{
+    "id": "C4C42525",
+    "path": "~/GitHub/CPRD/SCRIPT/setup.R",
+    "project_path": "SCRIPT/setup.R",
+    "type": "r_source",
+    "hash": "57106630",
+    "contents": "",
+    "dirty": false,
+    "created": 1619599235657.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "62,1",
+        "scrollLine": "40"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1619600086,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1619600086632,
+    "read_only": false,
+    "read_only_alternatives": []
+}
