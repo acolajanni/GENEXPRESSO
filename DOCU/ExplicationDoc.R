@@ -15,4 +15,5 @@
 # FIN
 
 # Essayer avec library()
-# NOTE : on peut utiliser Check dans Build pour vérifier si tout va bien dans la construction de notre package
+
+# NOTE : on peut utiliser Check dans Build pour vérifier si tout va bien dans la construction de notre package 
