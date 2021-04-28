@@ -223,13 +223,13 @@ tools.microarrays.inspect <- function(data,tool,n1,n2){
   DEG_Microarrays_tools.fnc <- switch(tool,
                                       GEOlimma = {
                                         res.diff = DEG_GEOlimma(data,design)
-                                        res.diff = DEG_limma_alternative(res.diff)
+                                        res.diff = DEG_alternative(res.diff)
                                         colnames(res.diff) = c("GEOlimma Up","GEOlimma Down","Gene.ID")
                                       },
                                       
                                       limma = {
                                         res.diff = DEG_limma(data,design)
-                                        res.diff = DEG_limma_alternative(res.diff)
+                                        res.diff = DEG_alternative(res.diff)
                                         colnames(res.diff) = c("limma Up","limma Down","Gene.ID")
                                         
                                       },
@@ -314,7 +314,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix = cm){
   return(res.diff_geolimma)
 }
 
-DEG_limma_alternative <- function(res.diff_limma){
+DEG_alternative <- function(res.diff_limma){
   
   res.up = copy(res.diff_limma)
   res.down = copy(res.diff_limma)

@@ -67,4 +67,3 @@ if (!requireNamespace("DESeq2", quietly = TRUE)){
 if (!requireNamespace("DESeq", quietly = TRUE)){
   BiocManager::install("DESeq")
 }
-aaa

@@ -68,7 +68,7 @@ names = colnames(A)
 
 upset(A, sets = names, sets.bar.color = "#56B4E9",
       order.by = "freq", 
-      empty.intersections = "on" )
+      empty.intersections = NULL )
 
 B = UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
 names = colnames(B)

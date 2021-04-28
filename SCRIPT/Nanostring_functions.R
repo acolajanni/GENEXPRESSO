@@ -8,7 +8,6 @@
 # Date de creation  : 18.04.2021
 #______________________________________________________________________________
 
-source(file.path("./SCRIPT","functionwilcoxtest.R"))
 source(file.path("./SCRIPT","functions.R"))
 
 tools_norm.inspect <- function(raw.data,tool,nanoR=F){
@@ -133,6 +132,13 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
   FOV <- raw.data$FOV
 
   method = paste0(tool_norm,"_",tool)
+  
+  if (tool%in%c("RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")){
+    group = table(samples.IDs$tp53.status)
+    n1 = as.integer(group[1])
+    n2 = as.integer(group[2])
+    design = rep(c(0,1),c(n1,n2))
+  }
 
 
   tools.fnc <- switch(tool,
@@ -142,28 +148,17 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
                         dds <- DESeqDataSetFromMatrix(countData = rcc.samples,
                                                       colData = samples.IDs,
                                                       design= ~ tp53.status)
+                        
                         dds <- DESeq(dds)
-                        res.diff <- results(dds)
+
+                        resG <- results(dds, altHypothesis="greater", format = "DataFrame")
+                        resL <- results(dds, altHypothesis="less", format = "DataFrame")
+                        
+                        res.diff = data.frame("DESeq2_greater"=(resG$padj),"DESeq2_less"=(resL$padj), "SYMBOL" = row.names(resG))
+                        
                         #res.diff <- data.frame(deseq2=-log10(res.diff$padj),SYMBOL=row.names(res.diff))
-                        res.diff <- data.frame(deseq2=(res.diff$padj),SYMBOL=row.names(res.diff))
-                        colnames(res.diff) = c("DESeq2", "SYMBOL")
                       },
-                      
-                      nanostringDiff={
-                        endogenous <- as.matrix(rcc.samples[grepl("Endog",annots.df$CodeClass),])
-                        positive <- as.matrix(rcc.samples[grepl("Pos",annots.df$CodeClass),])
-                        negative <- as.matrix(rcc.samples[grepl("Neg",annots.df$CodeClass),])
-                        housekeeping <- as.matrix(rcc.samples[grepl("House",annots.df$CodeClass),])
-                        NanoStringData <- createNanoStringSet(endogenous,positive,negative,housekeeping,samples.IDs)
-                        pheno <- pData(NanoStringData)
-                        group <- pheno$tp53.status
-                        design.full=model.matrix(~0+group)
-                        contrast <- c(1,-1)
-                        NanoStringData <- estNormalizationFactors(NanoStringData)
-                        result <- glm.LRT(NanoStringData,design.full,contrast=contrast)
-                        res.diff <- data.frame(NSDiff=result$table,SYMBOL=row.names(result$table))
-                      },
-                      
+
                       limma = {
                         group = table(samples.IDs$tp53.status)
                         n1 = as.integer(group[1])
@@ -173,14 +168,18 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
                         colnames(design) <- c("A","B")
                         
                         res.diff = DEG_limma(data,design)
+                        res.diff = DEG_limma_alternative(res.diff)
+                        
+                        method_Up = paste0(tool_norm,"_",tool,"_Up")
+                        method_Down = paste0(tool_norm,"_",tool,"_Down")
 
                         #fit <- lmFit(data,design)
                         #fit2 <- contrasts.fit(fit, cm)
                         #fit2 <- eBayes(fit2)
                         #res.diff <- topTable(fit2, coef="diff",genelist=row.names(data), number=Inf)
                         #res.diff <- data.frame(nanoR.total=-log10(res.diff$adj.P.Val),SYMBOL=res.diff$ID)
-                        res.diff <- data.frame(limma=(res.diff$PValue),SYMBOL=res.diff$SYMBOL)
-                        colnames(res.diff) = c(method, "SYMBOL")
+                        res.diff <- data.frame(A=(res.diff$PValue_Up), B=(res.diff$Pvalue_Down) ,SYMBOL=res.diff$SYMBOL)
+                        colnames(res.diff) = c(method_Up,method_Down, "SYMBOL")
 
                       },
                       
@@ -189,9 +188,35 @@ tools_DEG.inspect <- function(raw.data, tool, data, tool_norm) {
                         n1 = as.integer(group[1])
                         n2 = as.integer(group[2])
                         res.diff = wilcoxDEG(data, n1, n2)
-                        res.diff = res.diff[-(-1)]
+                        res.diff = res.diff[(-1)]
+                        
                         res.diff$SYMBOL = row.names(res.diff)
-                        colnames(res.diff) = c(method, "SYMBOL")
+                        method_less = paste0(tool_norm,"_",tool,"_less")
+                        method_greater = paste0(tool_norm,"_",tool,"_greater")
+                        colnames(res.diff) = c(method_less, method_greater, "SYMBOL")
+                      },
+                      
+                      RankProduct.param1 = {
+                        res.diff = RankProducts(data, design, rand = 123, logged = FALSE, na.rm = TRUE ,calculateProduct = TRUE)
+                        res.diff = res.diff[["pval"]]
+                        
+                      },
+                      
+                      RankProduct.param2 = {
+                        res.diff = RankProducts(data, design, rand = 123, logged = TRUE , na.rm = TRUE , calculateProduct = TRUE)
+                        res.diff = res.diff[["pval"]]
+                        
+                      },
+                      RankProduct.param3 = {
+                        res.diff = RankProducts(data, design, rand = 123,logged = FALSE ,na.rm = TRUE ,calculateProduct = FALSE)
+                        res.diff = res.diff[["pval"]]
+                        
+                      },
+                      
+                      RankProduct.param4 = {
+                        res.diff = RankProducts(data, design, rand = 123,logged = TRUE ,na.rm = TRUE ,calculateProduct = FALSE)
+                        res.diff = res.diff[["pval"]]
+                        
                       },
                       
                       stop("Enter something that switches me!") 
@@ -217,9 +242,11 @@ RCC.dir <- file.path(data.dir,"GSE146204_RAW")
 raw <- RCC.dir
 samples.IDs <- raw.data$samples.IDs
 ##
+#tool = "nappa.NS" 
+#data = tools_norm.inspect(raw.data, "nappa.NS")
 
 tools_norm <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
-tools_diff = c("limma", "Wilcox" )
+tools_diff = c("limma","Wilcox" )
 data.to.comp <- tools_DEG.inspect(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
 
 for (tool_norm in tools_norm){
