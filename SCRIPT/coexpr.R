@@ -106,25 +106,53 @@ plot(G2, layout=LO2,
 # Fonctions
 ############################################################################
 
-Cor.square.matrix <- function(data){
+Cor.square.matrix <- function(data, method){
+  
+  if (missing(method)){
+    method = "kendall"
+  }
+  
+  if (!method%in%c("pearson","kendall","spearman")){
+    stop("Enter something that switches me!")
+  }
+  
+  
   data_expr=as.data.frame(t(data))
-  result_correlation=cor(data_expr)
+  result_correlation=cor(data_expr, method = method)
   return(result_correlation)
 }
 
-Make.adjacency.graph <- function(data){
-  #data=as.data.frame(t(data))
-  result_correlation = Cor.square.matrix(data)
+TOM.square.matrix <- function(data){
+  data = t(as.data.frame(data))
+  row.number = nrow(data)
+  col.number = ncol(data)
+  obs.number = col.number*row.number
+  data[1:obs.number] = sapply(data[1:obs.number], as.numeric) 
+  TOM = TOMsimilarityFromExpr(data)
+  return(TOM)
+}
+
+
+Make.adjacency.graph <- function(data, method){
+  if (missing(method)){
+    method = "kendall"
+  }
+  result_correlation = Cor.square.matrix(data, method)
   list_correlation=melt(result_correlation)
   filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
   interaction = list_correlation[filtre,]
+  method = paste0("cor.",method)
+  colnames(interaction) = c("Var1", "Var2", method)
   return(interaction)
 }
 
-Make.adjacencyPVal <-function(data, Fast = F){
+Make.adjacencyPVal <-function(data, Fast = F, method){
   
   if (Fast == F){
-    interaction = Make.adjacency.graph(data)
+    interaction2 = Make.adjacency.graph(data, method = "spearman")
+    interaction1 = Make.adjacency.graph(data, method = "kendall")
+    interaction = merge(interaction1,interaction2, by = c("Var1","Var2"))
+    
     Cor_spe <- NULL
     Cor_ken <- NULL
   
@@ -143,7 +171,6 @@ Make.adjacencyPVal <-function(data, Fast = F){
       Cor_ken = c(Cor_ken, test_ken$p.value)
     }
     interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
-    colnames(interaction) = c("Gene1","Gene2","cor.level","PVal.Kendall","PVal.Spearman")
   } 
   else if (Fast == T){
     data = as.matrix(t(data))
@@ -151,7 +178,7 @@ Make.adjacencyPVal <-function(data, Fast = F){
     Pval = melt(Cor$p)
     Cor = melt(Cor$cor)
     interaction = cbind(Cor,PValue = Pval$value)
-    colnames(interaction) = c("Gene1","Gene2","cor.level","PValue")
+    colnames(interaction) = c("Gene1","Gene2","cor.pearson","PValue")
     
     filtre = as.character(interaction[,1])<as.character(interaction[,2])
     filtre2 = as.character(A[,1])<as.character(A[,2])
@@ -160,6 +187,8 @@ Make.adjacencyPVal <-function(data, Fast = F){
   
   return(interaction)
 }
+
+
 
 Make.relation.graph <- function(data){
   data = as.matrix(data)
@@ -200,8 +229,33 @@ Plot.relation.graph <-function(data){
 
 ########### Appel de fonctions
 RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
-RNA = RNA[1:50,]
+RNA = RNA[1:70,]
 
+
+kendall = Cor.square.matrix(RNA, method = "kendall")
+pearson = Cor.square.matrix(RNA, method = "pearson")
+spearman = Cor.square.matrix(RNA, method = "spearman")
+
+test = Make.adjacency.graph(RNA, "spearman")
+
+
+test = Make.adjacencyPVal(RNA, Fast = T)
+head(test)
+
+
+test = TOM.square.matrix(RNA)
+
+RNA = t(as.data.frame(RNA))
+row.number = nrow(RNA)
+col.number = ncol(RNA)
+obs.number = col.number*row.number
+RNA[1:obs.number] = sapply(RNA[1:obs.number], as.numeric) 
+head(RNA)
+diss = TOMsimilarityFromExpr(RNA)
+
+
+
+######################################################################
 #Total_RNA = Make.adjacencyPVal(RNA)
 Total_RNA = Make.adjacency.graph(RNA)
 
