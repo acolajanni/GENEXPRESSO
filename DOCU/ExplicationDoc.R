@@ -10,7 +10,7 @@
 # Mettre le titre, les paramètres, ce que ça return, avec pourquoi pas un exemple d'utilisation
 # Puis faire Install et restart (Build) => ensuite faire More => Document
 # Fichier man : liste des docs des fonctions du package créés (faire Preview pour voir une doc)
-# Pour voir la tête du package avec la doc de novuelles fonctions (fichier man), faire Install et restart.
+# Pour voir la tête du package avec la doc de novuelles fonctions (fichier man), faire Install et restart (il permettra d'être utilisé de manière générale dans R)
 # Puis aller dans Help => Home => Packages => Trouver le nom du package et cliquer dessus.
 # FIN
 
