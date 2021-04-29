@@ -142,7 +142,7 @@ Make.adjacency.table <- function(data, method){
   
   if (method == "TOM"){
     result_correlation = TOM.square.matrix(data)
-    method = "TOM.similiraty"
+    method = "TOM.similarity"
   }
   
   else{
@@ -241,13 +241,42 @@ Make.relation.matrix <- function(data){
   return(Matrix)
 }
 
-Make.df.graph<-function(data, threshold, method){
-  if (!method%in%c("pearson","kendall","spearman","TOM")){
+Make.df.graph<-function(data, threshold, method ){
+  
+  relations = Make.full.adjacency(data,PValue = F)
+
+  if (method == "spearman"){
+    cor = 'cor.spearman'
+  }
+  else if (method == "kendall"){
+    cor = "cor.kendall"
+  }
+  else if (method == "pearson"){
+    cor = "cor.pearson"
+  }
+  else if (method == "TOM"){
+    cor = "TOM.similarity"
+  }
+  else {
     stop("Enter something that switches me!")
   }
   
+  if (!method%in%c("TOM")){
+    relations[[cor]] = abs(relations[[cor]])
+  }
   
+  var1 = NULL
+  var2 = NULL
   
+  for (row in nrow(relations):1){
+    if (relations[[cor]][row] >= threshold) {
+      var1 = c(var1, toString(relations[["Var1"]][row]))
+      var2 = c(var2, toString(relations[["Var2"]][row]))
+    }
+  }
+  df.graph = data.frame(Var1 = var1, Var2 = var2)
+  df.graph = graph.data.frame(df.graph, directed = FALSE)
+  return(df.graph)
 }
 
 
@@ -272,39 +301,15 @@ Plot.relation.graph <-function(data){
 
 ########### Appel de fonctions
 RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
-RNA = RNA[1:70,]
-
-kendall = Cor.square.matrix(RNA, method = "kendall")
-pearson = Cor.square.matrix(RNA, method = "pearson")
-spearman = Cor.square.matrix(RNA, method = "spearman")
-
-test = Make.adjacency.table(RNA, "spearman")
+RNA = RNA[1:60,]
 
 
-test = Make.adjacencyPVal(RNA, Fast = F)
-test2 = Make.adjacencyPVal(RNA, Fast = T)
-head(test)
-head(test2)
-
-
-test2 = Cor.square.matrix(RNA)
-head(test2)
-test = TOM.square.matrix(RNA)
-row.names(test) = row.names(RNA)
-colnames(test) = row.names(RNA)
-head(test)
-
-test = TOM.square.matrix(RNA)
-test3 =Make.adjacency.table(RNA, method = "TOM")
-summary(test3$TOM.similiraty)
-
-test = Make.full.adjacency(RNA,PValue = T)
-head(test)
-RNA_cor = Make.full.adjacency(RNA,PValue = F)
-head(test2)
-
-
-
+spearman = Make.df.graph(RNA,0.83,"spearman")
+kendall = Make.df.graph(RNA,0.65,"kendall")
+TOM = Make.df.graph(RNA,0.25,'TOM')
+plot(spearman)
+plot(kendall)
+plot(TOM)
 
 ######################################################################
 #Total_RNA = Make.adjacencyPVal(RNA)
