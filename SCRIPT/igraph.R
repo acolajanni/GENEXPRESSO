@@ -4,6 +4,9 @@ d2 <- rbind(c(" A ", "F "), c(" A ", "D "), c(" A ", "C "), c(" C ", "I "))
 g1 <- graph.data.frame(d1, directed = FALSE)
 g2 <- graph.data.frame(d2, directed = FALSE)
 
+#g1 = spearman
+#g2 = kendall
+
 
 par(mfrow = c(1,2))
 plot(g1, main =  "g1" )
@@ -31,7 +34,7 @@ plot(compg1)
 #les attributs des sommets et du graphe sont conservés
 #attributs des liens sont perdus
 V(compg1)$degree
-compg1
+
 
 #fonction graph.difference premier réseau – deuxième réseau (opérateur %m%)
 #seuls les liens présents dans le premier réseau et non dans le deuxième sont conservés

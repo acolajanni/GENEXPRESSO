@@ -7,16 +7,16 @@
 # R version         : 3.6
 # Date de creation  : 16.04.2021
 #______________________________________________________________________________
-library("reshape2")
+
+#library("reshape2")
 #install.packages('igraph')
-library('igraph')
-library(data.table)
+#library('igraph')
+#library(data.table)
 source(file.path("./SCRIPT","functions.R"))
 
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarrays1000.csv", header = TRUE,row.names = 1)
 data_expr = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 
-test
 
 # la fonction cor() calcul les corrélation entre les colonnes et pas les lignes : 
 # il faut transposer la matrice et pour cela il existe la fonction t()
@@ -129,37 +129,50 @@ TOM.square.matrix <- function(data){
   obs.number = col.number*row.number
   data[1:obs.number] = sapply(data[1:obs.number], as.numeric) 
   TOM = TOMsimilarityFromExpr(data)
+  row.names(TOM) = row.names(RNA)
+  colnames(TOM) = row.names(RNA)
   return(TOM)
 }
 
 
-Make.adjacency.graph <- function(data, method){
+Make.adjacency.table <- function(data, method){
   if (missing(method)){
     method = "kendall"
   }
-  result_correlation = Cor.square.matrix(data, method)
+  
+  if (method == "TOM"){
+    result_correlation = TOM.square.matrix(data)
+    method = "TOM.similiraty"
+  }
+  
+  else{
+    result_correlation = Cor.square.matrix(data, method)
+    method = paste0("cor.",method)
+  }
+
   list_correlation=melt(result_correlation)
   filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
   interaction = list_correlation[filtre,]
-  method = paste0("cor.",method)
+
+  
   colnames(interaction) = c("Var1", "Var2", method)
   return(interaction)
 }
 
-Make.adjacencyPVal <-function(data, Fast = F, method){
+Make.adjacencyPVal <-function(data, Fast = F){
   
   if (Fast == F){
-    interaction2 = Make.adjacency.graph(data, method = "spearman")
-    interaction1 = Make.adjacency.graph(data, method = "kendall")
+    interaction2 = Make.adjacency.table(data, method = "spearman")
+    interaction1 = Make.adjacency.table(data, method = "kendall")
     interaction = merge(interaction1,interaction2, by = c("Var1","Var2"))
     
     Cor_spe <- NULL
     Cor_ken <- NULL
-  
     for (i in 1:nrow(interaction)){
       #print(i)
       A = toString(interaction[["Var1"]][i])
       A = as.vector(data[A,])
+
     
       B = toString(interaction[["Var2"]][i])
       B = as.vector(data[B,])
@@ -178,19 +191,39 @@ Make.adjacencyPVal <-function(data, Fast = F, method){
     Pval = melt(Cor$p)
     Cor = melt(Cor$cor)
     interaction = cbind(Cor,PValue = Pval$value)
-    colnames(interaction) = c("Gene1","Gene2","cor.pearson","PValue")
+    colnames(interaction) = c("Var1","Var2","cor.pearson","PVal.Pearson")
     
     filtre = as.character(interaction[,1])<as.character(interaction[,2])
-    filtre2 = as.character(A[,1])<as.character(A[,2])
+    filtre2 = as.character(interaction[,1])<as.character(interaction[,2])
     interaction = interaction[filtre,]
   }
   
   return(interaction)
 }
 
+Make.full.adjacency <- function(data, PValue = T){
+  
+  if (PValue == T){
+    interaction_Cor = Make.adjacencyPVal(data, Fast = F)
+    interaction_Fast = Make.adjacencyPVal(data, Fast = T)
+    interaction_Cor = merge(interaction_Cor,interaction_Fast, by = c("Var1","Var2"))
+  }
+  else {
+    interaction_spearman =  Make.adjacency.table(data, method = "spearman")
+    interaction_kendall =  Make.adjacency.table(data, method = "kendall")
+    interaction_pearson = Make.adjacency.table(data, method = "pearson")
+    interaction_Cor = merge(interaction_spearman,interaction_kendall,by = c("Var1","Var2"))
+    interaction_Cor = merge(interaction_Cor,interaction_pearson,by = c("Var1","Var2"))
+    
+  }
+  
+  interaction_TOM = Make.adjacency.table(data, method = "TOM")
+  interaction = merge(interaction_Cor, interaction_TOM, by = c("Var1","Var2"))
+  
+  return(interaction)
+}
 
-
-Make.relation.graph <- function(data){
+Make.relation.matrix <- function(data){
   data = as.matrix(data)
   Matrix = Cor.square.matrix(data)
   for (col in 1:ncol(Matrix)){
@@ -208,8 +241,18 @@ Make.relation.graph <- function(data){
   return(Matrix)
 }
 
+Make.df.graph<-function(data, threshold, method){
+  if (!method%in%c("pearson","kendall","spearman","TOM")){
+    stop("Enter something that switches me!")
+  }
+  
+  
+  
+}
+
+
 Plot.relation.graph <-function(data){
-  Matrix = Make.relation.graph(data)
+  Matrix = Make.relation.matrix(data)
   set.seed(12)
   G = graph_from_adjacency_matrix(Matrix, mode='undirected', diag=F)
   LO = layout_with_fr(G)
@@ -231,27 +274,35 @@ Plot.relation.graph <-function(data){
 RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
 RNA = RNA[1:70,]
 
-
 kendall = Cor.square.matrix(RNA, method = "kendall")
 pearson = Cor.square.matrix(RNA, method = "pearson")
 spearman = Cor.square.matrix(RNA, method = "spearman")
 
-test = Make.adjacency.graph(RNA, "spearman")
+test = Make.adjacency.table(RNA, "spearman")
 
 
-test = Make.adjacencyPVal(RNA, Fast = T)
+test = Make.adjacencyPVal(RNA, Fast = F)
+test2 = Make.adjacencyPVal(RNA, Fast = T)
+head(test)
+head(test2)
+
+
+test2 = Cor.square.matrix(RNA)
+head(test2)
+test = TOM.square.matrix(RNA)
+row.names(test) = row.names(RNA)
+colnames(test) = row.names(RNA)
 head(test)
 
-
 test = TOM.square.matrix(RNA)
+test3 =Make.adjacency.table(RNA, method = "TOM")
+summary(test3$TOM.similiraty)
 
-RNA = t(as.data.frame(RNA))
-row.number = nrow(RNA)
-col.number = ncol(RNA)
-obs.number = col.number*row.number
-RNA[1:obs.number] = sapply(RNA[1:obs.number], as.numeric) 
-head(RNA)
-diss = TOMsimilarityFromExpr(RNA)
+test = Make.full.adjacency(RNA,PValue = T)
+head(test)
+RNA_cor = Make.full.adjacency(RNA,PValue = F)
+head(test2)
+
 
 
 

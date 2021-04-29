@@ -18,6 +18,8 @@ suppressWarnings(library(RankProd))
 suppressWarnings(library(ggrepel))
 suppressWarnings(library(DESeq2))
 suppressWarnings(library(WGCNA))
+suppressWarnings(library("reshape2"))
+suppressWarnings(library('igraph'))
 source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
 source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
 
