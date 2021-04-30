@@ -159,39 +159,49 @@ Make.adjacency.table <- function(data, method){
   return(interaction)
 }
 
-Make.adjacencyPVal <-function(data, Fast = F){
+Make.adjacencyPVal <-function(data, Fast = F, method){
+  
   
   if (Fast == F){
-    interaction2 = Make.adjacency.table(data, method = "spearman")
-    interaction1 = Make.adjacency.table(data, method = "kendall")
-    interaction = merge(interaction1,interaction2, by = c("Var1","Var2"))
     
-    Cor_spe <- NULL
-    Cor_ken <- NULL
+    tools.coexpr <- switch(method,
+                           spearman = {
+                             interaction = Make.adjacency.table(data, method = "spearman")
+                           },
+                           
+                           kendall = {
+                             interaction = Make.adjacency.table(data, method = "kendall")
+                           },
+                           
+                           stop("Enter something that switches me!")
+                           
+    )
+
+    col.name = paste0("Pval.",method)
+    cor = NULL
+    
     for (i in 1:nrow(interaction)){
-      #print(i)
       A = toString(interaction[["Var1"]][i])
       A = as.vector(data[A,])
 
-    
       B = toString(interaction[["Var2"]][i])
       B = as.vector(data[B,])
     
-      test_spe = cor.test(as.numeric(A),as.numeric(B), method = "spearman")
-      Cor_spe = c(Cor_spe, test_spe$p.value)
-    
-      test_ken = cor.test(as.numeric(A),as.numeric(B), method = "kendall")
-      Cor_ken = c(Cor_ken, test_ken$p.value)
+      test = cor.test(as.numeric(A),as.numeric(B), method = method)
+      cor = c(cor, test$p.value)
+
     }
-    interaction = cbind(interaction,PVal.Kendall = Cor_ken, Pval.Spearman = Cor_spe )
+    interaction = cbind(interaction, Pval = cor )
+    colnames(interaction)[colnames(interaction) == "Pval"] = col.name 
   } 
+  
   else if (Fast == T){
     data = as.matrix(t(data))
     Cor = corAndPvalue(data) 
     Pval = melt(Cor$p)
     Cor = melt(Cor$cor)
     interaction = cbind(Cor,PValue = Pval$value)
-    colnames(interaction) = c("Var1","Var2","cor.pearson","PVal.Pearson")
+    colnames(interaction) = c("Var1","Var2","cor.pearson","PVal.pearson")
     
     filtre = as.character(interaction[,1])<as.character(interaction[,2])
     filtre2 = as.character(interaction[,1])<as.character(interaction[,2])
@@ -204,17 +214,18 @@ Make.adjacencyPVal <-function(data, Fast = F){
 Make.full.adjacency <- function(data, PValue = T){
   
   if (PValue == T){
-    interaction_Cor = Make.adjacencyPVal(data, Fast = F)
+    interaction_spearman = Make.adjacencyPVal(data, Fast = F, method = "spearman")
+    interaction_kendall = Make.adjacencyPVal(data, Fast = F, method = "kendall")
     interaction_Fast = Make.adjacencyPVal(data, Fast = T)
-    interaction_Cor = merge(interaction_Cor,interaction_Fast, by = c("Var1","Var2"))
+    
+    interaction_Cor = merge(interaction_spearman,interaction_kendall,by = c("Var1","Var2"))
+    interaction_Cor = merge(interaction_Cor,interaction_Fast,by = c("Var1","Var2"))                        
   }
   else {
     interaction_spearman =  Make.adjacency.table(data, method = "spearman")
     interaction_kendall =  Make.adjacency.table(data, method = "kendall")
-    interaction_pearson = Make.adjacency.table(data, method = "pearson")
-    interaction_Cor = merge(interaction_spearman,interaction_kendall,by = c("Var1","Var2"))
-    interaction_Cor = merge(interaction_Cor,interaction_pearson,by = c("Var1","Var2"))
     
+    interaction_Cor = merge(interaction_spearman,interaction_kendall,by = c("Var1","Var2"))
   }
   
   interaction_TOM = Make.adjacency.table(data, method = "TOM")
@@ -241,40 +252,68 @@ Make.relation.matrix <- function(data){
   return(Matrix)
 }
 
-Make.df.graph<-function(data, threshold, method ){
+Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = F, method ){
   
-  relations = Make.full.adjacency(data,PValue = F)
 
-  if (method == "spearman"){
-    cor = 'cor.spearman'
+  if (Pvalue.threshold == F){
+    tools.graph <- switch(method,
+                          spearman = {
+                            relations = Make.adjacency.table(data, method = "spearman")
+                            cor = 'cor.spearman' 
+                          },
+                          
+                          kendall = {
+                            relations = Make.adjacency.table(data, method = "kendall")
+                            cor = "cor.kendall"
+                          },
+                          
+                          TOM =  {
+                            relations = Make.adjacency.table(data, method = "TOM")
+                            cor = "TOM.similarity"
+                          },
+                          
+                          stop("Enter something that switches me!")
+    )
   }
-  else if (method == "kendall"){
-    cor = "cor.kendall"
-  }
-  else if (method == "pearson"){
-    cor = "cor.pearson"
-  }
-  else if (method == "TOM"){
-    cor = "TOM.similarity"
+  else { 
+    tools.graph <- switch(method,
+                          spearman = {
+                            relations = Make.adjacencyPVal(data, method = "spearman")
+                            cor = 'cor.spearman'
+                            pvalue = "Pval.spearman"
+                          },
+                          
+                          kendall = {
+                            relations = Make.adjacencyPVal(data, method = "kendall")
+                            cor = "cor.kendall"
+                            pvalue = "Pval.kendall"
+                          },
+                          
+                          TOM =  {
+                            relations = Make.adjacency.table(data, method = "TOM")
+                            cor = "TOM.similarity"
+                            Pvalue.threshold = F
+                          },
+                          
+                          stop("Enter something that switches me!")
+    )
+  }  
+   
+  if (method == "TOM"){
+    df.graph = subset(relations, relations[[cor]] >= cor.threshold)
   }
   else {
-    stop("Enter something that switches me!")
-  }
-  
-  if (!method%in%c("TOM")){
     relations[[cor]] = abs(relations[[cor]])
   }
   
-  var1 = NULL
-  var2 = NULL
-  
-  for (row in nrow(relations):1){
-    if (relations[[cor]][row] >= threshold) {
-      var1 = c(var1, toString(relations[["Var1"]][row]))
-      var2 = c(var2, toString(relations[["Var2"]][row]))
-    }
+  if (Pvalue.threshold == T){
+    df.graph = subset(relations, (relations[[cor]] >= cor.threshold) & (relations[[pvalue]] <= 0.05) )
   }
-  df.graph = data.frame(Var1 = var1, Var2 = var2)
+  else {
+    df.graph = subset(relations, relations[[cor]] >= cor.threshold)
+  }
+
+  df.graph = df.graph[-c(3:ncol(df.graph))]
   df.graph = graph.data.frame(df.graph, directed = FALSE)
   return(df.graph)
 }
@@ -299,43 +338,23 @@ Plot.relation.graph <-function(data){
   return(G2)
 }
 
+
+
 ########### Appel de fonctions
 RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,row.names = 1)
-RNA = RNA[1:60,]
+RNA = RNA[1:1000,]
 
 
-spearman = Make.df.graph(RNA,0.83,"spearman")
-kendall = Make.df.graph(RNA,0.65,"kendall")
-TOM = Make.df.graph(RNA,0.25,'TOM')
+
+spearman = Make.df.graph(RNA, cor.threshold = 0.83,Pvalue.threshold = F ,method = "spearman")
 plot(spearman)
-plot(kendall)
+
+TOM = Make.df.graph(RNA, cor.threshold = 0.25,method = "TOM")
 plot(TOM)
 
-######################################################################
-#Total_RNA = Make.adjacencyPVal(RNA)
-Total_RNA = Make.adjacency.graph(RNA)
-
-N = ncol(RNA)
-RNA_control = RNA[1:(N/2)]
-RNA_test = RNA[((N/2)+1):N]
-
-par(mfrow=c(1,3))
-# Plot total
-RNA_tot = Make.adjacency.graph(RNA)
-Plot.relation.graph(RNA)
-#Plot gr1
-RNA_C = Make.adjacency.graph(RNA_control)
-A = Plot.relation.graph(RNA_control)
-#Plot gr2
-RNA_T = Make.adjacency.graph(RNA_test)
-B = Plot.relation.graph(RNA_test)
-
-A$densite = graph.density(A)
-B$densite = graph.density(B)
-
-V(A)$degre = degree(A)
-E(A)$betw = edge.betweenness(A)
-
+kendall = Make.df.graph(RNA,  cor.threshold = 0.63,Pvalue.threshold = F,method = "kendall")
+#head(kendall)
+plot(kendall)
 
 
 ########### Appel de fonctions
