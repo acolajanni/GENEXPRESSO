@@ -6,15 +6,15 @@ g2 <- graph.data.frame(d2, directed = FALSE)
 
 g1 = spearman
 g2 = TOM
-g2 = kendall
+g3 = kendall
 lay = layout_with_lgl(g2)
 
 
-
-
-par(mfrow = c(1,2))
-plot(g1, main =  "g1" , layout = lay)
-plot(g2, main = "g2", layout = lay)
+dev.off()
+par(mfrow = c(1,3))
+plot(g1, main =  "spearman" , lay = layout_with_lgl(g1),vertex.label = NA)
+plot(g2, main = "TOM", layout = lay, vertex.label = NA)
+plot(g3, main = "kendall", layout = lay)
 
 #plot(g3, main = "g3", layout = lay)
 
@@ -28,6 +28,10 @@ plot(g2, main = "g2", layout = lay)
 #E(g1)$between <- edge.betweenness(g1)
 #E(g2)$between <- edge.betweenness(g2)
 #E(g3)$between <- edge.betweenness(g3)
+
+
+unionG1_G2 = graph.union(g1,g2) #opérateur %u%
+plot(unionG1_G2, layout = lay, main = "union")
 
 #ajout d’attributs au réseau : densité
 #g1$densite <- graph.density(g1)

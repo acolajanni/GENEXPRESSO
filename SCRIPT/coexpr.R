@@ -108,14 +108,9 @@ plot(G2, layout=LO2,
 
 Cor.square.matrix <- function(data, method){
   
-  if (missing(method)){
-    method = "kendall"
-  }
-  
   if (!method%in%c("pearson","kendall","spearman")){
     stop("Enter something that switches me!")
   }
-  
   
   data_expr=as.data.frame(t(data))
   result_correlation=cor(data_expr, method = method)
@@ -136,20 +131,27 @@ TOM.square.matrix <- function(data){
 
 
 Make.adjacency.table <- function(data, method){
-  if (missing(method)){
-    method = "kendall"
-  }
   
-  if (method == "TOM"){
-    result_correlation = TOM.square.matrix(data)
-    method = "TOM.similarity"
-  }
+  tools.coexpr <- switch(method,
+                         
+                         kendall = {
+                           result_correlation = Cor.square.matrix(data, method = "kendall")
+                           method = paste0("cor.",method)
+                         },
+                         
+                         spearman = {
+                           result_correlation = Cor.square.matrix(data, method = "spearman")
+                           method = paste0("cor.",method)
+                         },
+                         
+                         TOM = {
+                           result_correlation = TOM.square.matrix(data)
+                           method = "TOM.similarity"
+                         },
+                         
+                         stop("Enter something that switches me!")
+  )
   
-  else{
-    result_correlation = Cor.square.matrix(data, method)
-    method = paste0("cor.",method)
-  }
-
   list_correlation=melt(result_correlation)
   filtre = as.character(list_correlation[,1])<as.character(list_correlation[,2])
   interaction = list_correlation[filtre,]
@@ -234,23 +236,6 @@ Make.full.adjacency <- function(data, PValue = T){
   return(interaction)
 }
 
-Make.relation.matrix <- function(data){
-  data = as.matrix(data)
-  Matrix = Cor.square.matrix(data)
-  for (col in 1:ncol(Matrix)){
-    for (row in 1:nrow(Matrix)){
-      if (is.na(Matrix[col,row])){
-        Matrix[col,row] = 0
-      }
-      else if (Matrix[col,row] >= 0.75 || Matrix[col,row] <= -0.75){
-        Matrix[col,row] = 1
-      }else{
-        Matrix[col,row] = 0
-      }
-    }
-  }
-  return(Matrix)
-}
 
 Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = F, method ){
   
@@ -345,14 +330,15 @@ RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,r
 RNA = RNA[1:1000,]
 
 
+rna_test = Make.full.adjacency(RNA, PValue = F)
 
-spearman = Make.df.graph(RNA, cor.threshold = 0.83,Pvalue.threshold = F ,method = "spearman")
+spearman = Make.df.graph(RNA, cor.threshold = 0.7,Pvalue.threshold = F ,method = "spearman")
 plot(spearman)
 
-TOM = Make.df.graph(RNA, cor.threshold = 0.25,method = "TOM")
+TOM = Make.df.graph(RNA, cor.threshold = 0.3,method = "TOM")
 plot(TOM)
 
-kendall = Make.df.graph(RNA,  cor.threshold = 0.63,Pvalue.threshold = F,method = "kendall")
+kendall = Make.df.graph(RNA,  cor.threshold = 0.7,Pvalue.threshold = F,method = "kendall")
 #head(kendall)
 plot(kendall)
 
