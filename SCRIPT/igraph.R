@@ -137,13 +137,6 @@ graph.comparison <- function(g1,g2,g1.name,g2.name,diplay.graph = T){
         return(g)
 }
 
-graph.comparison3 <- function(g1,g2,g3,g1.name,g2.name,g3.name,diplay.graph = T){
-        
-        G1_G2 = comp.graph(spearman,TOM, "spearman", "TOM", T)
-        
-        
-        
-}
 
 
 
