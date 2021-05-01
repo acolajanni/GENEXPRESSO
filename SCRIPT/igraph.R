@@ -1,19 +1,27 @@
 d1 <- rbind(c(" A ", "B "),c(" A ", "C "), c(" B ", "C "), c(" A ", "D "), c(" D ", "E "))
 d2 <- rbind(c(" A ", "F "), c(" A ", "D "), c(" A ", "C "), c(" C ", "I "))
+d3<- rbind(c(" A ", "G "), c(" E ", "F "), c(" A ", "C "), c(" C ", "I "), c(" A ", "B "))
+
 
 g1 <- graph.data.frame(d1, directed = FALSE)
 g2 <- graph.data.frame(d2, directed = FALSE)
+g3 <- graph.data.frame(d3, directed = FALSE)
+
 
 g1 = spearman
 g2 = TOM
 g3 = kendall
+g2 = kendall
+
 lay = layout_with_lgl(g2)
 
+a = as_data_frame(g2,what = "edges")
+b = as_data_frame(g1,what = "edges")
 
 dev.off()
-par(mfrow = c(1,3))
+par(mfrow = c(1,2))
 plot(g1, main =  "spearman" , lay = layout_with_lgl(g1),vertex.label = NA)
-plot(g2, main = "TOM", layout = lay, vertex.label = NA)
+plot(g2, main = "TOM", lay = layout_with_lgl(g2), vertex.label = NA)
 plot(g3, main = "kendall", layout = lay)
 
 #plot(g3, main = "g3", layout = lay)
@@ -21,8 +29,8 @@ plot(g3, main = "kendall", layout = lay)
 #3 points communs (ACD) et deux liens communs (AD et AC)
 
 #ajout d’attributs : degré des sommets
-#V(g1)$degree <-  degree(g1)
-#V(g2)$degree <- degree(g2)
+V(g1)$degree <-  degree(g1)
+V(g2)$degree <- degree(g2)
 #V(g3)$degree <- degree(g3)
 #ajout d’attributs aux liens (intermédiarité)
 #E(g1)$between <- edge.betweenness(g1)
@@ -31,7 +39,188 @@ plot(g3, main = "kendall", layout = lay)
 
 
 unionG1_G2 = graph.union(g1,g2) #opérateur %u%
-plot(unionG1_G2, layout = lay, main = "union")
+
+
+# Graph 3 méthodes
+unionG1_G3 = graph.union(g1,g3)
+unionG2_G2 = graph.union(g2,g3)
+
+diffG1_g23 <- graph.difference(g1, unionG2_G2)
+G1_edges = as_data_frame(diffG1_g23,what = "edges")
+G1_edges$color = "darkgreen"
+
+diffG2_g13 <- graph.difference(g2, unionG1_G3)
+G2_edges = as_data_frame(diffG2_g13,what = "edges")
+G2_edges$color = "orange"
+
+diffG3_g12 <- graph.difference(g3, unionG1_G2)
+G3_edges = as_data_frame(diffG3_g12,what = "edges")
+G3_edges$color = "blue"
+
+
+test = rbind(G1_edges,G2_edges, G3_edges)
+g = graph.data.frame(test, directed = F)
+lay = layout_with_fr(g)
+
+plot(g, layout = lay,
+     edge.width = 1,
+     vertex.size = 2,
+     vertex.label = NA,
+     vertex.color = "white",
+     label.color = "black",
+     label.font = 2)
+
+plot(unionG1_G2, 
+     layout = lay,
+     main = "union",
+     edge.width = 1,
+     vertex.size = 2,
+     vertex.label = NA,
+     vertex.color = "white",
+     label.color = "black",
+     label.font = 2)
+
+
+
+graph.comparison <- function(g1,g2,g1.name,g2.name,diplay.graph = T){
+        diffg1 <- graph.difference(g1, g2)
+        diffg2 <- graph.difference(g2, g1)
+        interg1 <- graph.intersection(g1,g2, keep.all.vertices = T)
+        
+        G1_edges = as_data_frame(diffg1,what = "edges")
+        
+        if (nrow(G1_edges) != 0){
+                G1_edges$color = "blue"
+        }
+        
+        G2_edges = as_data_frame(diffg2,what = "edges")
+        if (nrow(G2_edges) != 0){
+                G2_edges$color = "darkgreen"
+        }
+        
+        
+        Common_edges = as_data_frame(interg1, what="edges")
+        if (nrow(Common_edges) != 0){
+
+                Common_edges = Common_edges[-c(3,4)]
+                Common_edges$color = "red"
+        }
+        
+        test = rbind(G1_edges,G2_edges, Common_edges)
+        
+        g = graph.data.frame(test, directed = F)
+        
+        if(diplay.graph == T){
+                plot(g, #layout = lay,
+                        edge.width = 2,
+                        vertex.size = 2,
+                        #vertex.label = NA,
+                        vertex.color = "white",
+                        label.color = "black",
+                        label.font = 2)
+        
+                inter = paste(g1.name, g2.name, "intersection")
+        
+                legend("bottomleft",
+                        #x=-1.5, y=-1.1,
+                        c(g1.name,g2.name,inter), 
+                        pch=18, 
+                        col=c("blue","darkgreen","red"), 
+                        pt.cex=0, #taille des bulles légendes 
+                        cex=.8, #taille de la police légende
+                        lty=c(1,1,1),
+                        lwd = 3,
+                        bty="n", #absence de cadre autour de la légende 
+                        ncol=1)
+        }
+        
+        return(g)
+}
+
+graph.comparison3 <- function(g1,g2,g3,g1.name,g2.name,g3.name,diplay.graph = T){
+        
+        G1_G2 = comp.graph(spearman,TOM, "spearman", "TOM", T)
+        
+        
+        
+}
+
+
+
+
+par(mfrow = c(1,2))
+A = graph.comparison(g1,g2, "g1", "g2", T)
+plot(A)
+B = as_data_frame(A,what = "edges")
+
+head(B)
+
+#TOM = g3
+
+# on prend la partie commune des deux premiers graphes pour calculer l'intersection au troisième
+# l'idée étant que, si c'est commun au 3, on peut le retirer du 3ème graph (facilite la suite)
+
+# 1 : on isole les points communs entre g1 et g2
+red = subset(B, B$color=="red")
+red = graph.data.frame(red, directed = F)
+
+# 2 : On prend le commun entre g1 et g2 et g3 ==> en noir
+black <- graph.intersection(TOM,red, keep.all.vertices = T)
+black = as_data_frame(black,what = "edges")
+black$color = "black"
+Gblack = graph.data.frame(black, directed = F)
+
+# On enlève les liens communs au trois de notre 3ème graph
+TOM = graph.difference(TOM,Gblack)
+# On enlève les liens rouges qui sont communs en trois (puisqu'ils seront en noirs)
+red = graph.difference(red,Gblack)
+
+# mise à jour des connexions rouges
+red = as_data_frame(red, what = "edges")
+B = subset(B,B$color!="red")
+
+
+# On isole les liens verts (unique à g2)
+green = subset(B,B$color=="darkgreen")
+green = graph.data.frame(green, directed = F)
+
+# On calcule l'intersection entre les liens verts et ceux du 3ème graph
+orange = graph.intersection(TOM,green)
+orange = as_data_frame(orange,what = "edges")
+orange$color = "orange"
+Gorange = graph.data.frame(orange, directed = F)
+
+# On retire ces liens au 3ème graph
+TOM = graph.difference(TOM,Gorange)
+
+# on fait pareil avec g1
+blue = subset(B,B$color=="blue")
+blue = graph.data.frame(blue, directed = F)
+
+grey = graph.intersection(TOM,blue)
+grey = as_data_frame(grey,what = "edges")
+grey$color = "grey"
+Ggrey = graph.data.frame(grey, directed = F)
+
+TOM = graph.difference(TOM,Ggrey)
+
+# On isole les connexions appartenant à g3 uniquement
+TOM = as_data_frame(TOM,what = "edges")
+TOM$color = "purple"
+Gtom = graph.data.frame(TOM, directed = F)
+
+head(B)
+head(TOM)
+
+grey$color = "green"
+
+# fusion des couleurs pour l'afficher dans un graph
+final = rbind(red, TOM, orange, grey, black, B)
+by(final, final$color, nrow)
+by(final, final$color, color)
+
+finalgraph = graph.data.frame(final,directed = F)
+plot(finalgraph, edge.width = 3)
 
 #ajout d’attributs au réseau : densité
 #g1$densite <- graph.density(g1)
@@ -71,7 +260,7 @@ test = rbind(G1_edges,G2_edges, Common_edges)
 
 
 g = graph.data.frame(test, directed = F)
-plot(g, layout = lay,
+plot(g, #layout = lay,
      edge.width = 1,
      vertex.size = 2,
      vertex.label = NA,

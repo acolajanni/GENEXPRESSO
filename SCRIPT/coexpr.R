@@ -332,13 +332,13 @@ RNA = RNA[1:1000,]
 
 rna_test = Make.full.adjacency(RNA, PValue = F)
 
-spearman = Make.df.graph(RNA, cor.threshold = 0.7,Pvalue.threshold = F ,method = "spearman")
+spearman = Make.df.graph(RNA, cor.threshold = 0.9,Pvalue.threshold = F ,method = "spearman")
 plot(spearman)
 
-TOM = Make.df.graph(RNA, cor.threshold = 0.3,method = "TOM")
+TOM = Make.df.graph(RNA, cor.threshold = 0.33,method = "TOM")
 plot(TOM)
 
-kendall = Make.df.graph(RNA,  cor.threshold = 0.7,Pvalue.threshold = F,method = "kendall")
+kendall = Make.df.graph(RNA,  cor.threshold = 0.75,Pvalue.threshold = F,method = "kendall")
 #head(kendall)
 plot(kendall)
 
