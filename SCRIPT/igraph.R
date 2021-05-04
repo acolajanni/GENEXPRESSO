@@ -82,7 +82,10 @@ plot(unionG1_G2,
 
 
 
+
 graph.comparison <- function(g1,g2,g1.name,g2.name,diplay.graph = T){
+
+        
         diffg1 <- graph.difference(g1, g2)
         diffg2 <- graph.difference(g2, g1)
         interg1 <- graph.intersection(g1,g2, keep.all.vertices = T)
@@ -136,7 +139,6 @@ graph.comparison <- function(g1,g2,g1.name,g2.name,diplay.graph = T){
         
         return(g)
 }
-
 
 
 

@@ -28,52 +28,28 @@ for (tool in tools){
 
 row.names(data_to_comp) <- data_to_comp$Gene.ID
 data_to_comp <- data_to_comp[,-1]
+data_to_comp = as.data.frame(t(data_to_comp))
 #head(data_to_comp)
 ## test log10
 #data_to_comp = -log10(data_to_comp)
 
 
-##
-data_to_comp_Up = copy(data_to_comp)
-data_to_comp_Down = copy(data_to_comp)
-
-for (i in ncol(data_to_comp):1){
-  if (i%%2 == 0){
-    # upregulated : condition A < condition B (donc upregulated = wilcox.test(A,B,"Less")) 
-    # Downregulated : condition A > condition B (si on prend A comme référence)
-    data_to_comp_Up = data_to_comp_Up[,-i]
-  }else{
-    data_to_comp_Down = data_to_comp_Down[,-i]
-  }
-}
-
-#head(data_to_comp_Down)
-#head(data_to_comp_Up)
-
-
-#on récupère le tableau semblable à MakeComparisonTable.R
-data_to_comp_Up = as.data.frame(t(data_to_comp_Up))
-data_to_comp_Down = as.data.frame(t(data_to_comp_Down))
-
-## PCA : 
-#data_to_comp = t(data_to_comp)
-#PCA_tools(data_to_comp)
-PCA_tools(data_to_comp_Up)
-PCA_tools(data_to_comp_Down)
+#Compute PCA
+PCA_tools(data_to_comp)
 
 ## Upsetplot : si erreur (pas d'intesection car très peu de gènes DE)
-par(mfrow=c(1,2))
-A = UpsetPlot(data.to.comp = data_to_comp_Down,threshold = 0.05)
-names = colnames(A)
+Upset = UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)
+methods = colnames(Upset)
 
-upset(A, sets = names, sets.bar.color = "#56B4E9",
+Upreg = methods[grepl("Up|less",methods)]
+Downreg = methods[grepl("Down|greater",methods)]
+
+upset(Upset, sets = Upreg, sets.bar.color = "#56B4E9",
       order.by = "freq", 
       empty.intersections = NULL )
 
-B = UpsetPlot(data.to.comp = data_to_comp_Up,threshold = 0.05)
-names = colnames(B)
 
-upset(B, sets = names, sets.bar.color = "#56B4E9",
+upset(Upset, sets = Downreg, sets.bar.color = "#56B4E9",
       order.by = "freq", 
       empty.intersections = NULL )
 

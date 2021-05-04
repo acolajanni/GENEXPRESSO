@@ -7,19 +7,20 @@ Scripts de tests : (à supprimer à terme)
 - Test_norm_microarray.R
 - testPaul.R
 - tesTJuliette.R
+- igraph.R
 (- SimulateNanostring.R)
 ___________________________________________________
 Scripts de fonctions à déplacer dans functions.R : 
 
 - functionwilcoxtest.R  OK
 - Nanostring_functions.R ==> à faire valider à la prochaine réunion
-- coexpr.R (pas tout à fait fini)
+- coexpr.R (pas tout à fait fini) 
 
 ___________________________________________________
 à finir : 
 
 - WGCNA.R
-- coexpr.R
+- coexpr.R (OK)
 ___________________________________________________
 scripts finaux (pipeline pour les 3 types de données): certains sont à renommer
 - DEG_micro.R ==> Analyse MicroArrays

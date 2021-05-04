@@ -19,8 +19,8 @@ source(file.path("./SCRIPT","functions.R"))
 # Fonctions
 ############################################################################
 
+
 Cor.square.matrix <- function(data, method){
-  
   
   if (!method%in%c("pearson","kendall","spearman")){
     stop("Enter something that switches me!")
@@ -231,7 +231,7 @@ Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = F, method ){
   return(df.graph)
 }
 
-
+#### Poubelle
 Plot.relation.graph <-function(data){
   Matrix = Make.relation.matrix(data)
   set.seed(12)
@@ -250,6 +250,7 @@ Plot.relation.graph <-function(data){
        label.font = 2)
   return(G2)
 }
+####
 
 relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
   
@@ -301,13 +302,14 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
     
     inter = paste(g1.name, g2.name, "intersection")
     
-    legend("bottomleft",
-           #x=-1.5, y=-1.1,
+    legend(#"bottomleft",
+           #"bottom",
+           x=-1.5, y=-1.1,
            c(g1.name,g2.name,inter), 
            pch=18, 
            col=c("blue","darkgreen","red"), 
            pt.cex=0, #taille des bulles légendes 
-           cex=.8, #taille de la police légende
+           cex=1.2, #taille de la police légende
            lty=c(1,1,1),
            lwd = 3,
            bty="n", #absence de cadre autour de la légende 
@@ -324,6 +326,7 @@ RNA = read.csv("~/GIT/CPRD/DATA/RNASEQ/SimulRNASEQ10000x30.csv", header = TRUE,r
 RNA = RNA[1:1000,]
 
 ## Co-expression totale
+memory.limit(75000000)
 Total_RNAseq = Make.full.adjacency(RNA, PValue = F)
 
 spearman = Make.df.graph(RNA, cor.threshold = 0.9,Pvalue.threshold = F ,method = "spearman")
@@ -332,13 +335,13 @@ spearman = Make.df.graph(RNA, cor.threshold = 0.9,Pvalue.threshold = F ,method =
 TOM = Make.df.graph(RNA, cor.threshold = 0.33,method = "TOM")
 #plot(TOM)
 
-kendall = Make.df.graph(RNA,  cor.threshold = 0.75,Pvalue.threshold = F,method = "kendall")
+kendall = Make.df.graph(RNA,  cor.threshold = 0.7,Pvalue.threshold = F,method = "kendall")
 #plot(kendall)
-
+dev.new()
 par(mfrow = c(1,3))
-CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM", "Kendall")
-CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM", "Spearman")
-CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman", "Kendall")
+CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM:0.33", "Kendall, cor = 0.75")
+CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM:0.33", "Spearman, cor = 0.9")
+CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman : cor=0.9", "Kendall: cor = 0.75")
 
 
 #Co-expression grp1 - grp 2
@@ -393,9 +396,9 @@ kendall = Make.df.graph(micro,  cor.threshold = 0.65,Pvalue.threshold = F,method
 plot(kendall)
 
 par(mfrow = c(1,3))
-CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM", "Kendall")
-CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM", "Spearman")
-CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman", "Kendall")
+CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM:0.2", "Kendall0.65")
+CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM:0.2", "Spearman:0.8")
+CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman:0.8", "Kendall:0.65")
 
 #Co-expression grp1 - grp 2
 # Formation des groupes
@@ -406,10 +409,11 @@ data.Grp2 = micro[((N/2)+1):N]
 #Graph d'adjacence
 
 #Méthode : Spearman
+dev.off()
 spearmanG1 = Make.df.graph(data.Grp1, cor.threshold = 0.85,Pvalue.threshold = F ,method = "spearman")
 spearmanG2 = Make.df.graph(data.Grp2, cor.threshold = 0.85,Pvalue.threshold = F ,method = "spearman")
 
-CompGraph_total = relations.comparison(spearmanG1, spearmanG2, "Control", "Case")
+CompGraph_total = relations.comparison(spearmanG1, spearmanG2, "Control:cor = 0.85", "Case")
 
 #Méthode : Kendall
 kendallG1 = Make.df.graph(data.Grp1, cor.threshold = 0.75,Pvalue.threshold = F ,method = "kendall")
@@ -456,9 +460,9 @@ kendall = Make.df.graph(Nano,  cor.threshold = 0.75,Pvalue.threshold = F,method 
 plot(kendall)
 
 par(mfrow = c(1,3))
-CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM", "Kendall")
-CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM", "Spearman")
-CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman", "Kendall")
+CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM:0.55", "Kendall:0.75")
+CompGraph_TOM_spearman = relations.comparison(TOM, spearman, "TOM:0.55", "Spearman:0.85")
+CompGraph_spearman_kendall = relations.comparison(spearman, kendall, "Spearman:0.85", "Kendall:0.75")
 
 #Co-expression grp1 - grp 2
 
@@ -468,19 +472,19 @@ dev.off()
 spearmanG1 = Make.df.graph(Nano_Mutated, cor.threshold = 0.9,Pvalue.threshold = F ,method = "spearman")
 spearmanG2 = Make.df.graph(Nano_WildType, cor.threshold = 0.9,Pvalue.threshold = F ,method = "spearman")
 
-CompGraph_total = relations.comparison(spearmanG1, spearmanG2, "Control", "Case")
+CompGraph_total = relations.comparison(spearmanG1, spearmanG2, "Mutated : spearman,cor=0.9", "WildType")
 
 #Méthode : Kendall
 kendallG1 = Make.df.graph(Nano_Mutated, cor.threshold = 0.75,Pvalue.threshold = F ,method = "kendall")
 kendallG2 = Make.df.graph(Nano_WildType, cor.threshold = 0.75,Pvalue.threshold = F ,method = "kendall")
 
-CompGraph_total = relations.comparison(kendallG1, kendallG2, "Control", "Case")
+CompGraph_total = relations.comparison(kendallG1, kendallG2, "Mutated", "WildType")
 
 #Méthode : TOM
-TomG1 = Make.df.graph(Nano_Mutated, cor.threshold = 0.55,Pvalue.threshold = F ,method = "TOM")
-TomG2 = Make.df.graph(Nano_WildType, cor.threshold = 0.55,Pvalue.threshold = F ,method = "TOM")
+TomG1 = Make.df.graph(Nano_Mutated, cor.threshold = 0.6,Pvalue.threshold = F ,method = "TOM")
+TomG2 = Make.df.graph(Nano_WildType, cor.threshold = 0.6,Pvalue.threshold = F ,method = "TOM")
 
-CompGraph_total = relations.comparison(TomG1, TomG2, "Control", "Case")
+CompGraph_total = relations.comparison(TomG1, TomG2, "Mutated : TOM=0.6", "WildType")
 
 # Tableaux d'adjacences
 Grp1_Micro = Make.full.adjacency(Nano_Mutated, PValue = F)
