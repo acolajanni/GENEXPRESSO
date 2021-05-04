@@ -140,7 +140,7 @@ data = data[1:1000,]
 
 # Essai de la fonction sur un paramètre
 data_to_comp = tools_norm_RNAseq.inspect(data,tool = 'edgeR_TMM')
-head(data_to_comp)
+#head(data_to_comp)
 ################################################################ 
 
 # De cette manière, on calcule les pvalue pour chacune de ces méthodes de normalisation
@@ -158,16 +158,16 @@ data_to_comp = as.data.frame(t(data_to_comp))
 
 ############################################################
 # PCA : 
-
+dev.new()
 PCA_tools(data_to_comp)
 
 ############################################################
 # UpsetPlot : 
+data_to_comp=data_to_comp[,1:1000]
+Upset = UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
+methods = colnames(Upset)
 
-A = UpsetPlot(data.to.comp = data_to_comp,threshold = 0.05)#, empty.intersections = "yes")
-names = colnames(A)
-
-upset(A, sets = names, sets.bar.color = "#56B4E9",
+upset(Upset, sets = methods, sets.bar.color = "#56B4E9",
       order.by = "freq", 
       empty.intersections = NULL )
 

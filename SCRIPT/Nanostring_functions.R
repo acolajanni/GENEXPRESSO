@@ -277,13 +277,17 @@ PCA_tools(data.to.comp)
 #UpsetPlot(data.to.comp, threshold = 0.05, log = F)
 
 ### ATTENTION, si vous lancez comme ça, vous risquez de planter
-A = UpsetPlot(data.to.comp,threshold = 0.05)
-names = colnames(A)
+Upset = UpsetPlot(data.to.comp,threshold = 0.05)
+methods = colnames(Upset)
 
-upset(A, sets = names[1:11], sets.bar.color = "#56B4E9",
+Upreg = methods[grepl("Up|less",methods)]
+Downreg = methods[grepl("Down|greater",methods)]
+
+dev.new()
+upset(Upset, sets = Upreg, sets.bar.color = "#56B4E9",
              order.by = "freq", 
-      empty.intersections = "on" )
+      empty.intersections = NULL )
 
-upset(A, sets = names[12:21], sets.bar.color = "#56B4E9",
-      order.by = "freq", empty.intersections = NULL)
-
+upset(Upset, sets = Downreg, sets.bar.color = "#56B4E9",
+      order.by = "freq", 
+      empty.intersections = NULL )

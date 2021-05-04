@@ -1,0 +1,18 @@
+Package: GENEXPRESSO 
+Type: Package
+Title: Comparison of DEG and coexpression tools
+Version: 0.1.0
+Authors@R: c(person("Antonin", "Colajanni", role = c("aut","cre"), email = "antonin.colajanni@gmail.com"), 
+              person("Anthony", "Kudin",role = c("aut","cre")), 
+              person("Paul", "Sourbe", role = c("aut","cre")), 
+              person("Tardivy--Casemejor", "Juliette", ,role = c("aut","cre")) )
+Author: Antonin Colajanni [aut, cre]
+Maintainer: Joe Developer <Joe.Developer@some.domain.net>
+Description: Comparison of DEG and coexpression tools for Nanostring, Microarrays and RNA-seq.
+Depends: R (>= 3.6.3)
+Encoding: UTF-8
+License: GPL-3 
+Imports: 
+  DEFormats, 
+  madsim
+RoxygenNote: 7.1.1
