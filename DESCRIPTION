@@ -1,4 +1,4 @@
-Package: GENEXPRESSO 
+Package: GENEXPRESSO
 Type: Package
 Title: Comparison of DEG and coexpression tools
 Version: 0.1.0
@@ -14,5 +14,7 @@ Encoding: UTF-8
 License: GPL-3 
 Imports: 
   DEFormats, 
-  madsim
+  madsim,
+  Rdpack
+RdMacros: Rdpack
 RoxygenNote: 7.1.1

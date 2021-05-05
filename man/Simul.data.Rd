@@ -2,7 +2,7 @@
 % Please edit documentation in R/Simulation.R
 \name{Simul.data}
 \alias{Simul.data}
-\title{Creates dataset}
+\title{Creates a dataset}
 \usage{
 Simul.data(type, n.cond1, n.cond2, nb.genes)
 }
