@@ -56,7 +56,7 @@ Lenght = round(runif(100, min=1000, max=9000))
 cqn = cqn(SimulRNASEQ, x = GC,  lengths = Lenght, sizeFactors = sizeF, verbose = TRUE)
 #normalisation
 cqnOffset <- cqn$glm.offset
-cqnNormFactors <- exp(cqnOffset)8
+cqnNormFactors <- exp(cqnOffset)
 
 #normGeom <- cqnNormFactors / exp(rowMeans(log(cqnNormFactors))) moy géométrique
 
