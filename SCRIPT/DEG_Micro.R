@@ -7,10 +7,8 @@
 # R version         : 3.6
 # Date de creation  : 16.03.2021
 #______________________________________________________________________________
+
 source(file.path("./SCRIPT","functions.R"))
-source(file.path("./SCRIPT","functionwilcoxtest.R"))
-
-
 
 micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/Simulmicroarraysname.csv", header = TRUE,row.names = 1)
 micro = read.csv("~/GIT/CPRD/DATA/MICROARRAYS/SimulmicroarraysBIG.csv", header = TRUE,row.names = 1)
