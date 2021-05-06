@@ -29,6 +29,10 @@ n1 <- 6
 n2 <- 6
 
 #Pour nanostring et rna seq, outils de normalisation : mettre liste
+#Outils normalisation : 
+# normalisation intégrée dans le package de production de données microarrays
+# rna seq : "EdgeR", "DESeq", "DESeq2"
+# nanostring : "NanostringNorm", "NAPPA", "NanostringR", "NanoR" et "DESeq2"
 norm <- "a completer"
 #Outils DEG : "Wilcox, "RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4", "GEOlimma" et/ou "limma"
 tools = c("GEOlimma", "Wilcox","RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")
