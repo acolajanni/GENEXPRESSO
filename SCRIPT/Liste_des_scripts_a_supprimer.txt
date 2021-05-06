@@ -23,9 +23,9 @@ ___________________________________________________
 - coexpr.R (OK)
 ___________________________________________________
 scripts finaux (pipeline pour les 3 types de données): certains sont à renommer
-- DEG_micro.R ==> Analyse MicroArrays
+- DEG_micro.R ==> Analyse MicroArrays   
 - functions.R
-- make_comparison_table.R ==> Analyse Nanostring
-- Test_norm_RNAseq.R ==> Analyse RNA-seq
+- make_comparison_table.R ==> Analyse Nanostring    (OK)
+- Test_norm_RNAseq.R ==> Analyse RNA-seq     (OK)
 - Coexpression / WGCNA ? (finir la coexpression avant)
 (- setup.R)
