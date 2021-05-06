@@ -26,6 +26,8 @@ A dataframe with genes in rows and pvalues of a gene being upregulated and downr
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 }
 \examples{
-
-
+# Import a dataset
+Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+# Compute Pvalues for the RankProduct method
+res.DEG = tools.DEG.Microarrays(Data,"RankProduct",15,15)
 }

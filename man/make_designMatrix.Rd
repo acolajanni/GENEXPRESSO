@@ -30,7 +30,7 @@ Model matrix.
 Creates a Model matrix.
 }
 \examples{
-
-ajouter un exemple
-
+# Using an existing dataset
+Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+design = make_designMatrix(dataset = Data, cond1 = "control", cond2 = "Case", ncond1 = 15, ncond2 = 15)
 }

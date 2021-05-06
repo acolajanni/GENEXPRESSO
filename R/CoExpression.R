@@ -51,6 +51,8 @@ Cor.square.matrix <- function(data, method){
 #' @param data Dataset of gene expression levels with genes in row and samples in columns
 #' 
 #' @return square matrix of TOM similarity measurements for each genes
+#' 
+#' @import "WGCNA"
 #' @export
 #'
 #' @examples
@@ -96,6 +98,8 @@ TOM.square.matrix <- function(data){
 #' 
 #' @return 
 #' Datraframe of three columns. Two first contains pair of genes, and the third one the correlation coefficient or the TOM similarity.
+#' 
+#' @import "reshape2"
 #' @export
 #'
 #' @examples
@@ -163,6 +167,8 @@ Make.adjacency.table <- function(data, method){
 #' @return 
 #' Dataframe with 4 columns. the two first are the pairs of genes,
 #' the other two are the correlation coefficients and the associated pvalue.
+#'
+#' @import "reshape2"
 #' @export
 #'
 #' @examples
@@ -298,6 +304,7 @@ Make.full.adjacency <- function(data, PValue = T){
 #' "TOM" uses the TOMsimilarityFromExpr() function from the WGCNA package.
 #'
 #' @return igraph class object
+#' @import "igraph"
 #' @export
 #'
 #' @examples

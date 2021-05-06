@@ -6,8 +6,7 @@ library(factoextra)
 library(FactoMineR)
 library(UpSetR)
 library(igraph)
-library(data.table)
-library(igraph)
+
 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
 #'
@@ -15,6 +14,8 @@ library(igraph)
 #' with tools used in row, and genes in columns
 #'
 #' @return Principal component analysis plot with cos2 values for each methods
+#' 
+#' @import "factoextra" "FactoMineR"
 #' @export
 #'
 #' @examples
@@ -74,6 +75,8 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' @param diplay Logical value.
 #' TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.
 #' @return igraph class object with colored edges.
+#' 
+#' @import "igraph"
 #' @export
 #'
 #' @examples

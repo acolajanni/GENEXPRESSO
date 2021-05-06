@@ -21,3 +21,9 @@ For the second condition has values that are less or greater than values of the 
 \description{
 Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.
 }
+\examples{
+# Import a dataset
+Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+# Compute Pvalues
+res.DEG = wilcoxDEG(Data,15,15)
+}

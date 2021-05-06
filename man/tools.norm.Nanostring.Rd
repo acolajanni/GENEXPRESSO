@@ -4,7 +4,7 @@
 \alias{tools.norm.Nanostring}
 \title{Normalize a Nanostring dataset}
 \usage{
-tools.norm.Nanostring(raw.data, tool, nanoR = F)
+tools.norm.Nanostring(raw.data, tool, nanoR = F, dir = NULL)
 }
 \arguments{
 \item{raw.data}{rcc type file. List of 4 elements: 
@@ -16,9 +16,13 @@ FOV is a dataframe that contains Field of views information.}
 \item{tool}{Normalization tool. "nappa.NS", "nappa.param1","nappa.param2","nappa.param3" are different parameters used with the NAPPA() function from the NAPPA package.
 "nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2" use the NanoStringNorm() normalization function from the package NanoStringNorm
 "nanostringR" uses the HKnorm() function from the package nanostringr.
-"nanoR.top100","nanoR.total" uses the nsNormalize() function from the nanoR package.}
+"nanoR.top100","nanoR.total" uses the nsNormalize() function from the nanoR package.
+For the nanoR package, it is needed to give the file path to rcc files}
 
 \item{nanoR}{Logical value. TRUE is necessary if the tool used is "nanoR.top100" or "nanoR.total". By default, the value is set on FALSE}
+
+\item{dir}{directory of rcc files. 
+This parameter is only necessary if the nanoR normalizations are wanted.}
 }
 \value{
 dataframe of normalized expression values
@@ -27,7 +31,11 @@ dataframe of normalized expression values
 Normalization through different methods in several packages
 }
 \examples{
-
+# Retrieve Nanostring Data
+Data = Simul.data(type = "Nanostring")
 # Normalizing data using one method :
-Norm.data = tools.norm.Nanostring(raw.data = data, tool = "nappa.NS")
+Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS",nanoR=F)
+#with nanoR
+RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nanoR.top100",dir = RCC.dir,nanoR=T)
 }

@@ -21,24 +21,43 @@ library(nanoR)
 #'  "nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2" use the NanoStringNorm() normalization function from the package NanoStringNorm
 #'  "nanostringR" uses the HKnorm() function from the package nanostringr.
 #'  "nanoR.top100","nanoR.total" uses the nsNormalize() function from the nanoR package.
+#'  For the nanoR package, it is needed to give the file path to rcc files
 #'
 #' @param nanoR Logical value. TRUE is necessary if the tool used is "nanoR.top100" or "nanoR.total". By default, the value is set on FALSE
+#' @param dir directory of rcc files. 
+#' This parameter is only necessary if the nanoR normalizations are wanted.
 #'
 #' @return dataframe of normalized expression values
+#' 
+#' @import "nanostringr" "NanoStringNorm" "NAPPA" "nanoR"
 #' @export
 #'
 #' @examples
 #' # Retrieve Nanostring Data
 #' Data = Simul.data(type = "Nanostring")
 #' # Normalizing data using one method :
-#' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
-tools.norm.Nanostring <- function(raw.data,tool,nanoR=F){
+#' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS",nanoR=F)
+#' #with nanoR
+#' RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+#' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nanoR.top100",dir = RCC.dir,nanoR=T)
+tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
   # if the method is "nanoR.top100" or "nanoR.total", the function needs other information contained in other files 
-  if (!nanoR){
+  if(!nanoR){
     rcc.samples <- raw.data$rcc.df
     annots.df <- raw.data$annots.df
     samples.IDs <- raw.data$samples.IDs
     FOV <- raw.data$FOV
+    dir = NULL
+  }
+  
+  if (missing(dir) & (nanoR = T)) {
+    data.dir <- "./DATA/NANOSTRING"
+    RCC.dir <- file.path(data.dir,"GSE146204_RAW")
+    samples.IDs <- raw.data$samples.IDs
+  }
+  else if(nanoR){
+    samples.IDs <- raw.data$samples.IDs
+    raw.data = dir
   }
   
   tools.fnc <- switch(tool,

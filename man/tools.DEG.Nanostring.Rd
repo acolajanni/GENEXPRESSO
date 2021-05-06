@@ -29,3 +29,11 @@ A dataframe with genes in rows and pvalues of a gene being upregulated and downr
 \description{
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 }
+\examples{
+# Retrieve Nanostring Data
+Data = Simul.data(type = "Nanostring")
+# Normalizing data using one method
+Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
+# Analyze normalized data with one DEG method
+res.DEG = tools.DEG.Nanostring(raw.data = Data, data = Norm.data, tool_norm = "nappa.NS", tool = "RankProduct")
+}

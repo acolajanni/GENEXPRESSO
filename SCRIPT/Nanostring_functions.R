@@ -11,12 +11,12 @@
 source(file.path("./SCRIPT","functions.R"))
 
 tools_norm.inspect <- function(raw.data,tool,nanoR=F){
-  if (!nanoR){
+  if(!nanoR){
     rcc.samples <- raw.data$rcc.df
     annots.df <- raw.data$annots.df
     samples.IDs <- raw.data$samples.IDs
     FOV <- raw.data$FOV
-  }
+  }  
   
   tools.fnc <- switch(tool,
                       nanostringR={
@@ -238,8 +238,13 @@ samples.IDs <- raw.data$samples.IDs
 
 tools_norm <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
 tools_norm <- c("nappa.NS","nanostringnorm.default","nanoR.top100","nanoR.total","nanostringR")
-
 tools_diff = c("limma","Wilcox","RankProduct","RankSum" )
+norm = tools_norm.inspect(raw,"nanoR.top100",nanoR = T)
+
+RCC.dir <- file.path(data.dir,"GSE146204_RAW")
+raw <- RCC.dir
+
+
 data.to.comp <- tools_DEG.inspect(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
 
 for (tool_norm in tools_norm){

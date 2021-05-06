@@ -16,7 +16,7 @@ Simul.data(type, n.cond1, n.cond2, nb.genes)
 \item{nb.genes}{Gene numbers}
 }
 \value{
-
+Dataframe of gene expression values
 }
 \description{
 Creates a dataset depending on the wanted data type
@@ -24,4 +24,8 @@ Creates a dataset depending on the wanted data type
 \examples{
 # To get a RNAseq type data with 1000 genes and 2 groups of 15 samples
 Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+# To get Microarray type data with 1000 genes and 2 groups of 15 samples
+Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+# To get the non simulated Nanostring data
+Data = Simul.data(type = "Nanostring")
 }

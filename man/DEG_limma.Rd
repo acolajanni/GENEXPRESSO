@@ -4,7 +4,7 @@
 \alias{DEG_limma}
 \title{Differentially expressed genes analysis through the limma package.}
 \usage{
-DEG_limma(dataset, design, contrast.matrix = cm)
+DEG_limma(dataset, design, contrast.matrix)
 }
 \arguments{
 \item{dataset}{dataframe of expression values with samples in columns and genes in row.}
@@ -20,4 +20,11 @@ the last column corresponds to the gene names given in the dataset (SYMBOL)
 }
 \description{
 Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the steps of the analysis.
+}
+\examples{
+# Import a dataset
+Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#Construct the design matrix
+design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
+res.DEG = DEG_limma(Data,design)
 }

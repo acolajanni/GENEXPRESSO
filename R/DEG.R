@@ -47,6 +47,8 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
 #' A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
 #' The Pvalue associated with this Pvalue (PValue)
 #' the last column corresponds to the gene names given in the dataset (SYMBOL)
+#' 
+#' @import "limma"
 #' @export
 #'
 #' @examples
@@ -84,6 +86,8 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #' A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
 #' The Pvalue associated with this Pvalue (PValue)
 #' the last column corresponds to the gene names given in the dataset (SYMBOL) 
+#' 
+#' @import "limma"
 #' @export
 #' @examples
 #' # Import a dataset
@@ -91,7 +95,10 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #' #Construct the design matrix
 #' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
 #' res.DEG = DEG_GEOlimma(Data,design)
-DEG_GEOlimma <- function(dataset,design, contrast.matrix = cm){
+DEG_GEOlimma <- function(dataset,design, contrast.matrix){
+  source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
+  source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
+  
   if(missing(contrast.matrix)){
     cm <- makeContrasts(diff = B-A, levels=design)
   }
@@ -208,6 +215,8 @@ wilcoxDEG <- function(data, n1, n2){
 #'
 #' @return
 #' A dataframe with genes in rows and pvalues of a gene being upregulated and downregulated in columns
+#' 
+#' @import "RankProd" "limma" 
 #' @export
 #'
 #' @examples
@@ -312,6 +321,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
 #' @return 
 #' A dataframe with genes in rows and pvalues of a gene being upregulated and downregulated in columns
 #' 
+#' @import "DESeq2" "RankProd" "limma"
 #' @export
 #'
 #' @examples 
@@ -425,6 +435,8 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #'
 #' @return
 #' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene. 
+#' 
+#' @import "DESeq2" "DESeq" "edgeR"
 #' @export
 #'
 #' @examples
@@ -542,14 +554,14 @@ tools.DEG.RNAseq <- function(data,tool){
     res.diff2 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
     res.diff = merge(res.diff1,res.diff2,by = "genes",all=T)
     
-    # On renaming the two last columns
+    # Renaming the two last columns
     names(res.diff)[-1][-2] = colname1
     names(res.diff)[-1][-1] = colname2
   }
   return(res.diff)
 }
 
-#' Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq
+#' Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
 #'
 #' @param data 
 #' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
@@ -570,7 +582,6 @@ tools.DEG.RNAseq <- function(data,tool){
 #' tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
 #' res.DEG = tools.DEG.RNAseq.merge(data = Data, tools = tools)
 tools.DEG.RNAseq.merge <- function(data,tools){
-  
   if(missing(tools)){
     tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq")
   }
@@ -590,4 +601,135 @@ tools.DEG.RNAseq.merge <- function(data,tools){
   data_to_comp = as.data.frame(t(data_to_comp))
   return(data_to_comp)
 }
+
+#' Merge the DEG Pvalues for each tool used by tools.DEG.Nanostring in one dataframe
+#'
+#' @param tools_DEG Method to use to compute the pvalues of differentially expressed genes.
+#' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
+#' "limma" uses the functions DEG_limma() that comes from the limma pacakge
+#' "RankProduct" and "RankSum" perform respectively a Rank Product and a Rank Sum analysiswith the RankProducts() function from the RankProd package
+#'   
+#' @param tools_norm Normalization tool. "nappa.NS", "nappa.param1","nappa.param2","nappa.param3" are different parameters used with the NAPPA() function from the NAPPA package.
+#'  "nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2" use the NanoStringNorm() normalization function from the package NanoStringNorm
+#'  "nanostringR" uses the HKnorm() function from the package nanostringr.
+#'  "nanoR.top100","nanoR.total" uses the nsNormalize() function from the nanoR package.
+#'  For the nanoR package, it is needed to give the file path to rcc files
+#'  
+#' @param DESeq logical values.
+#' TRUE to use DESeq2 DEG analysis with its own normalization
+#' 
+#' 
+#' @param raw.data rcc type file. List of 4 elements: 
+#' Samples.IDs is a dataframe with four columns: sample name, status (WildType, Mutated), filename. 
+#' rcc.df contains expression levels with samples in column and genes in rows. 
+#' annots.df is a dataframe with 3 columns: geneclass (endogenous, housekeeping, negative, positive), gene name, and the accession number. 
+#' FOV is a dataframe that contains Field of views information.
+#' 
+#' @param dir directory of rcc files. 
+#' This parameter is only necessary if the nanoR normalizations are wanted.
+#'
+#' @return 
+#' Dataframe with genes in columns and as many rows as there is possible combination of methods
+#' @export
+#'
+#' @examples
+#' # Retrieve gene expression data from Nanostring
+#' raw.data = Simul.data(type = "Nanostring")
+#' 
+#' # Compute the DEG pvalues with all the possible methods
+#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data)
+#' 
+#' # Compute the DEG pvalues with only NanoR top100 normalization and Wilcoxon's test only
+#' RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,"Wilcox","nanoR.top100",DESeq = F, dir = RCC.dir)
+tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir = NULL){
+  # By default, all the possible normalization methods are computed
+  if (missing(tools_norm)){
+    tools_norm <- c("nappa.NS","nappa.param1", "nappa.param2","nappa.param3","nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2","nanoR.top100","nanoR.total","nanostringR")
+  }
+  # Same for the DEG analysis methods
+  if (missing(tools_DEG)){
+    tools_DEG = c("limma","Wilcox","RankProduct","RankSum" )
+  }
   
+  # To create the dataframe, it is easier to start with DESeq2 since this analysis uses an integrated normalization method
+  # Otherwise, a dataframe with one column with genes is conserved to merge further methods with it
+  if(DESeq){
+    print("DESeq2")
+    data.to.comp <- tools.DEG.Nanostring(raw.data = raw.data,data =  raw.data, tool = "desq2", tool_norm = NULL)
+  }
+  else{
+    data.to.comp = data.frame(SYMBOL = row.names(raw.data$rcc.df))
+  }
+  # For each normalization tool, the data are modified in order to be analyzed with a DEG method.
+  for (tool_norm in tools_norm){
+    nanoR=F
+    raw <- raw.data
+    dir = NULL
+    # nanoR methods needs a particular setup. It needs the directory parameters passed in parameters
+    if (tool_norm%in%c("nanoR.top100","nanoR.total")){
+      nanoR <- T
+      dir = RCC.dir
+    }
+    # the normalized dataset is computed
+    tmp <- tools.norm.Nanostring(raw,tool_norm,nanoR = nanoR, dir = dir)
+    # Now it can be analyzed with each DEG tools
+    for (tool_diff in tools_DEG){
+      print(paste(c(tool_norm, tool_diff)))
+      tmp2 = tools.DEG.Nanostring(raw.data = raw.data, data =  tmp, tool = tool_diff, tool_norm = tool_norm)
+      # adding the pvalues by merging with the SYMBOL columns that contains the genes
+      data.to.comp <- merge(data.to.comp,tmp2,by="SYMBOL",all=T) 
+    }
+  }
+  # The gene column is placed as row names
+  row.names(data.to.comp) <- data.to.comp$SYMBOL
+  data.to.comp <- data.to.comp[,-1]
+  # if you need to remove genes not present in all analyses: NA (missing) data
+  data.to.comp <- na.omit(data.to.comp)
+  # we obtain a dataframe with genes in columns and methods in rows
+  data.to.comp <- as.data.frame(t(data.to.comp))
+  return(data.to.comp)
+}
+
+
+#' Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
+#'  
+#'  @param data 
+#'  Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
+#'  @param tool Different methods used to compute pvalues of differentially expressed genes for microarrays
+#' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
+#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
+#' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+#' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+#' @param n1 Number of sample for the first experimental condition
+#' @param n2 Number of sample for the second experimental condition
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 100)
+#' # Compute Pvalues for all the methods 
+#' res.DEG = tools.DEG.Microarrays.merge(Data)
+tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
+  # By default, all the implemented methods are used
+  if (missing(tools)){
+    tools = c("limma", "GEOlimma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
+  }
+  if (missing(n1)){
+    n1=ncol(data)/2
+  }
+  if (missing(n2)){
+    n2=ncol(data)/2
+  }
+  # Creating the dataframe with only genes in it to merge further results with it
+  data_to_comp = data.frame(Gene.ID = row.names(data))
+  
+  for (tool in tools){
+    print(tool)
+    tmp = tools.DEG.Microarrays(data,tool,n1, n2)
+    data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
+  }
+  return(data_to_comp)
+}
