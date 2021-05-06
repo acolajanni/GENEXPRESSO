@@ -7,6 +7,7 @@ library(FactoMineR)
 library(UpSetR)
 library(igraph)
 library(data.table)
+library(igraph)
 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
 #'
@@ -60,4 +61,98 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   }
   Upset = as.data.frame(t(Upset))
   return(Upset)
+}
+
+#' Producing an igraph network with different colors to compare two networks with igraph
+#'
+#' For two graphs, red edges will be the common ones. It is used to compare two methods with one another, or two experimental conditions of a same set of genes for example. 
+#'
+#' @param g1 igraph class object.
+#' @param g2 igraph class object.
+#' @param g1.name Character string to be displayed on the legend of the graph for the first graph.
+#' @param g2.name Character string to be displayed on the legend of the graph for the second graph.
+#' @param diplay Logical value.
+#' TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.
+#' @return igraph class object with colored edges.
+#' @export
+#'
+#' @examples
+#' # Creating two datasets
+#' df = matrix(runif(500, 10, 100), ncol=20)
+#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=1))
+#' colnames(df) = group
+#' row.names(df) = genes
+#' # Computing relation network
+#' G.spearman = Make.df.graph(df1, cor.threshold = 0.5, Pvalue.threshold = F, method = "spearman")
+#' G.TOM = Make.df.graph(df1, cor.threshold = 0.05, Pvalue.threshold = F, method = "TOM")
+#' # Comparing both relation network
+#' G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM, g1.name = "Spearman", g2.name = "TOM similarity", diplay = T)
+relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
+  # by default parameters
+  if (missing(g1.name)){
+    g1.name = "g1"
+  }
+  if (missing(g2.name)){
+    g1.name = "g2"
+  }
+  if(missing(diplay)){
+    diplay = TRUE
+  }
+  # finding g1 exclusive edges
+  diffg1 <- graph.difference(g1, g2)
+  # finding g2 exclusive edges
+  diffg2 <- graph.difference(g2, g1)
+  # finding common edges
+  interg1 <- graph.intersection(g1,g2, keep.all.vertices = T)
+  # converting igraph class object in dataframe to add a "color" associated column 
+  G1_edges = as_data_frame(diffg1,what = "edges")
+  # by default, G1 exclusive edes, will be blue
+  if (nrow(G1_edges) != 0){
+    G1_edges$color = "blue"
+  }
+  # G2, exclusive will be green
+  G2_edges = as_data_frame(diffg2,what = "edges")
+  if (nrow(G2_edges) != 0){
+    G2_edges$color = "darkgreen"
+  }
+  
+  # Common edges will be red
+  Common_edges = as_data_frame(interg1, what="edges")
+  if (nrow(Common_edges) != 0){
+    
+    Common_edges = Common_edges[-c(3,4)]
+    Common_edges$color = "red"
+  }
+  # merging the three graph 
+  # This object is equivalent to the union of both graph, but with specified colored edges 
+  graph = rbind(G1_edges,G2_edges, Common_edges)
+  # Converting back the dataframe into an igraph class object
+  g = graph.data.frame(graph, directed = F)
+  # Diplay or not the graph in the plot window.
+  if(diplay){
+    plot(g, #layout = lay,
+         edge.width = 2,
+         vertex.size = 2,
+         vertex.label = NA,
+         vertex.color = "white",
+         label.color = "black",
+         label.font = 2)
+    
+    inter = paste(g1.name, "and", g2.name, "intersection")
+    
+    legend(#"bottomleft",
+      #"bottom",
+      x=-1.5, y=-1.1,
+      c(g1.name,g2.name,inter), 
+      pch=18, 
+      col=c("blue","darkgreen","red"), 
+      pt.cex=0, #size of dots in the legend
+      cex=1.2, #font size
+      lty=c(1,1,1),
+      lwd = 3,
+      bty="n", #no frame around the legend
+      ncol=1)
+  }
+  return(g)
 }

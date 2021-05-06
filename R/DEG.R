@@ -23,9 +23,9 @@ source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
 #' @export
 #'
 #' @examples
-#' 
-#' ajouter un exemple
-#' 
+#' # Using an existing dataset
+#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' design = make_designMatrix(dataset = Data, cond1 = "control", cond2 = "Case", ncond1 = 15, ncond2 = 15)
 make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(dataset)/2),ncond2=(ncol(dataset)/2)){
   status.control = rep(cond1,ncond1)
   status.test = rep(cond2,ncond2)
@@ -50,7 +50,12 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
 #' @export
 #'
 #' @examples
-DEG_limma <- function(dataset,design, contrast.matrix = cm){
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' #Construct the design matrix
+#' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
+#' res.DEG = DEG_limma(Data,design)
+DEG_limma <- function(dataset,design, contrast.matrix){
   if(missing(contrast.matrix)){
     cm <- makeContrasts(diff = B-A, levels=design)
   }
@@ -81,8 +86,11 @@ DEG_limma <- function(dataset,design, contrast.matrix = cm){
 #' the last column corresponds to the gene names given in the dataset (SYMBOL) 
 #' @export
 #' @examples
-#' 
-#' 
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' #Construct the design matrix
+#' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
+#' res.DEG = DEG_GEOlimma(Data,design)
 DEG_GEOlimma <- function(dataset,design, contrast.matrix = cm){
   if(missing(contrast.matrix)){
     cm <- makeContrasts(diff = B-A, levels=design)
@@ -116,8 +124,12 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix = cm){
 #' @export
 #'
 #' @examples
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' #Construct the design matrix
+#' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
 #' #get the results of limma analysis
-#' res.diff = DEG_limma(dataset,design, contrast.matrix = cm)
+#' res.diff = DEG_limma(dataset = Data,design)
 #' #compute the results of alternative hypothesis
 #' res.diff.alternative = DEG_alternative(res.diff)
 DEG_alternative <- function(res.diff_limma){
@@ -155,6 +167,10 @@ DEG_alternative <- function(res.diff_limma){
 #' @export
 #'
 #' @examples
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # Compute Pvalues
+#' res.DEG = wilcoxDEG(Data,15,15)
 wilcoxDEG <- function(data, n1, n2){
   wilcox <- data.frame()
   # for each row in the dataset, three Wilconxon test are made, depending on the hypothesis.
@@ -195,8 +211,10 @@ wilcoxDEG <- function(data, n1, n2){
 #' @export
 #'
 #' @examples
-#' 
-#' 
+#' # Import a dataset
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # Compute Pvalues for the RankProduct method
+#' res.DEG = tools.DEG.Microarrays(Data,"RankProduct",15,15)
 tools.DEG.Microarrays <- function(data,tool,n1,n2){
   if (tool == "GEOlimma" || tool == "limma"){
     design = make_designMatrix(dataset = data)
@@ -296,7 +314,13 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
 #' 
 #' @export
 #'
-#' @examples
+#' @examples 
+#' # Retrieve Nanostring Data
+#' Data = Simul.data(type = "Nanostring")
+#' # Normalizing data using one method
+#' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
+#' # Analyze normalized data with one DEG method
+#' res.DEG = tools.DEG.Nanostring(raw.data = Data, data = Norm.data, tool_norm = "nappa.NS", tool = "RankProduct")
 tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
   
   rcc.samples <- raw.data$rcc.df
@@ -404,8 +428,11 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #' @export
 #'
 #' @examples
-#' 
-tools.DEG.RNAseq.inspect <- function(data,tool){
+#' # Import a RNA seq dataset
+#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # computing pvalues of DEG with TMM normalization method
+#' res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
+tools.DEG.RNAseq <- function(data,tool){
   data = as.matrix(data)
   # One column dataframe with genes inside
   res.diff = data.frame("genes" = row.names(data))
@@ -521,3 +548,46 @@ tools.DEG.RNAseq.inspect <- function(data,tool){
   }
   return(res.diff)
 }
+
+#' Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq
+#'
+#' @param data 
+#' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
+#' @param tools list character string.
+#' By default all the methods present in tools.DEG.RNAseq() are used.
+#' Any tools given in this list could be apssed as argument : 
+#' "edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq"
+#' @return 
+#' Dataframe of DEG pvalues with genes in columns and tools in rows.
+#' @export
+#'
+#' @examples
+#' # Import a RNA seq dataset
+#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # Compute all the possible pvalues
+#' res.DEG = tools.DEG.RNAseq.merge(Data)
+#' # Compute the pvalues, only with edgeR methods
+#' tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
+#' res.DEG = tools.DEG.RNAseq.merge(data = Data, tools = tools)
+tools.DEG.RNAseq.merge <- function(data,tools){
+  
+  if(missing(tools)){
+    tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq")
+  }
+
+  data_to_comp = data.frame(genes = row.names(data))
+  for (tool in tools){
+    # for each tool, the corresponding analysis is computed
+    print(tool)
+    tmp = tools.DEG.RNAseq(data,tool)
+    # the pvalue column associated to the tool is added
+    data_to_comp = merge(data_to_comp,tmp,by = "genes",all=T)  
+  }
+  # The gene column is placed as row names
+  row.names(data_to_comp) <- data_to_comp$genes
+  data_to_comp <- data_to_comp[,-1]
+  # we obtain a dataframe with genes in columns and methods in rows
+  data_to_comp = as.data.frame(t(data_to_comp))
+  return(data_to_comp)
+}
+  

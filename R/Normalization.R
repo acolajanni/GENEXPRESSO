@@ -28,9 +28,10 @@ library(nanoR)
 #' @export
 #'
 #' @examples
-#' 
+#' # Retrieve Nanostring Data
+#' Data = Simul.data(type = "Nanostring")
 #' # Normalizing data using one method :
-#' Norm.data = tools.norm.Nanostring(raw.data = data, tool = "nappa.NS")
+#' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
 tools.norm.Nanostring <- function(raw.data,tool,nanoR=F){
   # if the method is "nanoR.top100" or "nanoR.total", the function needs other information contained in other files 
   if (!nanoR){

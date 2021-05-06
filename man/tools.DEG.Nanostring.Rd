@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.Nanostring}
 \alias{tools.DEG.Nanostring}
-\title{Compute the pvalues of genes being up and downregulated for Microarray dataset.}
+\title{Compute the pvalues of genes being up and downregulated for Nanostring datasets.}
 \usage{
 tools.DEG.Nanostring(raw.data, tool, data, tool_norm)
 }

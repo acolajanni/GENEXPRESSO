@@ -12,11 +12,17 @@
 #' @param nb.genes Gene numbers
 #'
 #' @return 
+#' Dataframe of gene expression values
+#' 
 #' @export 
 #'
 #' @examples
 #' # To get a RNAseq type data with 1000 genes and 2 groups of 15 samples
 #' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # To get Microarray type data with 1000 genes and 2 groups of 15 samples
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' # To get the non simulated Nanostring data
+#' Data = Simul.data(type = "Nanostring")
 Simul.data <-function(type,n.cond1,n.cond2,nb.genes){
 
   library(DEFormats)
@@ -71,6 +77,7 @@ Simul.data <-function(type,n.cond1,n.cond2,nb.genes){
                         listenom <- paste0(rep(LETTERS[1:26], each=400), rep(1:400, 26))
                         listenom = listenom[1:nb.genes]
                         row.names(data) <- listenom
+                        data = data.frame(data)
                         
                       },
                       stop("Enter something that switches me!") 

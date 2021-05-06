@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.Microarrays}
 \alias{tools.DEG.Microarrays}
-\title{Compute the pvalues of genes being up and downregulated for Microarray dataset.}
+\title{Compute the pvalues of genes being up and downregulated for Microarray datasets.}
 \usage{
 tools.DEG.Microarrays(data, tool, n1, n2)
 }
