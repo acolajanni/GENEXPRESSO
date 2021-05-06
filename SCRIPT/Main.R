@@ -34,9 +34,11 @@ n2 <- 6
 # rna seq : "EdgeR", "DESeq" et "DESeq2"
 # nanostring : "NanostringNorm", "NAPPA", "NanostringR", "NanoR" et "DESeq2"
 norm <- "a completer"
-#Outils DEG : "Wilcox, "RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4", "GEOlimma" et/ou "limma"
+#Outils DEG : 
+# microarray : "Wilcox, "RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4", "GEOlimma" et/ou "limma"
 # rna seq : "EdgeR", "DESeq" et "DESeq2"
-# nanostring : 
+# nanostring : "NanostringR", "nappa.NS", "nappa.default", "nappa.param1", "nappa.param2", "nappa.param3", "nanostringnorm.default", "nanostringnorm.param1", "nanostringnorm.param2",
+#              "desq2", "nanostringDiff", "nanoR.top100" et/ou "nanoR.total"
 tools = c("GEOlimma", "Wilcox","RankProduct.param1","RankProduct.param2","RankProduct.param3","RankProduct.param4")
 
 setwd(.PROGRAMS)
