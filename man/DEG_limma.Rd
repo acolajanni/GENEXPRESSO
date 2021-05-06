@@ -23,7 +23,10 @@ Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the
 }
 \examples{
 # Import a dataset
-Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+Data = Simul.data(type = "Microarrays",  
+                  n.cond1 = 15, 
+                  n.cond2 = 15,  
+                  nb.genes = 100)
 #Construct the design matrix
 design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
 res.DEG = DEG_limma(Data,design)

@@ -22,7 +22,8 @@ Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
 }
 \examples{
 # Import a RNA seq dataset
-Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
+                  nb.genes = 100)
 # Compute all the possible pvalues
 res.DEG = tools.DEG.RNAseq.merge(Data)
 # Compute the pvalues, only with edgeR methods

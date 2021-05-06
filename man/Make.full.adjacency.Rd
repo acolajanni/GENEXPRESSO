@@ -29,5 +29,5 @@ colnames(df) = group
 row.names(df) = genes
 
 # computing fast correlation and pvalues 
-Adj = Make.full.adjacency(df,PValue = T)
+Adj = Make.full.adjacency(df,PValue = TRUE)
 }

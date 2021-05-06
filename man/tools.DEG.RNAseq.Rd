@@ -24,7 +24,8 @@ Through different functions contained in several packages, this function compute
 }
 \examples{
 # Import a RNA seq dataset
-Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
+                  nb.genes = 100)
 # computing pvalues of DEG with TMM normalization method
 res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
 }

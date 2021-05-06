@@ -8,8 +8,6 @@ library(igraph)
 
 
 #' Computing a square matrix of correlation coefficients
-#' 
-#' 
 #'
 #' @param data Dataset of gene expression levels with genes in row and samples in columns
 #' @param method Methods to compute the correlation coefficients.
@@ -154,7 +152,7 @@ Make.adjacency.table <- function(data, method){
 #' Dataset of gene expression levels with genes in row and samples in columns
 #' @param Fast Logical value. 
 #' if Fast = TRUE, only the pearson correlation coefficients will be measured with a fast one-step method. It uses the corAndPvalue() function from the WGCNA package.
-#' if Fast = FALSE, the pvalue of the correlation of the gene pair will be computed. 
+#' if Fast = FALSEALSE, the pvalue of the correlation of the gene pair will be computed. 
 #' Carefull, if Fast = F, it may take a while depending on number of genes in the dataset.
 #'  
 #' 
@@ -180,8 +178,8 @@ Make.adjacency.table <- function(data, method){
 #' row.names(df) = genes
 #' 
 #' # computing fast correlation and pvalues 
-#' Adj = Make.adjacencyPVal(df,Fast = F ,method = "spearman")
-Make.adjacencyPVal <-function(data, Fast = F, method){
+#' Adj = Make.adjacencyPVal(df,Fast = FALSE ,method = "spearman")
+Make.adjacencyPVal <-function(data, Fast = FALSE, method){
   if (Fast == F){
     #First, we retrive the adjacency table depending on the method
         tools.coexpr <- switch(method,
@@ -257,7 +255,7 @@ Make.adjacencyPVal <-function(data, Fast = F, method){
 #' row.names(df) = genes
 #' 
 #' # computing fast correlation and pvalues 
-#' Adj = Make.full.adjacency(df,PValue = T)
+#' Adj = Make.full.adjacency(df,PValue = TRUE)
 Make.full.adjacency <- function(data, PValue = T){
   
   if (PValue == T){
@@ -315,12 +313,12 @@ Make.full.adjacency <- function(data, PValue = T){
 #' colnames(df) = group
 #' row.names(df) = genes
 #' # Compute the graph in an usable format for igraph
-#' Graph = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, method = "spearman")
+#' Graph = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = FALSE, method = "spearman")
 #' # Plotting it with igraph
 #' plot(Graph)
-Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = F, method ){
+Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = FALSE, method ){
   
-  if (Pvalue.threshold == F){
+  if (Pvalue.threshold == FALSE){
     # In this case, no need to compute pvalues
     tools.graph <- switch(method,
                           spearman = {
@@ -361,7 +359,7 @@ Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = F, method ){
                             relations = Make.adjacency.table(data, method = "TOM")
                             cor = "TOM.similarity"
                             # No pvalues could be associated with TOM similarity
-                            Pvalue.threshold = F
+                            Pvalue.threshold = FALSE
                           },
                           
                           stop("Enter something that switches me!")

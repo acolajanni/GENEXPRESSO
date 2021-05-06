@@ -27,7 +27,10 @@ Through different functions contained in several packages, this function compute
 }
 \examples{
 # Import a dataset
-Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+Data = Simul.data(type = "Microarrays", 
+                   n.cond1 = 15, 
+                   n.cond2 = 15, 
+                   nb.genes = 100)
 # Compute Pvalues for the RankProduct method
 res.DEG = tools.DEG.Microarrays(Data,"RankProduct",15,15)
 }

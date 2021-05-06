@@ -2,13 +2,13 @@
 ########    DEG   #########
 ###########################
 
-library(edgeR)
-library(DESeq)
-library(DESeq2)
-library(RankProd)
-library(limma)
-source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
-source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
+#library(edgeR)
+#library(DESeq)
+#library(DESeq2)
+#library(RankProd)
+#library(limma)
+#source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
+#source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
 
 
 #' Creates a Model matrix.
@@ -24,8 +24,15 @@ source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
 #'
 #' @examples
 #' # Using an existing dataset
-#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
-#' design = make_designMatrix(dataset = Data, cond1 = "control", cond2 = "Case", ncond1 = 15, ncond2 = 15)
+#' Data = Simul.data(type = "RNAseq", 
+#'                    n.cond1 = 15, 
+#'                    n.cond2 = 15,  
+#'                    nb.genes = 100)
+#' design = make_designMatrix(dataset = Data, 
+#'                             cond1 = "control", 
+#'                             cond2 = "Case", 
+#'                             ncond1 = 15, 
+#'                             ncond2 = 15)
 make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(dataset)/2),ncond2=(ncol(dataset)/2)){
   status.control = rep(cond1,ncond1)
   status.test = rep(cond2,ncond2)
@@ -53,7 +60,10 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
 #'
 #' @examples
 #' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "Microarrays",  
+#'                   n.cond1 = 15, 
+#'                   n.cond2 = 15,  
+#'                   nb.genes = 100)
 #' #Construct the design matrix
 #' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
 #' res.DEG = DEG_limma(Data,design)
@@ -90,11 +100,6 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #' @import "limma"
 #' @export
 #' @examples
-#' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
-#' #Construct the design matrix
-#' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
-#' res.DEG = DEG_GEOlimma(Data,design)
 DEG_GEOlimma <- function(dataset,design, contrast.matrix){
   source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
   source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
@@ -128,11 +133,14 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
 #' @return
 #' A dataframe with 3 columns is returned. The two columns corresponds to the pvalue
 #' of a gene being respectively, more expressed and less expressed in the second condition
+#' 
+#' @import "data.table"
 #' @export
 #'
 #' @examples
 #' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, 
+#'                   nb.genes = 100)
 #' #Construct the design matrix
 #' design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
 #' #get the results of limma analysis
@@ -175,7 +183,10 @@ DEG_alternative <- function(res.diff_limma){
 #'
 #' @examples
 #' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "Microarrays", 
+#'                   n.cond1 = 15,  
+#'                   n.cond2 = 15, 
+#'                   nb.genes = 100)
 #' # Compute Pvalues
 #' res.DEG = wilcoxDEG(Data,15,15)
 wilcoxDEG <- function(data, n1, n2){
@@ -221,7 +232,10 @@ wilcoxDEG <- function(data, n1, n2){
 #'
 #' @examples
 #' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "Microarrays", 
+#'                    n.cond1 = 15, 
+#'                    n.cond2 = 15, 
+#'                    nb.genes = 100)
 #' # Compute Pvalues for the RankProduct method
 #' res.DEG = tools.DEG.Microarrays(Data,"RankProduct",15,15)
 tools.DEG.Microarrays <- function(data,tool,n1,n2){
@@ -330,7 +344,10 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
 #' # Normalizing data using one method
 #' Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
 #' # Analyze normalized data with one DEG method
-#' res.DEG = tools.DEG.Nanostring(raw.data = Data, data = Norm.data, tool_norm = "nappa.NS", tool = "RankProduct")
+#' res.DEG = tools.DEG.Nanostring(raw.data = Data, 
+#'                                 data = Norm.data, 
+#'                                 tool_norm = "nappa.NS", 
+#'                                 tool = "RankProduct")
 tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
   
   rcc.samples <- raw.data$rcc.df
@@ -441,7 +458,8 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #'
 #' @examples
 #' # Import a RNA seq dataset
-#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
+#'                   nb.genes = 100)
 #' # computing pvalues of DEG with TMM normalization method
 #' res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
 tools.DEG.RNAseq <- function(data,tool){
@@ -575,7 +593,8 @@ tools.DEG.RNAseq <- function(data,tool){
 #'
 #' @examples
 #' # Import a RNA seq dataset
-#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+#' Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
+#'                   nb.genes = 100)
 #' # Compute all the possible pvalues
 #' res.DEG = tools.DEG.RNAseq.merge(Data)
 #' # Compute the pvalues, only with edgeR methods
@@ -636,12 +655,24 @@ tools.DEG.RNAseq.merge <- function(data,tools){
 #' # Retrieve gene expression data from Nanostring
 #' raw.data = Simul.data(type = "Nanostring")
 #' 
-#' # Compute the DEG pvalues with all the possible methods
-#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data)
-#' 
-#' # Compute the DEG pvalues with only NanoR top100 normalization and Wilcoxon's test only
+#' # Compute the DEG pvalues with some of the possible methods
+#' tools_DEG = c("Wilcox","limma")
+#' tools_norm = c("nappa.NS","nanoR.total")
 #' RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
-#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,"Wilcox","nanoR.top100",DESeq = F, dir = RCC.dir)
+#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,
+#'                                      tools_DEG = tools_DEG,
+#'                                      tools_norm = tools_norm,
+#'                                      DESeq = FALSE,
+#'                                      dir = RCC.dir)
+#' 
+#' # Compute the DEG pvalues with only NanoR top100 normalization 
+#' #and Wilcoxon's test only
+#' RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+#' res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,
+#'                                      "Wilcox",
+#'                                      "nanoR.top100",
+#'                                      DESeq = FALSE, 
+#'                                      dir = RCC.dir)
 tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir = NULL){
   # By default, all the possible normalization methods are computed
   if (missing(tools_norm)){
@@ -651,7 +682,8 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
   if (missing(tools_DEG)){
     tools_DEG = c("limma","Wilcox","RankProduct","RankSum" )
   }
-  
+  # putting the directory into another variable
+  RCC.dir = dir
   # To create the dataframe, it is easier to start with DESeq2 since this analysis uses an integrated normalization method
   # Otherwise, a dataframe with one column with genes is conserved to merge further methods with it
   if(DESeq){
@@ -694,9 +726,8 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
 
 #' Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
 #'  
-#'  @param data 
-#'  Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
-#'  @param tool Different methods used to compute pvalues of differentially expressed genes for microarrays
+#'  @param data Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
+#'  @param tools Different methods used to compute pvalues of differentially expressed genes for microarrays
 #' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
 #' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
 #' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
@@ -704,12 +735,13 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
 #' @param n1 Number of sample for the first experimental condition
 #' @param n2 Number of sample for the second experimental condition
 #'
-#' @return
+#' @return Dataframe of pvalues of genes being differentially expressed with genes in columns and methods in rows
 #' @export
 #'
 #' @examples
 #' # Import a dataset
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 100)
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, 
+#'                   nb.genes = 100)
 #' # Compute Pvalues for all the methods 
 #' res.DEG = tools.DEG.Microarrays.merge(Data)
 tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
@@ -731,5 +763,10 @@ tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
     tmp = tools.DEG.Microarrays(data,tool,n1, n2)
     data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
   }
+  # adding the genes as row names
+  row.names(data_to_comp) <- data_to_comp$Gene.ID
+  data_to_comp <- data_to_comp[,-1]
+  # Genes in columns, methods in rows
+  data_to_comp = as.data.frame(t(data_to_comp))
   return(data_to_comp)
 }

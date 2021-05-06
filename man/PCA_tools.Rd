@@ -16,3 +16,13 @@ Principal component analysis plot with cos2 values for each methods
 \description{
 Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes
 }
+\examples{
+# Import a dataset (Microarrays for example)
+Data = Simul.data(type = "Microarrays", n.cond1 = 15, 
+                                        n.cond2 = 15, 
+                                        nb.genes = 100)
+# Compute Pvalues for all the methods 
+res.DEG = tools.DEG.Microarrays.merge(Data)
+# Plotting PCA on methods
+PCA = PCA_tools(res.DEG)
+}

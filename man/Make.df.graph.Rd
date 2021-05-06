@@ -4,7 +4,7 @@
 \alias{Make.df.graph}
 \title{Computing a dataframe of usable format for Network plotting with iGraph}
 \usage{
-Make.df.graph(data, cor.threshold, Pvalue.threshold = F, method)
+Make.df.graph(data, cor.threshold, Pvalue.threshold = FALSE, method)
 }
 \arguments{
 \item{data}{Dataset of gene expression levels with genes in row and samples in columns.}
@@ -36,7 +36,7 @@ genes <- paste0(rep(LETTERS[1:25], each=1))
 colnames(df) = group
 row.names(df) = genes
 # Compute the graph in an usable format for igraph
-Graph = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, method = "spearman")
+Graph = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = FALSE, method = "spearman")
 # Plotting it with igraph
 plot(Graph)
 }

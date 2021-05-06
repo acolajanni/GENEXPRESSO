@@ -19,6 +19,14 @@ library(igraph)
 #' @export
 #'
 #' @examples
+#' # Import a dataset (Microarrays for example)
+#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, 
+#'                                         n.cond2 = 15, 
+#'                                         nb.genes = 100)
+#' # Compute Pvalues for all the methods 
+#' res.DEG = tools.DEG.Microarrays.merge(Data)
+#' # Plotting PCA on methods
+#' PCA = PCA_tools(res.DEG)
 PCA_tools <- function(data.to.comp){
   # Compute a PCA
   res.pca <- PCA(data.to.comp,graph=F)
@@ -43,6 +51,20 @@ PCA_tools <- function(data.to.comp){
 #' @export
 #'
 #' @examples
+#' #' # Import a dataset (Microarrays for example)
+#' Data = Simul.data(type = "Microarrays", 
+#'                     n.cond1 = 15, 
+#'                     n.cond2 = 15, 
+#'                     nb.genes = 100)
+#'           
+#' # Compute Pvalues for all the methods 
+#' res.DEG = tools.DEG.Microarrays.merge(Data)
+#' # Make a binary matrix to construct an Upset plot
+#' Upset = Upset.Binary.Dataframe(res.DEG)
+#' upset(Upset, sets = names(Upset), 
+#'          sets.bar.color = "#56B4E9", 
+#'          order.by = "freq", 
+#'          empty.intersections = NULL )
 Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   if(missing(threshold)){
     threshold = 0.05
@@ -51,12 +73,10 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   Upset <- copy(data.to.comp)
   for (i in names(Upset)){
     for (u in 1:nrow(Upset)){
-      if (log == F){
-        if(data.to.comp[[i]][u] > threshold){
-          Upset[[i]][u] = 0}
-        else{
-          Upset[[i]][u] = 1
-        }
+      if(data.to.comp[[i]][u] > threshold){
+        Upset[[i]][u] = 0}
+      else{
+        Upset[[i]][u] = 1
       }
     }
   }
@@ -87,10 +107,15 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' colnames(df) = group
 #' row.names(df) = genes
 #' # Computing relation network
-#' G.spearman = Make.df.graph(df1, cor.threshold = 0.5, Pvalue.threshold = F, method = "spearman")
-#' G.TOM = Make.df.graph(df1, cor.threshold = 0.05, Pvalue.threshold = F, method = "TOM")
+#' G.spearman = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, 
+#'                                                      method = "spearman")
+#' G.TOM = Make.df.graph(df, cor.threshold = 0.05, Pvalue.threshold = F, 
+#'                                                  method = "TOM")
 #' # Comparing both relation network
-#' G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM, g1.name = "Spearman", g2.name = "TOM similarity", diplay = T)
+#' G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM,  
+#'                              g1.name = "Spearman", 
+#'                              g2.name = "TOM similarity", 
+#'                              diplay = T)
 relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
   # by default parameters
   if (missing(g1.name)){

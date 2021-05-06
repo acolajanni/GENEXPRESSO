@@ -46,10 +46,22 @@ Merge the DEG Pvalues for each tool used by tools.DEG.Nanostring in one datafram
 # Retrieve gene expression data from Nanostring
 raw.data = Simul.data(type = "Nanostring")
 
-# Compute the DEG pvalues with all the possible methods
-res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data)
-
-# Compute the DEG pvalues with only NanoR top100 normalization and Wilcoxon's test only
+# Compute the DEG pvalues with some of the possible methods
+tools_DEG = c("Wilcox","limma")
+tools_norm = c("nappa.NS","nanoR.total")
 RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
-res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,"Wilcox","nanoR.top100",DESeq = F, dir = RCC.dir)
+res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,
+                                     tools_DEG = tools_DEG,
+                                     tools_norm = tools_norm,
+                                     DESeq = FALSE,
+                                     dir = RCC.dir)
+
+# Compute the DEG pvalues with only NanoR top100 normalization 
+#and Wilcoxon's test only
+RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+res.DEG = tools.DEG.Nanostring.merge(raw.data =raw.data,
+                                     "Wilcox",
+                                     "nanoR.top100",
+                                     DESeq = FALSE, 
+                                     dir = RCC.dir)
 }

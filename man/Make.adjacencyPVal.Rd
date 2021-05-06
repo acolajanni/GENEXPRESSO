@@ -4,14 +4,14 @@
 \alias{Make.adjacencyPVal}
 \title{Computing an adjacency table with Pvalues associated to a coefficient of correlation}
 \usage{
-Make.adjacencyPVal(data, Fast = F, method)
+Make.adjacencyPVal(data, Fast = FALSE, method)
 }
 \arguments{
 \item{data}{Dataset of gene expression levels with genes in row and samples in columns}
 
 \item{Fast}{Logical value. 
 if Fast = TRUE, only the pearson correlation coefficients will be measured with a fast one-step method. It uses the corAndPvalue() function from the WGCNA package.
-if Fast = FALSE, the pvalue of the correlation of the gene pair will be computed. 
+if Fast = FALSEALSE, the pvalue of the correlation of the gene pair will be computed. 
 Carefull, if Fast = F, it may take a while depending on number of genes in the dataset.}
 
 \item{method}{Methods to compute the correlation coefficients.
@@ -37,5 +37,5 @@ colnames(df) = group
 row.names(df) = genes
 
 # computing fast correlation and pvalues 
-Adj = Make.adjacencyPVal(df,Fast = F ,method = "spearman")
+Adj = Make.adjacencyPVal(df,Fast = FALSE ,method = "spearman")
 }

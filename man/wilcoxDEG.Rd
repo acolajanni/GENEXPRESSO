@@ -23,7 +23,10 @@ Testing, for one row at the time, if the first series of values are different, g
 }
 \examples{
 # Import a dataset
-Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
+Data = Simul.data(type = "Microarrays", 
+                  n.cond1 = 15,  
+                  n.cond2 = 15, 
+                  nb.genes = 100)
 # Compute Pvalues
 res.DEG = wilcoxDEG(Data,15,15)
 }

@@ -32,8 +32,13 @@ genes <- paste0(rep(LETTERS[1:25], each=1))
 colnames(df) = group
 row.names(df) = genes
 # Computing relation network
-G.spearman = Make.df.graph(df1, cor.threshold = 0.5, Pvalue.threshold = F, method = "spearman")
-G.TOM = Make.df.graph(df1, cor.threshold = 0.05, Pvalue.threshold = F, method = "TOM")
+G.spearman = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, 
+                                                     method = "spearman")
+G.TOM = Make.df.graph(df, cor.threshold = 0.05, Pvalue.threshold = F, 
+                                                 method = "TOM")
 # Comparing both relation network
-G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM, g1.name = "Spearman", g2.name = "TOM similarity", diplay = T)
+G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM,  
+                             g1.name = "Spearman", 
+                             g2.name = "TOM similarity", 
+                             diplay = T)
 }
