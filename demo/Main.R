@@ -39,8 +39,7 @@ if (type == "RNAseq"){
 }else if(type == "Nanostring"){
   tools_DEG = c("limma","RankProduct","RankSum" )
   tools_norm = c("nappa.NS","nanostringnorm.default")
-  data.to.comp = tools.DEG.Nanostring.merge()
-  res.DEG = tools.DEG.Nanostring.merge(data,tools_DEG,tools_norm,DESeq=T)
+  data.to.comp = tools.DEG.Nanostring.merge(raw.data = raw.data,tools_DEG,tools_norm,DESeq=T)
 }
 
 ### Visualisation
@@ -49,16 +48,37 @@ if (type == "RNAseq"){
 # Et Sur/sous exprimé dans la deuxième condition expérimental pour les données Nanostring et Microarrays.
 
 # Ces tableaux pourront permettre de faire un graphique d'analyse en composante principale pour comparer les méthodes employées
-PCA = PCA_tools(data.to.comp)
+PCA_tools(data.to.comp)
 
 # Une seconde information pourra être apportée par les upsets plots :
 # Le nombre de gènes repéré comme différentiellement exprimé en communs entre chaque méthode
 # On construit d'abord un matrice constitutée de 0 et de 1 :
 # 1 pour les gènes différentiellement exprimés, 0 pour les autres
 Binary.Matrix = Upset.Binary.Dataframe(data.to.comp)
-# On peut donc maintenant construire l'upset plot
-upset(Upset, sets = names(Upset), sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+# On récupère la liste des méthodes utilisées
+methods = colnames(Binary.Matrix)
 
+# Il peut être intéressant pour les Nanostring et Microarrays de séparer les gènes surexprimés et sousexprimés
+library(UpSetR)
+
+if(type=="Nanostring" || type == "Microarrays"){
+  #Upreg pour surexprimés en 2ème condition
+  Upreg = methods[grepl("Up|less",methods)]
+  #Downreg pour sousexrimé
+  Downreg = methods[grepl("Down|greater",methods)]
+}
+
+# On peut donc maintenant construire l'upset plot
+if(type=="Nanostring" || type == "Microarrays"){
+  # Upset plot des gènes surexprimés dans la 2ème condition
+  upset(Binary.Matrix, sets = names(Upreg), sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+  # Upset plot des gènes sous-exprimés dans la 2ème condition
+  upset(Binary.Matrix, sets = names(Downreg), sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+  
+}else{
+  # Upset plot des gènes différentiellement exprimés
+  upset(Binary.Matrix, sets = methods, sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+}
 
 
 ########################
@@ -84,7 +104,7 @@ Relations = Make.full.adjacency(data,PValue = TRUE)
 
 # Les graphes sont contruits avec les trois méthodes implémentées
 spearman = Make.df.graph(data, cor.threshold = 0.8,Pvalue.threshold = F ,method = "spearman")
-TOM = Make.df.graph(data, cor.threshold = 0.5,method = "TOM")
+TOM = Make.df.graph(data, cor.threshold = 0.4,method = "TOM")
 kendall = Make.df.graph(data,  cor.threshold = 0.65,Pvalue.threshold = F,method = "kendall")
 # Affichage en comparaisondeux à deux des trois méthodes 
 par(mfrow = c(1,3))
