@@ -11,11 +11,11 @@ Make.adjacencyPVal(data, Fast = FALSE, method)
 
 \item{Fast}{Logical value. 
 if Fast = TRUE, only the pearson correlation coefficients will be measured with a fast one-step method. It uses the corAndPvalue() function from the WGCNA package.
-if Fast = FALSEALSE, the pvalue of the correlation of the gene pair will be computed. 
-Carefull, if Fast = F, it may take a while depending on number of genes in the dataset.}
+if Fast = FALSE, the pvalue of the correlation of the gene pairs will be computed. 
+Careful, if Fast = F, it may take a while depending on the number of genes in the dataset.}
 
 \item{method}{Methods to compute the correlation coefficients.
-"spearman" compute the Spearman's rho, 
+"spearman" computes the Spearman's rho, 
 "kendall" uses the Kendall's tau and
 "pearson" the Pearson's product moment correlation coefficient.
 These functions are called via the cor() function in the stats package.}

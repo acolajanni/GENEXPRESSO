@@ -13,10 +13,10 @@ Make.df.graph(data, cor.threshold, Pvalue.threshold = FALSE, method)
 
 \item{Pvalue.threshold}{Logical value.
 If TRUE, all the pairs not significantly correlated will be removed. Could take a while since all the pvalues needs to be computed.
-If FALSE, only a thresholding through the correlation coefficient will be apply.}
+If FALSE, only a thresholding through the correlation coefficient will be applied.}
 
 \item{method}{Methods to compute the correlation coefficients and the p-values (if Pvalue.threshold = T)
-"spearman" compute the Spearman's rho, 
+"spearman" computes the Spearman's rho, 
 "kendall" uses the Kendall's tau and
 These functions are called via the cor() function in the stats package.
 "TOM" uses the TOMsimilarityFromExpr() function from the WGCNA package.}

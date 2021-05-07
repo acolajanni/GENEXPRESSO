@@ -10,7 +10,7 @@ Make.adjacency.table(data, method)
 \item{data}{Dataset of gene expression levels with genes in row and samples in columns}
 
 \item{method}{Methods to compute the correlation coefficients.
-"spearman" compute the Spearman's rho, 
+"spearman" computes the Spearman's rho, 
 "kendall" uses the Kendall's tau and
 "pearson" the Pearson's product moment correlation coefficient.
 These functions are called via the cor() function in the stats package.

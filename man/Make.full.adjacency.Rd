@@ -10,12 +10,12 @@ Make.full.adjacency(data, PValue = T)
 \item{data}{Dataset of gene expression levels with genes in row and samples in columns}
 
 \item{PValue}{Logical value. 
-if PValue = TRUE, all the pvalues associated with the corresponding coeffient of correlation will be computed. Could be very long on large dataframe
+if PValue = TRUE, all the pvalues associated with the corresponding coeffients of correlation will be computed. Could be very long on large dataframe
 if PValue = FALSE, only the coefficient of correlation, and TOM similarity will be computed.}
 }
 \value{
-Dataframe with several columns. the two first are the pairs of genes,
-the other are the coefficient of correlation depending on the used method, and maybe the PValues depending on the argument.
+Dataframe with several columns. The two firsts are the pair of genes,
+the others are the coefficient of correlation depending on the used method, and maybe the PValues depending on the argument.
 }
 \description{
 Calling Make.adjacencyPVal() with all the implemented methods.

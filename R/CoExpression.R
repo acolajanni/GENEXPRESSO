@@ -11,7 +11,7 @@ library(igraph)
 #'
 #' @param data Dataset of gene expression levels with genes in row and samples in columns
 #' @param method Methods to compute the correlation coefficients.
-#' "spearman" compute the Spearman's rho, 
+#' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' "pearson" the Pearson's product moment correlation coefficient.
 #' These functions are called via the cor() function in the stats package.
@@ -64,16 +64,16 @@ Cor.square.matrix <- function(data, method){
 #' # Computing TOM similarity
 #' TOM = TOM.square.matrix(df)
 TOM.square.matrix <- function(data){
-  # arrange the dataset in order to use the TOMsimilarityFromExpr() function without problem
+  # Arrange the dataset in order to use the TOMsimilarityFromExpr() function without problem
   genes = row.names(data)
   data = t(as.data.frame(data))
   row.number = nrow(data)
   col.number = ncol(data)
   obs.number = col.number*row.number
-  # Converting every values of the dataframe into numeric values
+  # Each values of the dataframe is converted into numeric values
   data[1:obs.number] = sapply(data[1:obs.number], as.numeric) 
   TOM = TOMsimilarityFromExpr(data)
-  # Needs to rename the columns and rows
+  # Rename the columns and rows
   row.names(TOM) = genes
   colnames(TOM) = genes
   return(TOM)
@@ -88,7 +88,7 @@ TOM.square.matrix <- function(data){
 #' Dataset of gene expression levels with genes in row and samples in columns
 #' 
 #' @param method Methods to compute the correlation coefficients.
-#' "spearman" compute the Spearman's rho, 
+#' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' "pearson" the Pearson's product moment correlation coefficient.
 #' These functions are called via the cor() function in the stats package.
@@ -152,12 +152,12 @@ Make.adjacency.table <- function(data, method){
 #' Dataset of gene expression levels with genes in row and samples in columns
 #' @param Fast Logical value. 
 #' if Fast = TRUE, only the pearson correlation coefficients will be measured with a fast one-step method. It uses the corAndPvalue() function from the WGCNA package.
-#' if Fast = FALSEALSE, the pvalue of the correlation of the gene pair will be computed. 
-#' Carefull, if Fast = F, it may take a while depending on number of genes in the dataset.
+#' if Fast = FALSE, the pvalue of the correlation of the gene pairs will be computed. 
+#' Careful, if Fast = F, it may take a while depending on the number of genes in the dataset.
 #'  
 #' 
 #' @param method Methods to compute the correlation coefficients.
-#' "spearman" compute the Spearman's rho, 
+#' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' "pearson" the Pearson's product moment correlation coefficient.
 #' These functions are called via the cor() function in the stats package.
@@ -181,7 +181,7 @@ Make.adjacency.table <- function(data, method){
 #' Adj = Make.adjacencyPVal(df,Fast = FALSE ,method = "spearman")
 Make.adjacencyPVal <-function(data, Fast = FALSE, method){
   if (Fast == F){
-    #First, we retrive the adjacency table depending on the method
+    #First, we retrieve the adjacency table depending on the method
         tools.coexpr <- switch(method,
                            spearman = {
                              interaction = Make.adjacency.table(data, method = "spearman")
@@ -196,7 +196,7 @@ Make.adjacencyPVal <-function(data, Fast = FALSE, method){
     )
     col.name = paste0("Pval.",method)
     cor = NULL
-    # Then the pvalue is computed for each pair of gene
+    # The pvalue is computed for each pair of gene
     for (i in 1:nrow(interaction)){
       # Retrieving first gene name, and the associated values
       A = toString(interaction[["Var1"]][i])
@@ -218,7 +218,7 @@ Make.adjacencyPVal <-function(data, Fast = FALSE, method){
     data = as.matrix(t(data))
     # Computing the pvalue and associated correlations values
     Cor = corAndPvalue(data) 
-    # retrieving pvalues and corelation coefficients
+    # retrieving pvalues and correlation coefficients
     Pval = melt(Cor$p)
     Cor = melt(Cor$cor)
     interaction = cbind(Cor,PValue = Pval$value)
@@ -239,11 +239,11 @@ Make.adjacencyPVal <-function(data, Fast = FALSE, method){
 #' @param data 
 #' Dataset of gene expression levels with genes in row and samples in columns
 #' @param PValue Logical value. 
-#' if PValue = TRUE, all the pvalues associated with the corresponding coeffient of correlation will be computed. Could be very long on large dataframe
+#' if PValue = TRUE, all the pvalues associated with the corresponding coeffients of correlation will be computed. Could be very long on large dataframe
 #' if PValue = FALSE, only the coefficient of correlation, and TOM similarity will be computed.
 #' @return
-#' Dataframe with several columns. the two first are the pairs of genes,
-#' the other are the coefficient of correlation depending on the used method, and maybe the PValues depending on the argument.
+#' Dataframe with several columns. The two firsts are the pair of genes,
+#' the others are the coefficient of correlation depending on the used method, and maybe the PValues depending on the argument.
 #' @export
 #'
 #' @examples
@@ -268,10 +268,10 @@ Make.full.adjacency <- function(data, PValue = T){
     interaction_Cor = merge(interaction_Cor,interaction_Fast,by = c("Var1","Var2"))                        
   }
   else {
-    # Since PValue = F, we only compute all the correlation coefficient for all the methods
+    # PValue = F so we only compute all the correlation coefficient for all the methods
     interaction_spearman =  Make.adjacency.table(data, method = "spearman")
     interaction_kendall =  Make.adjacency.table(data, method = "kendall")
-    # Merging them to have all the corrleation coefficients in the same dataframe
+    # Merging them to have all the correlation coefficients in the same dataframe
     interaction_Cor = merge(interaction_spearman,interaction_kendall,by = c("Var1","Var2"))
   }
   # TOM similarity has no pvalue to test their signifiance
@@ -294,9 +294,9 @@ Make.full.adjacency <- function(data, PValue = T){
 #' Threshold to apply for minimal correlation or similarity to keep the pair of gene.
 #' @param Pvalue.threshold Logical value.
 #' If TRUE, all the pairs not significantly correlated will be removed. Could take a while since all the pvalues needs to be computed.
-#' If FALSE, only a thresholding through the correlation coefficient will be apply.
+#' If FALSE, only a thresholding through the correlation coefficient will be applied.
 #' @param method Methods to compute the correlation coefficients and the p-values (if Pvalue.threshold = T)
-#' "spearman" compute the Spearman's rho, 
+#' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' These functions are called via the cor() function in the stats package.
 #' "TOM" uses the TOMsimilarityFromExpr() function from the WGCNA package.
@@ -365,8 +365,8 @@ Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = FALSE, method ){
                           stop("Enter something that switches me!")
     )
   }  
-  # TOM similarity varies between 0 and 1, whereas coefficients varies between -1 and 1.
-  # We are not interested in the sign of the correlation, so absolute values are used only for corrlation coefficients
+  # TOM similarity varies between 0 and 1, while coefficients value varies between -1 and 1.
+  # We are not interested in the sign of the correlation, so absolute values are only used for correlation coefficients
   if (method == "TOM"){
     df.graph = subset(relations, relations[[cor]] >= cor.threshold)
   }
@@ -374,7 +374,7 @@ Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = FALSE, method ){
     relations[[cor]] = abs(relations[[cor]])
   }
   # When the pvalues are used the threshold is 0.05
-  # subset is used to only kept the part of a dataframe that respect the condition
+  # subset is used to only keep the part of the dataframe that respects the condition
   if (Pvalue.threshold == T){
     df.graph = subset(relations, (relations[[cor]] >= cor.threshold) & (relations[[pvalue]] <= 0.05) )
   }
@@ -388,7 +388,7 @@ Make.df.graph<-function(data, cor.threshold, Pvalue.threshold = FALSE, method ){
   df.graph = df.graph[-c(3:ncol(df.graph))]
   
   # If the threshold is too high, an error is raised
-  # A too high threshold produce a dataframe with no rows (no pair of gene is correlated enough)
+  # A treshold set too high will produce a dataframe with no rows (no pair of gene is correlated enough)
   if (nrow(df.graph) != 0){
     df.graph = graph.data.frame(df.graph, directed = FALSE)
   }
