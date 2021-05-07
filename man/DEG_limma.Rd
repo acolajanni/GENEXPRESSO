@@ -22,12 +22,15 @@ the last column corresponds to the gene names given in the dataset (SYMBOL)
 Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the steps of the analysis.
 }
 \examples{
-# Import a dataset
-Data = Simul.data(type = "Microarrays",  
-                  n.cond1 = 15, 
-                  n.cond2 = 15,  
-                  nb.genes = 100)
+# Import the dataset
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes  
+
 #Construct the design matrix
-design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
-res.DEG = DEG_limma(Data,design)
+#design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
+#res.DEG = DEG_limma(Data,design)
 }

@@ -22,11 +22,13 @@ For the second condition has values that are less or greater than values of the 
 Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.
 }
 \examples{
-# Import a dataset
-Data = Simul.data(type = "Microarrays", 
-                  n.cond1 = 15,  
-                  n.cond2 = 15, 
-                  nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Compute Pvalues
-res.DEG = wilcoxDEG(Data,15,15)
+res.DEG = wilcoxDEG(Data,10,10)
 }

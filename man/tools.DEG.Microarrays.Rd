@@ -27,10 +27,13 @@ Through different functions contained in several packages, this function compute
 }
 \examples{
 # Import a dataset
-Data = Simul.data(type = "Microarrays", 
-                   n.cond1 = 15, 
-                   n.cond2 = 15, 
-                   nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Compute Pvalues for the RankProduct method
-res.DEG = tools.DEG.Microarrays(Data,"RankProduct",15,15)
+res.DEG = tools.DEG.Microarrays(Data,"RankProduct",10,10)
 }

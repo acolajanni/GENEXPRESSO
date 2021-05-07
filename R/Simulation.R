@@ -16,6 +16,8 @@ library(madsim)
 #'
 #' @return 
 #' Dataframe of gene expression values
+#' @docType data
+#' @usage data(Data_Nanostring)
 #' @import "madsim" "DEFormats"
 #' @export 
 #' 
@@ -49,8 +51,8 @@ Simul.data <-function(type,n.cond1,n.cond2,nb.genes){
                       },
                       
                       Nanostring = {
-                        data = readRDS(file = "./DATA/NANOSTRING/Nanostring_Data.rds" )
-                        
+                        data = GENEXPRESSO::Data_Nanotring
+     
                       },
                       
                       Microarrays = {

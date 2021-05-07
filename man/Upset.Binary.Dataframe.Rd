@@ -18,18 +18,19 @@ dataframe filled with binary values
 Filling the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other.
 }
 \examples{
-#' # Import a dataset (Microarrays for example)
-Data = Simul.data(type = "Microarrays", 
-                    n.cond1 = 15, 
-                    n.cond2 = 15, 
-                    nb.genes = 100)
-          
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Compute Pvalues for all the methods 
-res.DEG = tools.DEG.Microarrays.merge(Data)
+# res.DEG = tools.DEG.RNAseq.merge(Data)
 # Make a binary matrix to construct an Upset plot
-Upset = Upset.Binary.Dataframe(res.DEG)
-upset(Upset, sets = names(Upset), 
-         sets.bar.color = "#56B4E9", 
-         order.by = "freq", 
-         empty.intersections = NULL )
+# Upset = Upset.Binary.Dataframe(res.DEG)
+#upset(Upset, sets = names(Upset), 
+#          sets.bar.color = "#56B4E9", 
+#          order.by = "freq", 
+#          empty.intersections = NULL )
 }

@@ -4,7 +4,7 @@
 \alias{relations.comparison}
 \title{Producing an igraph network with different colors to compare two networks with igraph}
 \usage{
-relations.comparison(g1, g2, g1.name, g2.name, diplay)
+relations.comparison(g1, g2, g1.name, g2.name, diplay, color.g1, color.g2)
 }
 \arguments{
 \item{g1}{igraph class object.}
@@ -15,7 +15,14 @@ relations.comparison(g1, g2, g1.name, g2.name, diplay)
 
 \item{g2.name}{Character string to be displayed on the legend of the graph for the second graph.}
 
-\item{diplay}{Logical value.
+\item{diplay}{Logical value.}
+
+\item{color.g1}{Character string for a color to be displayed onto the g1 edges.
+By default the color is "blue".}
+
+\item{color.g2}{Character string for a color to be displayed onto the g2 edges.
+By default the color is "darkgreen".
+
 TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.}
 }
 \value{
@@ -26,19 +33,20 @@ For two graphs, red edges will be the common ones. It is used to compare two met
 }
 \examples{
 # Creating two datasets
-df = matrix(runif(500, 10, 100), ncol=20)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
 group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
-genes <- paste0(rep(LETTERS[1:25], each=1))
-colnames(df) = group
-row.names(df) = genes
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
 # Computing relation network
-G.spearman = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, 
-                                                     method = "spearman")
-G.TOM = Make.df.graph(df, cor.threshold = 0.05, Pvalue.threshold = F, 
-                                                 method = "TOM")
+#G.spearman = Make.df.graph(Data, cor.threshold = 0.25, Pvalue.threshold = F, 
+#                                                      method = "spearman")
+#G.kendall = Make.df.graph(Data, cor.threshold = 0.25, Pvalue.threshold = F, 
+#                                                  method = "kendall")
 # Comparing both relation network
-G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM,  
-                             g1.name = "Spearman", 
-                             g2.name = "TOM similarity", 
-                             diplay = T)
+#G.comp = relations.comparison(g1 = G.spearman, g2 = G.kendall,  
+#                              g1.name = "Spearman", 
+#                              g2.name = "kendall", 
+#                              diplay = T)
 }

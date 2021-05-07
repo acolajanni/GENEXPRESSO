@@ -21,12 +21,17 @@ Dataframe of DEG pvalues with genes in columns and tools in rows.
 Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
 }
 \examples{
-# Import a RNA seq dataset
-Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
-                  nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Compute all the possible pvalues
-res.DEG = tools.DEG.RNAseq.merge(Data)
+# res.DEG = tools.DEG.RNAseq.merge(Data)
+
 # Compute the pvalues, only with edgeR methods
-tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp")
+tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMM")
 res.DEG = tools.DEG.RNAseq.merge(data = Data, tools = tools)
 }

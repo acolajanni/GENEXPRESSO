@@ -19,13 +19,18 @@ of a gene being respectively, more expressed and less expressed in the second co
 Takes the results of DEG_GEOlimma and DEG_limma to extract the pvalues of alternative hypothesis.
 }
 \examples{
-# Import a dataset
-Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, 
-                  nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 #Construct the design matrix
-design = make_designMatrix(dataset = Data,ncond1 = 15, ncond2 = 15)
+#design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #get the results of limma analysis
-res.diff = DEG_limma(dataset = Data,design)
+#res.diff = DEG_limma(dataset = Data,design)
+
 #compute the results of alternative hypothesis
-res.diff.alternative = DEG_alternative(res.diff)
+#res.diff.alternative = DEG_alternative(res.diff)
 }

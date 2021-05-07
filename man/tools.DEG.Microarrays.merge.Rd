@@ -2,18 +2,19 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.Microarrays.merge}
 \alias{tools.DEG.Microarrays.merge}
-\title{Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
- 
- @param data Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
- @param tools Different methods used to compute pvalues of differentially expressed genes for microarrays
-"Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
-"RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
-"RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively}
+\title{Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe}
 \usage{
 tools.DEG.Microarrays.merge(data, tools, n1, n2)
 }
 \arguments{
+\item{data}{Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.}
+
+\item{tools}{Different methods used to compute pvalues of differentially expressed genes for microarrays
+"Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
+"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
+"RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+"RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively}
+
 \item{n1}{Number of sample for the first experimental condition}
 
 \item{n2}{Number of sample for the second experimental condition}
@@ -23,18 +24,16 @@ Dataframe of pvalues of genes being differentially expressed with genes in colum
 }
 \description{
 Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
- 
- @param data Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
- @param tools Different methods used to compute pvalues of differentially expressed genes for microarrays
-"Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
-"RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
-"RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively
 }
 \examples{
-# Import a dataset
-Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, 
-                  nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Compute Pvalues for all the methods 
-res.DEG = tools.DEG.Microarrays.merge(Data)
+tools = c("limma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
+res.DEG = tools.DEG.Microarrays.merge(Data,tools,10,10)
 }

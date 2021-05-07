@@ -19,14 +19,17 @@ library(igraph)
 #' @export
 #'
 #' @examples
-#' # Import a dataset (Microarrays for example)
-#' Data = Simul.data(type = "Microarrays", n.cond1 = 15, 
-#'                                         n.cond2 = 15, 
-#'                                         nb.genes = 100)
+#' # Import the dataset
+#' Data = matrix(runif(5000, 10, 100), ncol=20)
+#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#' colnames(Data) = group
+#' row.names(Data) = genes 
+#' 
 #' # Compute Pvalues for all the methods 
-#' res.DEG = tools.DEG.Microarrays.merge(Data)
+#' # res.DEG = tools.DEG.RNAseq.merge(Data)
 #' # Plotting PCA on methods
-#' PCA = PCA_tools(res.DEG)
+#' # PCA_tools(res.DEG)
 PCA_tools <- function(data.to.comp){
   # Compute a PCA
   res.pca <- PCA(data.to.comp,graph=F)
@@ -35,9 +38,7 @@ PCA_tools <- function(data.to.comp){
                 gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
                 repel = TRUE,
                 ggrepel.max.overlaps = 3)
-  return(res.pca)
 }
-
 
 #' Compute a usable matrix to make an Upset plot
 #' 
@@ -51,20 +52,21 @@ PCA_tools <- function(data.to.comp){
 #' @export
 #'
 #' @examples
-#' #' # Import a dataset (Microarrays for example)
-#' Data = Simul.data(type = "Microarrays", 
-#'                     n.cond1 = 15, 
-#'                     n.cond2 = 15, 
-#'                     nb.genes = 100)
-#'           
+#' # Import the dataset
+#' Data = matrix(runif(5000, 10, 100), ncol=20)
+#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#' colnames(Data) = group
+#' row.names(Data) = genes 
+#' 
 #' # Compute Pvalues for all the methods 
-#' res.DEG = tools.DEG.Microarrays.merge(Data)
+#' # res.DEG = tools.DEG.RNAseq.merge(Data)
 #' # Make a binary matrix to construct an Upset plot
-#' Upset = Upset.Binary.Dataframe(res.DEG)
-#' upset(Upset, sets = names(Upset), 
-#'          sets.bar.color = "#56B4E9", 
-#'          order.by = "freq", 
-#'          empty.intersections = NULL )
+#' # Upset = Upset.Binary.Dataframe(res.DEG)
+#' #upset(Upset, sets = names(Upset), 
+#' #          sets.bar.color = "#56B4E9", 
+#' #          order.by = "freq", 
+#' #          empty.intersections = NULL )
 Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   if(missing(threshold)){
     threshold = 0.05
@@ -93,6 +95,11 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' @param g1.name Character string to be displayed on the legend of the graph for the first graph.
 #' @param g2.name Character string to be displayed on the legend of the graph for the second graph.
 #' @param diplay Logical value.
+#' @param color.g1 Character string for a color to be displayed onto the g1 edges.
+#' By default the color is "blue".
+#' @param color.g2 Character string for a color to be displayed onto the g2 edges.
+#' By default the color is "darkgreen".
+#' 
 #' TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.
 #' @return igraph class object with colored edges.
 #' 
@@ -101,22 +108,23 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #'
 #' @examples
 #' # Creating two datasets
-#' df = matrix(runif(500, 10, 100), ncol=20)
+#' # Import the dataset
+#' Data = matrix(runif(5000, 10, 100), ncol=20)
 #' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
-#' genes <- paste0(rep(LETTERS[1:25], each=1))
-#' colnames(df) = group
-#' row.names(df) = genes
+#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#' colnames(Data) = group
+#' row.names(Data) = genes 
 #' # Computing relation network
-#' G.spearman = Make.df.graph(df, cor.threshold = 0.5, Pvalue.threshold = F, 
-#'                                                      method = "spearman")
-#' G.TOM = Make.df.graph(df, cor.threshold = 0.05, Pvalue.threshold = F, 
-#'                                                  method = "TOM")
+#' #G.spearman = Make.df.graph(Data, cor.threshold = 0.25, Pvalue.threshold = F, 
+#' #                                                      method = "spearman")
+#' #G.kendall = Make.df.graph(Data, cor.threshold = 0.25, Pvalue.threshold = F, 
+#' #                                                  method = "kendall")
 #' # Comparing both relation network
-#' G.comp = relations.comparison(g1 = G.spearman, g2 = G.TOM,  
-#'                              g1.name = "Spearman", 
-#'                              g2.name = "TOM similarity", 
-#'                              diplay = T)
-relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
+#' #G.comp = relations.comparison(g1 = G.spearman, g2 = G.kendall,  
+#' #                              g1.name = "Spearman", 
+#' #                              g2.name = "kendall", 
+#' #                              diplay = T)
+relations.comparison <- function(g1,g2,g1.name,g2.name, diplay, color.g1, color.g2){
   # by default parameters
   if (missing(g1.name)){
     g1.name = "g1"
@@ -126,6 +134,12 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
   }
   if(missing(diplay)){
     diplay = TRUE
+  }
+  if(missing(color.g1)){
+    color.g1 = "blue"
+  }
+  if(missing(color.g2)){
+    color.g2 = "darkgreen"
   }
   # finding g1 exclusive edges
   diffg1 <- graph.difference(g1, g2)
@@ -137,12 +151,12 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
   G1_edges = as_data_frame(diffg1,what = "edges")
   # by default, G1 exclusive edes, will be blue
   if (nrow(G1_edges) != 0){
-    G1_edges$color = "blue"
+    G1_edges$color = color.g1
   }
   # G2, exclusive will be green
   G2_edges = as_data_frame(diffg2,what = "edges")
   if (nrow(G2_edges) != 0){
-    G2_edges$color = "darkgreen"
+    G2_edges$color = color.g2
   }
   
   # Common edges will be red
@@ -174,7 +188,7 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay){
       x=-1.5, y=-1.1,
       c(g1.name,g2.name,inter), 
       pch=18, 
-      col=c("blue","darkgreen","red"), 
+      col=c(color.g1,color.g2,"red"), 
       pt.cex=0, #size of dots in the legend
       cex=1.2, #font size
       lty=c(1,1,1),

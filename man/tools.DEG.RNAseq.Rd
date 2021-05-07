@@ -23,9 +23,13 @@ Dataframe with genes in row, and methods used in columns. In contains the differ
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 }
 \examples{
-# Import a RNA seq dataset
-Data = Simul.data(type = "RNAseq", n.cond1 = 15, n.cond2 = 15, 
-                  nb.genes = 100)
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # computing pvalues of DEG with TMM normalization method
 res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
 }

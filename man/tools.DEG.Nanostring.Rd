@@ -30,13 +30,18 @@ A dataframe with genes in rows and pvalues of a gene being upregulated and downr
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 }
 \examples{
-# Retrieve Nanostring Data
-Data = Simul.data(type = "Nanostring")
+# Import the dataset
+Data = matrix(runif(5000, 10, 100), ncol=20)
+group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+colnames(Data) = group
+row.names(Data) = genes 
+
 # Normalizing data using one method
-Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
+# Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS")
 # Analyze normalized data with one DEG method
-res.DEG = tools.DEG.Nanostring(raw.data = Data, 
-                                data = Norm.data, 
-                                tool_norm = "nappa.NS", 
-                                tool = "RankProduct")
+#res.DEG = tools.DEG.Nanostring(raw.data = Data, 
+#                                 data = Norm.data, 
+#                                 tool_norm = "nappa.NS", 
+#                                 tool = "RankProduct")
 }

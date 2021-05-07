@@ -32,10 +32,10 @@ Normalization through different methods in several packages
 }
 \examples{
 # Retrieve Nanostring Data
-Data = Simul.data(type = "Nanostring")
+# Data = Simul.data(type = "Nanostring")
 # Normalizing data using one method :
-Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS",nanoR=F)
-#with nanoR
-RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
-Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nanoR.top100",dir = RCC.dir,nanoR=T)
+# Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS",nanoR=F)
+#with nanoR : Give the rcc files location
+#RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
+#Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nanoR.top100",dir = RCC.dir,nanoR=T)
 }
