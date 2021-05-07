@@ -11,7 +11,7 @@ tools.DEG.RNAseq.merge(data, tools)
 
 \item{tools}{list character string.
 By default all the methods present in tools.DEG.RNAseq() are used.
-Any tools given in this list could be apssed as argument : 
+Any tools given in this list could be passed as argument : 
 "edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq"}
 }
 \value{

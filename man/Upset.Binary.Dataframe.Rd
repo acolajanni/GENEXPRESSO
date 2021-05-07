@@ -15,7 +15,7 @@ Upset.Binary.Dataframe(data.to.comp, threshold)
 dataframe filled with binary values
 }
 \description{
-Filling the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other.
+Fill the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other.
 }
 \examples{
 # Import the dataset

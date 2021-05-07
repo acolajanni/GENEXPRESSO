@@ -35,13 +35,13 @@ library(nanoR)
 #' @examples
 #' # Retrieve Nanostring Data
 #' # Data = Simul.data(type = "Nanostring")
-#' # Normalizing data using one method :
+#' # Normalize data using one method :
 #' # Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nappa.NS",nanoR=F)
 #' #with nanoR : Give the rcc files location
 #' #RCC.dir <- file.path("./DATA/NANOSTRING","GSE146204_RAW")
 #' #Norm.data = tools.norm.Nanostring(raw.data = Data, tool = "nanoR.top100",dir = RCC.dir,nanoR=T)
 tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
-  # if the method is "nanoR.top100" or "nanoR.total", the function needs other information contained in other files 
+  # if the method is "nanoR.top100" or "nanoR.total", the function needs other informations contained in other files 
   if(!nanoR){
     rcc.samples <- raw.data$rcc.df
     annots.df <- raw.data$annots.df

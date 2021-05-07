@@ -10,7 +10,7 @@ library(igraph)
 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
 #'
-#' @param data.to.comp datarame containing pvalues of genes being differentially expressed, 
+#' @param data.to.comp dataframe containing pvalues of genes being differentially expressed, 
 #' with tools used in row, and genes in columns
 #'
 #' @return Principal component analysis plot with cos2 values for each methods
@@ -42,7 +42,7 @@ PCA_tools <- function(data.to.comp){
 
 #' Compute a usable matrix to make an Upset plot
 #' 
-#' Filling the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other. 
+#' Fill the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other. 
 #'
 #' @param data.to.comp Dataframe of DEG pvalues with genes in columns, and methods in rows.
 #' @param threshold Threshold value to fill the dataframe with binary values. By default threshold = 0.05
@@ -86,7 +86,7 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   return(Upset)
 }
 
-#' Producing an igraph network with different colors to compare two networks with igraph
+#' Produce an igraph network with different colors to compare two networks with igraph
 #'
 #' For two graphs, red edges will be the common ones. It is used to compare two methods with one another, or two experimental conditions of a same set of genes for example. 
 #'
@@ -100,7 +100,7 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' @param color.g2 Character string for a color to be displayed onto the g2 edges.
 #' By default the color is "darkgreen".
 #' 
-#' TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.
+#' TRUE if you want to to display the graph, otherwise it will be stocked as an object.
 #' @return igraph class object with colored edges.
 #' 
 #' @import "igraph"

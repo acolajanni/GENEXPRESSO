@@ -21,8 +21,8 @@ FOV is a dataframe that contains Field of views information.}
 
 \item{tools_DEG}{Method to use to compute the pvalues of differentially expressed genes.
 "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-"limma" uses the functions DEG_limma() that comes from the limma pacakge
-"RankProduct" and "RankSum" perform respectively a Rank Product and a Rank Sum analysiswith the RankProducts() function from the RankProd package}
+"limma" uses the functions DEG_limma() that comes from the limma package
+"RankProduct" and "RankSum" perform respectively a Rank Product and a Rank Sum analysis with the RankProducts() function from the RankProd package}
 
 \item{tools_norm}{Normalization tool. "nappa.NS", "nappa.param1","nappa.param2","nappa.param3" are different parameters used with the NAPPA() function from the NAPPA package.
 "nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2" use the NanoStringNorm() normalization function from the package NanoStringNorm

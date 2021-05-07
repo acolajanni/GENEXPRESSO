@@ -12,7 +12,7 @@ data(GEOlimma_probabilities)
 
 \item{design}{vector of 0 and 1 values. 0 for the first experimental condition, 1 for the second one.}
 
-\item{contrast.matrix}{design matrix like one produced by the make_designMatrix() function.}
+\item{contrast.matrix}{design matrix like the one produced by the make_designMatrix() function.}
 }
 \value{
 A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
@@ -30,7 +30,7 @@ genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Data) = group
 row.names(Data) = genes  
 
-#Construct the design matrix
+#Build the design matrix
 #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #get the results of limma analysis
 #res.diff = DEG_GEOlimma(dataset = Data,design)

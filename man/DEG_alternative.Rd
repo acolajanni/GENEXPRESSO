@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEG.R
 \name{DEG_alternative}
 \alias{DEG_alternative}
-\title{Takes the results of DEG_GEOlimma and DEG_limma to extract the pvalues of alternative hypothesis.}
+\title{Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.}
 \usage{
 DEG_alternative(res.diff_limma)
 }
@@ -13,10 +13,10 @@ the last column corresponds to the gene names (SYMBOL).}
 }
 \value{
 A dataframe with 3 columns is returned. The two columns corresponds to the pvalue
-of a gene being respectively, more expressed and less expressed in the second condition
+of a gene being more expressed and less expressed, in the second condition
 }
 \description{
-Takes the results of DEG_GEOlimma and DEG_limma to extract the pvalues of alternative hypothesis.
+Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.
 }
 \examples{
 # Import the dataset
@@ -26,7 +26,7 @@ genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Data) = group
 row.names(Data) = genes 
 
-#Construct the design matrix
+#Build the design matrix
 #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #get the results of limma analysis
 #res.diff = DEG_limma(dataset = Data,design)

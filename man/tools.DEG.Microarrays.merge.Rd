@@ -7,17 +7,17 @@
 tools.DEG.Microarrays.merge(data, tools, n1, n2)
 }
 \arguments{
-\item{data}{Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.}
+\item{data}{Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.}
 
-\item{tools}{Different methods used to compute pvalues of differentially expressed genes for microarrays
-"Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
+\item{tools}{Different methods are used to compute pvalues of differentially expressed genes for microarrays
+"Wilcox" uses the wilcoxDEG() function implemented in this very same package 
+"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that come from the limma package
 "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively}
 
-\item{n1}{Number of sample for the first experimental condition}
+\item{n1}{Number of samples for the first experimental condition}
 
-\item{n2}{Number of sample for the second experimental condition}
+\item{n2}{Number of samples for the second experimental condition}
 }
 \value{
 Dataframe of pvalues of genes being differentially expressed with genes in columns and methods in rows

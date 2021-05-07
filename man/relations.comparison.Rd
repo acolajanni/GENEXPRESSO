@@ -2,7 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{relations.comparison}
 \alias{relations.comparison}
-\title{Producing an igraph network with different colors to compare two networks with igraph}
+\title{Produce an igraph network with different colors to compare two networks with igraph}
 \usage{
 relations.comparison(g1, g2, g1.name, g2.name, diplay, color.g1, color.g2)
 }
@@ -23,7 +23,7 @@ By default the color is "blue".}
 \item{color.g2}{Character string for a color to be displayed onto the g2 edges.
 By default the color is "darkgreen".
 
-TRUE if you want to to diplay the graph, otherwise it will be stocked as an object.}
+TRUE if you want to to display the graph, otherwise it will be stocked as an object.}
 }
 \value{
 igraph class object with colored edges.

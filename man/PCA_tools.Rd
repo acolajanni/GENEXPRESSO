@@ -7,7 +7,7 @@
 PCA_tools(data.to.comp)
 }
 \arguments{
-\item{data.to.comp}{datarame containing pvalues of genes being differentially expressed, 
+\item{data.to.comp}{dataframe containing pvalues of genes being differentially expressed, 
 with tools used in row, and genes in columns}
 }
 \value{

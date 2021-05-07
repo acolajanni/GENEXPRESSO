@@ -3,12 +3,12 @@
 \docType{data}
 \name{Simul.data}
 \alias{Simul.data}
-\title{Creates a dataset}
+\title{Create a dataset}
 \usage{
 data(Data_Nanostring)
 }
 \arguments{
-\item{type}{Data type wanted. "RNAseq" Simulates data with SimulateRnaSeqData() from the DEFormats package. "Microarrays" simulates data with the function madsim() from madsim package. "Nanostring" imports an already existing dataset, from real data.}
+\item{type}{Data type wanted. "RNAseq" simulates data with SimulateRnaSeqData() from the DEFormats package. "Microarrays" simulates data with the function madsim() from madsim package. "Nanostring" imports an already existing dataset, from real data.}
 
 \item{n.cond1}{Sample number in the first group}
 
@@ -20,7 +20,7 @@ data(Data_Nanostring)
 Dataframe of gene expression values
 }
 \description{
-Creates a dataset depending on the wanted data type
+Create a dataset depending on the wanted data type
 }
 \examples{
 # To get a RNAseq type data with 1000 genes and 2 groups of 15 samples

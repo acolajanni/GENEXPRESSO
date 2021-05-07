@@ -71,7 +71,7 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
 #' colnames(Data) = group
 #' row.names(Data) = genes  
 #' 
-#' #Construct the design matrix
+#' #Build the design matrix
 #' #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #' #res.DEG = DEG_limma(Data,design)
 DEG_limma <- function(dataset,design, contrast.matrix){
@@ -97,7 +97,7 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #'
 #' @param dataset dataframe of expression values with samples in columns and genes in row.
 #' @param design vector of 0 and 1 values. 0 for the first experimental condition, 1 for the second one.
-#' @param contrast.matrix design matrix like one produced by the make_designMatrix() function.
+#' @param contrast.matrix design matrix like the one produced by the make_designMatrix() function.
 #' 
 #' @return
 #' A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
@@ -116,7 +116,7 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #' colnames(Data) = group
 #' row.names(Data) = genes  
 #' 
-#' #Construct the design matrix
+#' #Build the design matrix
 #' #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #' #get the results of limma analysis
 #' #res.diff = DEG_GEOlimma(dataset = Data,design)
@@ -133,7 +133,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
   # GEOlimma_probabilities.rda is a file that contains real probabilities of a gene being differentially expressed
   #data("GEOlimma_probabilities")
   prop = GENEXPRESSO::prop
-  # Those data are used to help the model to fit
+  # These datas are used to help the model fit
   fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
   # Classifying genes through their pvalue being differentially expressed
   de <- topTable(fit22, number = nrow(dataset))
@@ -144,7 +144,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
   return(res.diff_geolimma)
 }
 
-#' Takes the results of DEG_GEOlimma and DEG_limma to extract the pvalues of alternative hypothesis.
+#' Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.
 #'
 #' @param res.diff_limma 
 #' A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
@@ -153,7 +153,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
 #'
 #' @return
 #' A dataframe with 3 columns is returned. The two columns corresponds to the pvalue
-#' of a gene being respectively, more expressed and less expressed in the second condition
+#' of a gene being more expressed and less expressed, in the second condition
 #' 
 #' @import "data.table"
 #' @export
@@ -166,7 +166,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
 #' colnames(Data) = group
 #' row.names(Data) = genes 
 #' 
-#' #Construct the design matrix
+#' #Build the design matrix
 #' #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #' #get the results of limma analysis
 #' #res.diff = DEG_limma(dataset = Data,design)
@@ -178,7 +178,7 @@ DEG_alternative <- function(res.diff_limma){
   res.up = copy(res.diff_limma)
   res.down = copy(res.diff_limma)
   # If the pvalue is significant, and depending on the sign of the logFoldChange, we can set the probability to one for one hypothesis
-  # The idea is that, if the fist condition has significantly higher expression values than the second one, the gene can't be more expressed in the second condition, and vice versa.
+  # If the fist condition has significantly higher expression values than the second one, the gene can't be more expressed in the second condition, and vice versa.
   for (row in 1:nrow(res.diff_limma)){
     if (res.diff_limma[['logFC']][row] > 0 && res.diff_limma[['PValue']][row] <= 0.05){
       res.down[['PValue']][row] = 1 
@@ -187,7 +187,7 @@ DEG_alternative <- function(res.diff_limma){
       res.up[['PValue']][row] = 1
     }
   }
-  # This way, two columns are created, one for the probability of a gene being more expressed in the second condition (Pvalue_Up), and less expressed (Pvalue_Down)
+  # This way, two columns are created, one for the probability of a gene being more expressed (Pvalue_Up) and less expressed (Pvalue_Down) in the second condition
   res = data.frame(PValue_Up = res.up$PValue, Pvalue_Down = res.down$PValue, SYMBOL = res.diff_limma$SYMBOL)
   return(res)
 }
@@ -219,7 +219,7 @@ DEG_alternative <- function(res.diff_limma){
 #' res.DEG = wilcoxDEG(Data,10,10)
 wilcoxDEG <- function(data, n1, n2){
   wilcox <- data.frame()
-  # for each row in the dataset, three Wilconxon test are made, depending on the hypothesis.
+  # for each row in the dataset, three Wilcoxon tests are made, depending on the hypothesis.
   for (i in 1:nrow(data)){
     x = data[i,1:n1]
     y = data[i,(n1+1):(n1+n2)]
@@ -237,7 +237,7 @@ wilcoxDEG <- function(data, n1, n2){
   return(wilcox)
 }
 
-#' Compute the pvalues of genes being up and downregulated for Microarray datasets.
+#' Compute the pvalues of genes being up- and down-regulated for Microarray datasets.
 #'
 #' Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 #'
@@ -259,7 +259,6 @@ wilcoxDEG <- function(data, n1, n2){
 #' @export
 #'
 #' @examples
-#' # Import a dataset
 #' # Import the dataset
 #' Data = matrix(runif(5000, 10, 100), ncol=20)
 #' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
@@ -273,7 +272,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
   if (tool == "GEOlimma" || tool == "limma"){
     design = make_designMatrix(dataset = data)
   } else if (tool%in%c("RankProduct","RankProduct.log","RankSum","RankSum.log")){
-    # we need a vector with 0 or 1 corresponding to the experimental condition (0 for the first, 1 for the other)
+    # we need a vector of 0 and 1 corresponding to the experimental condition (0 for the first, 1 for the other)
     design = rep(c(0,1),c(n1,n2)) 
   }
   
@@ -305,7 +304,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
                                       RankProduct = {
                                         # Computing the DEG analysis
                                         res.diff = RankProducts(data, # dataset
-                                                                design, #vector with 0 and 1 corresponding the the experimental condition of each sample
+                                                                design, #vector of 0 and 1 corresponding the the experimental condition of each sample
                                                                 rand = 123, # equivalent to set seed, to have reproducible results
                                                                 logged = FALSE, # wether or not the data are in log scale
                                                                 na.rm = TRUE , # removing missing data
@@ -345,7 +344,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
 
 #' Compute the pvalues of genes being up and downregulated for Nanostring datasets.
 #'
-#' Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
+#' Through different functions contained in several packages, this function computes pvalues of diferentially expressed genes
 #'
 #' @param raw.data rcc type file. List of 4 elements: 
 #' Samples.IDs is a dataframe with four columns: sample name, status (WildType, Mutated), filename. 
@@ -487,7 +486,7 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #' The first method uses a Wald test and the second a Likelihood ratio test to determine Pvalues of differentially expressed genes.
 #'
 #' @return
-#' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene. 
+#' Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene. 
 #' 
 #' @import "DESeq2" "DESeq" "edgeR"
 #' @export
@@ -582,7 +581,7 @@ tools.DEG.RNAseq <- function(data,tool){
                                   stop("Enter something that switches me!") 
                                   
   )
-  # DEG analysis for not yet treated data (only edgeR methods)
+  # DEG analysis for data that hasn't been treated yet (only edgeR methods)
   if (!tool%in%c("deseq2.Wald","deseq2.LRT", "deseq")){
     # Exact Test (edgeR)
     colname1 = paste(tool_name,"ExactTest")
@@ -612,7 +611,7 @@ tools.DEG.RNAseq <- function(data,tool){
     res.diff2 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
     res.diff = merge(res.diff1,res.diff2,by = "genes",all=T)
     
-    # Renaming the two last columns
+    # Renaming the last two columns
     names(res.diff)[-1][-2] = colname1
     names(res.diff)[-1][-1] = colname2
   }
@@ -625,7 +624,7 @@ tools.DEG.RNAseq <- function(data,tool){
 #' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
 #' @param tools list character string.
 #' By default all the methods present in tools.DEG.RNAseq() are used.
-#' Any tools given in this list could be apssed as argument : 
+#' Any tools given in this list could be passed as argument : 
 #' "edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq"
 #' @return 
 #' Dataframe of DEG pvalues with genes in columns and tools in rows.
@@ -670,8 +669,8 @@ tools.DEG.RNAseq.merge <- function(data,tools){
 #'
 #' @param tools_DEG Method to use to compute the pvalues of differentially expressed genes.
 #' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-#' "limma" uses the functions DEG_limma() that comes from the limma pacakge
-#' "RankProduct" and "RankSum" perform respectively a Rank Product and a Rank Sum analysiswith the RankProducts() function from the RankProd package
+#' "limma" uses the functions DEG_limma() that comes from the limma package
+#' "RankProduct" and "RankSum" perform respectively a Rank Product and a Rank Sum analysis with the RankProducts() function from the RankProd package
 #'   
 #' @param tools_norm Normalization tool. "nappa.NS", "nappa.param1","nappa.param2","nappa.param3" are different parameters used with the NAPPA() function from the NAPPA package.
 #'  "nanostringnorm.default","nanostringnorm.param1","nanostringnorm.param2" use the NanoStringNorm() normalization function from the package NanoStringNorm
@@ -760,7 +759,7 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
   # The gene column is placed as row names
   row.names(data.to.comp) <- data.to.comp$SYMBOL
   data.to.comp <- data.to.comp[,-1]
-  # if you need to remove genes not present in all analyses: NA (missing) data
+  # if you need to remove genes not present in all analysis: NA (missing) data
   data.to.comp <- na.omit(data.to.comp)
   # we obtain a dataframe with genes in columns and methods in rows
   data.to.comp <- as.data.frame(t(data.to.comp))
@@ -769,15 +768,15 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
 
 #' Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
 #'
-#' @param data Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
-#' @param tools Different methods used to compute pvalues of differentially expressed genes for microarrays
-#' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
+#' @param data Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.
+#' @param tools Different methods are used to compute pvalues of differentially expressed genes for microarrays
+#' "Wilcox" uses the wilcoxDEG() function implemented in this very same package 
+#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that come from the limma package
 #' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 #' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 
-#' @param n1 Number of sample for the first experimental condition
-#' @param n2 Number of sample for the second experimental condition
+#' @param n1 Number of samples for the first experimental condition
+#' @param n2 Number of samples for the second experimental condition
 #'
 #' @return Dataframe of pvalues of genes being differentially expressed with genes in columns and methods in rows
 #' @export

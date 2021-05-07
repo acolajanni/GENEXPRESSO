@@ -30,7 +30,7 @@ genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Data) = group
 row.names(Data) = genes  
 
-#Construct the design matrix
+#Build the design matrix
 #design = make_designMatrix(dataset = Data,ncond1 = 10, ncond2 = 10)
 #res.DEG = DEG_limma(Data,design)
 }

@@ -5,11 +5,11 @@
 library(DEFormats)
 library(madsim)
 
-#' Creates a dataset
+#' Create a dataset
 #'
-#' Creates a dataset depending on the wanted data type 
+#' Create a dataset depending on the wanted data type 
 #'
-#' @param type Data type wanted. "RNAseq" Simulates data with SimulateRnaSeqData() from the DEFormats package. "Microarrays" simulates data with the function madsim() from madsim package. "Nanostring" imports an already existing dataset, from real data.
+#' @param type Data type wanted. "RNAseq" simulates data with SimulateRnaSeqData() from the DEFormats package. "Microarrays" simulates data with the function madsim() from madsim package. "Nanostring" imports an already existing dataset, from real data.
 #' @param n.cond1 Sample number in the first group 
 #' @param n.cond2 Sample number in the second group
 #' @param nb.genes Gene numbers

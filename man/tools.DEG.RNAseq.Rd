@@ -17,7 +17,7 @@ and a Quasi-likelihood test with the glmQLFTest() function still in the edgeR pa
 The first method uses a Wald test and the second a Likelihood ratio test to determine Pvalues of differentially expressed genes.}
 }
 \value{
-Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
+Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.
 }
 \description{
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes

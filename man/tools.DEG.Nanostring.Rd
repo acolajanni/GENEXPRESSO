@@ -27,7 +27,7 @@ FOV is a dataframe that contains Field of views information.}
 A dataframe with genes in rows and pvalues of a gene being upregulated and downregulated in columns
 }
 \description{
-Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
+Through different functions contained in several packages, this function computes pvalues of diferentially expressed genes
 }
 \examples{
 # Import the dataset

@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.Microarrays}
 \alias{tools.DEG.Microarrays}
-\title{Compute the pvalues of genes being up and downregulated for Microarray datasets.}
+\title{Compute the pvalues of genes being up- and down-regulated for Microarray datasets.}
 \usage{
 tools.DEG.Microarrays(data, tool, n1, n2)
 }
@@ -26,7 +26,6 @@ A dataframe with genes in rows and pvalues of a gene being upregulated and downr
 Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
 }
 \examples{
-# Import a dataset
 # Import the dataset
 Data = matrix(runif(5000, 10, 100), ncol=20)
 group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
