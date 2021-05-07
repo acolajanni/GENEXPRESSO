@@ -6,7 +6,7 @@ Authors@R: c(person("Antonin", "Colajanni", role = c("aut","cre"), email = "anto
               person("Anthony", "Kudin",role = "aut"), 
               person("Paul", "Sourbe", role = "aut"), 
               person("Tardivy--Casemejor", "Juliette", ,role = "aut"),
-              person("Elodie"," Darbo",role = "aut") )
+              person("Darbo","Elodie",role = "aut") )
 Description: Comparison of DEG and coexpression tools for Nanostring, Microarrays and RNA-seq.
 Encoding: UTF-8
 License: GPL-3 

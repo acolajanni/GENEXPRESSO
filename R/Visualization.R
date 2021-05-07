@@ -71,7 +71,7 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   if(missing(threshold)){
     threshold = 0.05
   }
-  # à refaire avec la fonction ifelse()
+  
   Upset <- copy(data.to.comp)
   for (i in names(Upset)){
     for (u in 1:nrow(Upset)){
@@ -94,7 +94,7 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' @param g2 igraph class object.
 #' @param g1.name Character string to be displayed on the legend of the graph for the first graph.
 #' @param g2.name Character string to be displayed on the legend of the graph for the second graph.
-#' @param diplay Logical value.
+#' @param display Logical value.
 #' @param color.g1 Character string for a color to be displayed onto the g1 edges.
 #' By default the color is "blue".
 #' @param color.g2 Character string for a color to be displayed onto the g2 edges.
@@ -123,8 +123,8 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
 #' #G.comp = relations.comparison(g1 = G.spearman, g2 = G.kendall,  
 #' #                              g1.name = "Spearman", 
 #' #                              g2.name = "kendall", 
-#' #                              diplay = T)
-relations.comparison <- function(g1,g2,g1.name,g2.name, diplay, color.g1, color.g2){
+#' #                              display = T)
+relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color.g2){
   # by default parameters
   if (missing(g1.name)){
     g1.name = "g1"
@@ -132,8 +132,8 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay, color.g1, color.
   if (missing(g2.name)){
     g1.name = "g2"
   }
-  if(missing(diplay)){
-    diplay = TRUE
+  if(missing(display)){
+    display = TRUE
   }
   if(missing(color.g1)){
     color.g1 = "blue"
@@ -171,8 +171,8 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, diplay, color.g1, color.
   graph = rbind(G1_edges,G2_edges, Common_edges)
   # Converting back the dataframe into an igraph class object
   g = graph.data.frame(graph, directed = F)
-  # Diplay or not the graph in the plot window.
-  if(diplay){
+  # Display or not the graph in the plot window.
+  if(display){
     plot(g, #layout = lay,
          edge.width = 2,
          vertex.size = 2,

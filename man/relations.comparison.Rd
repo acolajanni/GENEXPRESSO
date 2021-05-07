@@ -4,7 +4,7 @@
 \alias{relations.comparison}
 \title{Produce an igraph network with different colors to compare two networks with igraph}
 \usage{
-relations.comparison(g1, g2, g1.name, g2.name, diplay, color.g1, color.g2)
+relations.comparison(g1, g2, g1.name, g2.name, display, color.g1, color.g2)
 }
 \arguments{
 \item{g1}{igraph class object.}
@@ -15,7 +15,7 @@ relations.comparison(g1, g2, g1.name, g2.name, diplay, color.g1, color.g2)
 
 \item{g2.name}{Character string to be displayed on the legend of the graph for the second graph.}
 
-\item{diplay}{Logical value.}
+\item{display}{Logical value.}
 
 \item{color.g1}{Character string for a color to be displayed onto the g1 edges.
 By default the color is "blue".}
@@ -48,5 +48,5 @@ row.names(Data) = genes
 #G.comp = relations.comparison(g1 = G.spearman, g2 = G.kendall,  
 #                              g1.name = "Spearman", 
 #                              g2.name = "kendall", 
-#                              diplay = T)
+#                              display = T)
 }
