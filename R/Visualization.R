@@ -49,6 +49,7 @@ PCA_tools <- function(data.to.comp){
 #'
 #' @return dataframe filled with binary values
 #' 
+#' @import "UpSetR"
 #' @export
 #'
 #' @examples
