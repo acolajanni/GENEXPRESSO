@@ -71,9 +71,9 @@ if(type=="Nanostring" || type == "Microarrays"){
 # On peut donc maintenant construire l'upset plot
 if(type=="Nanostring" || type == "Microarrays"){
   # Upset plot des gènes surexprimés dans la 2ème condition
-  upset(Binary.Matrix, sets = names(Upreg), sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+  upset(Binary.Matrix, sets = Upreg, sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
   # Upset plot des gènes sous-exprimés dans la 2ème condition
-  upset(Binary.Matrix, sets = names(Downreg), sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
+  upset(Binary.Matrix, sets = Downreg, sets.bar.color = "#56B4E9", order.by = "freq",empty.intersections = NULL )
   
 }else{
   # Upset plot des gènes différentiellement exprimés
@@ -103,9 +103,9 @@ Relations = Make.full.adjacency(data,PValue = TRUE)
 # On peut comparer les différentes méthodes entre elles :
 
 # Les graphes sont contruits avec les trois méthodes implémentées
-spearman = Make.df.graph(data, cor.threshold = 0.8,Pvalue.threshold = F ,method = "spearman")
-TOM = Make.df.graph(data, cor.threshold = 0.4,method = "TOM")
-kendall = Make.df.graph(data,  cor.threshold = 0.65,Pvalue.threshold = F,method = "kendall")
+spearman = Make.df.graph(data, cor.threshold = 0.7,Pvalue.threshold = F ,method = "spearman")
+TOM = Make.df.graph(data, cor.threshold = 0.15,method = "TOM")
+kendall = Make.df.graph(data,  cor.threshold = 0.55,Pvalue.threshold = F,method = "kendall")
 # Affichage en comparaisondeux à deux des trois méthodes 
 par(mfrow = c(1,3))
 CompGraph_TOM_kendall = relations.comparison(TOM, kendall, "TOM", "Kendall",color.g1 = "blue", color.g2 = "orange")
@@ -131,8 +131,8 @@ data_gr1 = data[1:n1]
 data_gr2 = data[(n1+1):(n1+n2)]
 
 # On peut comparer les deux groupes selon le critère de similarité "TOM" par exemple
-TomG1 = Make.df.graph(data_gr1, cor.threshold = 0.15,Pvalue.threshold = F ,method = "TOM")
-TomG2 = Make.df.graph(data_gr2, cor.threshold = 0.15,Pvalue.threshold = F ,method = "TOM")
+TomG1 = Make.df.graph(data_gr1, cor.threshold = 0.1,Pvalue.threshold = F ,method = "TOM")
+TomG2 = Make.df.graph(data_gr2, cor.threshold = 0.1,Pvalue.threshold = F ,method = "TOM")
 # Afficahge de la comparaison entre les deux groupes
 dev.off()
 CompGraph_total = relations.comparison(TomG1, TomG2, "groupe 1", "groupe 2")
