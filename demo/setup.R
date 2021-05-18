@@ -1,5 +1,7 @@
-packages.cran <- c("devtools","data.table","NanoStringNorm","pheatmap","nanostringr","ggrepel")
-packages.bioC <- c("limma","GEOquery","DESeq2","vsn")
+packages.cran <- c("madsim","FactoMineR","factoextra","UpSetR","igraph","reshape2","devtools","data.table","NanoStringNorm","pheatmap","nanostringr","ggrepel")
+packages.bioC <- c("limma","GEOquery","DESeq2","DESeq","vsn","WGCNA","RankProd","edgeR","DEFormats")
+# Indisponible sur R 4.0 :
+packages = c("DESeq2","DESeq","RankProd","edgeR", "DEFormats")
 
 installed <- rownames(installed.packages())
 packages.cran <- packages.cran[!packages.cran%in%installed]
@@ -10,17 +12,19 @@ if (length(packages.cran)>0){
 }
 
 if (!requireNamespace("nanoR", quietly = TRUE)){
-  install.packages("~/nanoR",repos=NULL,type="source")
+  install.packages("~/GIT/GENEXPRESSO/nanoR",repos=NULL,type="source")
 }
 
 if (!requireNamespace("NAPPA", quietly = TRUE)){
-  install.packages("~/GIT/CPRD/NAPPA_2.0.tar.gz",repos=NULL,type="source")
+  install.packages("~/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz", repos = NULL, type = "source")
 }
 
 if (length(packages.cran)>0){
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-  BiocManager::install(packages.bioC)
+  for (package in packages.bioC){
+    BiocManager::install(package, force = TRUE)
+  }
 }
 
 if (!requireNamespace("ggbiplot", quietly = TRUE)) {
@@ -28,24 +32,33 @@ if (!requireNamespace("ggbiplot", quietly = TRUE)) {
   install_github("vqv/ggbiplot")
 }
 
-if (!requireNamespace("UpSetR", quietly = TRUE)){
-  install.packages("UpSetR")
-}
 
-if (!requireNamespace("reshape2", quietly = TRUE)){
-  install.packages("reshape2")
-}
 
-if (!requireNamespace("WGCNA", quietly = TRUE)){
-  BiocManager::install("WGCNA") 
-}
+
+
+
+
+
+
+#if (!requireNamespace("UpSetR", quietly = TRUE)){
+#  install.packages("UpSetR")
+#}
+
+#if (!requireNamespace("reshape2", quietly = TRUE)){
+#  install.packages("reshape2")
+#}
+
+#if (!requireNamespace("WGCNA", quietly = TRUE)){
+#  BiocManager::install("WGCNA") 
+#}
 
 if (!requireNamespace("RankProd", quietly = TRUE)){
   BiocManager::install("RankProd")
 }
-if (!requireNamespace("igraph", quietly = TRUE)){
-  BiocManager::install("igraph")
-}
+#if (!requireNamespace("igraph", quietly = TRUE)){
+#  BiocManager::install("igraph")
+#}
+
 if (!requireNamespace("factoextra", quietly = TRUE)){
   BiocManager::install("factoextra")
 }
