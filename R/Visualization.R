@@ -40,12 +40,14 @@ PCA_tools <- function(data.to.comp){
                 ggrepel.max.overlaps = 3)
 }
 
+
 #' Compute a usable matrix to make an Upset plot
 #' 
 #' Fill the dataframe with binary values. 0 for non differentially expressed genes and 1 for the other. 
 #'
 #' @param data.to.comp Dataframe of DEG pvalues with genes in columns, and methods in rows.
-#' @param threshold Threshold value to fill the dataframe with binary values. By default threshold = 0.05
+#' @param threshold Integer. 
+#' For the whole dataframe, if value <= threshold, value = 1, else value = 0.
 #'
 #' @return dataframe filled with binary values
 #' 
@@ -72,18 +74,11 @@ Upset.Binary.Dataframe <- function(data.to.comp, threshold){
   if(missing(threshold)){
     threshold = 0.05
   }
-  
-  Upset <- copy(data.to.comp)
-  for (i in names(Upset)){
-    for (u in 1:nrow(Upset)){
-      if(data.to.comp[[i]][u] > threshold){
-        Upset[[i]][u] = 0}
-      else{
-        Upset[[i]][u] = 1
-      }
-    }
-  }
+  # Replacing values of data.to.comp
+  # 1 if below the threshold (significantly differentially expressed), else 0
+  Upset = ifelse(data.to.comp <= threshold, 1, 0)
   Upset = as.data.frame(t(Upset))
+  
   return(Upset)
 }
 

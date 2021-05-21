@@ -32,5 +32,7 @@ Imports:
     UpSetR,
     data.table,
     graphics,
-    stats
+    stats,
+    dplyr,
+    stringr
 RoxygenNote: 7.1.1
