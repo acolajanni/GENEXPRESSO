@@ -10,7 +10,7 @@ gds@dataTable@table
 
 # Plus lourd que les autres, contient toutes les données
 gse <- getGEO("GSE781",GSEMatrix=TRUE)
-
+show(gse)
 
 # récupérer un expression tableau d'expression à partir de gds
 # Possible de faire une transfo log mais peut être pas intéressant ? (depénd de la normalisation)
