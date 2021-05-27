@@ -7,3 +7,4 @@ install.packages("rJava")
 install.packages("rgdal")
 install.packages("xlsx")
 
+sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
