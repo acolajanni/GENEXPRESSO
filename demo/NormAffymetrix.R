@@ -9,9 +9,9 @@ library(stringr)
 
 
 getGEOSuppFiles("GSE781", fetch_files = TRUE, baseDir = "./data")
-
+untar(tarfile = "./data/GSE781/GSE781_RAW.tar", exdir = "./data/GSE781")
 ###############################
-celpath = file.path("./data/Affymetrix/GSE781_RAW/")
+celpath = file.path("./data/GSE781/")
 f <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
 
 # Pas indispensable

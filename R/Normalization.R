@@ -189,7 +189,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
   }
   else {
     # Download the archive
-    getGEOSuppFiles(CelFiles, fetch_files = TRUE, baseDir = "./data")  
+    getGEOSuppFiles(GEOiD, fetch_files = TRUE, baseDir = "./data")  
     # get the directory
     celpath = paste0("./data/",GEOiD,"/")
     # extracting it
@@ -215,6 +215,10 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
                      mas5 = {
                        eset = mas5(abatch)
                      }, 
+                     
+                     none = {
+                       return(abatch)
+                     },
                      
                      # Custom normalization through different method : 
                      # Normalization, background correction, pm correction, summary stat expression
