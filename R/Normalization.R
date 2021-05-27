@@ -169,18 +169,17 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
 #' If you give a GEO accession number, then set FetchOnGEOdb = TRUE.
 #' Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. Note that if the data are stored localy, it should be inside a .tar archive.
 #' @param FetchOnGEOdb logical value. if TRUE, GEOiD parameter should be a GEO accession number.
-#' @param tools.norm Character string in the following : "rma","gcrma","mas5"  "custom"
-#' If tools.norm = "rma" or "gcrma" or "mas5" other tools parameters could be ignored
 #' @param tools.normalize 
 #' @param tools.bgcorrect 
 #' @param tools.pmcorrect 
 #' @param tools.express.summary.stat 
+#' @param tools 
 #'
 #' @return
 #' @export
 #'
 #' @examples
-tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools.norm, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
+tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
   
   if (!FetchOnGEOdb){
     # Getting the directory of .Cel files
@@ -202,8 +201,9 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools.norm, tools.no
     # Construct the AffyBatch object
     abatch <- ReadAffy(filenames = files)
   }
-  
-  tools.fnc = switch(tools.norm,
+  # Depending on the applied methods, different functions will be called
+  tools.fnc = switch(tools,
+                     # rma, gcrma and mas5 are pretty straigthforward functions
                      rma = {
                        eset = rma(abatch)
                      },
@@ -216,30 +216,44 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools.norm, tools.no
                        eset = mas5(abatch)
                      }, 
                      
+                     # Custom normalization through different method : 
+                     # Normalization, background correction, pm correction, summary stat expression
                      custom = {
                        
-                       custom.fnc = switch(tools.bgcorrect,
-                                          
-                                           mas = {
-                                             
-                                           },
-                                           rma = {
-                                             
-                                           },
-                                           stop("ojktdjyrs")
-                                           )
+                       # Error management for each tool method given in argument
+                       bgcorrect.methods = bgcorrect.methods()
+                       bgcorrect.methods = bgcorrect.methods[bgcorrect.methods == "rma" | bgcorrect.methods == "mas" ]
+                       if (!tools.bgcorrect%in%bgcorrect.methods){
+                         stop("Enter a background correction method that switches me!")
+                       }
                        
-                       custom2.fnc = switch(tools.normalize,
-                                            )
-                     }
-                     
-                     
-                     
-                     
-                     
-                     stop("Enter something that switches me!") 
-                     
-                     
+                       
+                       norm.methods = normalize.AffyBatch.methods()
+                       norm.methods = norm.methods [norm.methods != "methods" & norm.methods != "vsn" ]
+                       if (!tools.normalize%in%norm.methods){
+                         stop("Enter a normalization method that switches me!")
+                       }
+                       
+                       pmcorrect.methods = pmcorrect.methods()
+                       pmcorrect.methods = pmcorrect.methods[pmcorrect.methods != "methods"]
+                       if (!tools.pmcorrect%in%pmcorrect.methods){
+                         stop("Enter a pm correction method that switches me!")
+                       }
+                       
+                       sum.stat = express.summary.stat.methods()
+                       if (!tools.express.summary.stat%in% sum.stat){
+                         stop("Enter a summary stat method that switches me!")
+                       }
+                       
+                       # If all tools.normalize, tools.bgcorrect, .... are correct
+                       # We can call the expresso() function with the four tools parameters : 
+                       eset <- expresso(abatch1, 
+                                        bgcorrect.method= tools.bgcorrect,
+                                        normalize.method= tools.normalize,
+                                        pmcorrect.method= tools.pmcorrect,
+                                        summary.method= tools.express.summary.stat)
+                       
+                       }
                      )
   
   exprSet = exprs(eset)

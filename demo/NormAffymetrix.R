@@ -56,7 +56,7 @@ eset.mas5 = mas5(abatch1)
 
 # Pour plus de paramétrage : (on peut changer chaque méthode)
 eset <- expresso(abatch1, bgcorrect.method="rma",
-                 normalize.method="contrasts",
+                 normalize.method="constant",
                  pmcorrect.method="pmonly"
                  ,summary.method="avgdiff"
                  )
@@ -64,6 +64,10 @@ eset <- expresso(abatch1, bgcorrect.method="rma",
 
 abatchBG = bg.correct(abatch1, method = "rma")
 abatchBG_constant = normalize.AffyBatch.constant(abatch = abatchBG)
+abatchBG_constant_pmonly = pmcorrect.pmonly(abatchBG_constant)
+abatchBG_constant_pmonly_avgdiff = express.summary.stat(abatchBG_constant, 
+                                                        pmcorrect = "pmonly",
+                                                        summary = "avgdiff")
 
 # RMA par défaut
 eset.rma = rma(abatch1)
@@ -84,10 +88,21 @@ exprSet = log(exprSet,2)
 
 
 # Options personallisable allant avec la fonction expresso()
-normalize.AffyBatch.methods()
-bgcorrect.methods()
-pmcorrect.methods()
-express.summary.stat.methods()
+norm.methods = normalize.AffyBatch.methods()
+#norm.methods = norm.methods[-c("methods","vsn")]
+norm.methods = norm.methods [norm.methods != "methods" & norm.methods != "vsn" ]
+
+
+
+bgcorrect.methods = bgcorrect.methods()
+bgcorrect.methods = bgcorrect.methods[bgcorrect.methods == "rma" | bgcorrect.methods == "mas" ]
+bgcorrect.methods
+
+pmcorrect.methods = pmcorrect.methods()
+pmcorrect.methods = pmcorrect.methods[pmcorrect.methods != "methods"]
+
+
+sum.stat = express.summary.stat.methods()
 
 
 
