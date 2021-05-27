@@ -162,3 +162,87 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
   )
   return(res.norm)
 }
+
+#' Normalize a Nanostring dataset
+#'
+#' @param GEOiD GEO accession number or directory. 
+#' If you give a GEO accession number, then set FetchOnGEOdb = TRUE.
+#' Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. Note that if the data are stored localy, it should be inside a .tar archive.
+#' @param FetchOnGEOdb logical value. if TRUE, GEOiD parameter should be a GEO accession number.
+#' @param tools.norm Character string in the following : "rma","gcrma","mas5"  "custom"
+#' If tools.norm = "rma" or "gcrma" or "mas5" other tools parameters could be ignored
+#' @param tools.normalize 
+#' @param tools.bgcorrect 
+#' @param tools.pmcorrect 
+#' @param tools.express.summary.stat 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools.norm, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
+  
+  if (!FetchOnGEOdb){
+    # Getting the directory of .Cel files
+    celpath = celpath = file.path(GEOiD)
+    files <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
+    abatch <- ReadAffy(filenames = files)
+  }
+  else {
+    # Download the archive
+    getGEOSuppFiles(CelFiles, fetch_files = TRUE, baseDir = "./data")  
+    # get the directory
+    celpath = paste0("./data/",GEOiD,"/")
+    # extracting it
+    tarfile = paste0(celpath, GEOiD,"_RAW.tar")
+    # Extract the .cel files from the archive
+    untar(tarfile = tarfile, exdir = celpath)
+    # Retrieve the filenames
+    files <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
+    # Construct the AffyBatch object
+    abatch <- ReadAffy(filenames = files)
+  }
+  
+  tools.fnc = switch(tools.norm,
+                     rma = {
+                       eset = rma(abatch)
+                     },
+                     
+                     gcrma = {
+                       eset = gcrma(abatch)
+                     },
+                     
+                     mas5 = {
+                       eset = mas5(abatch)
+                     }, 
+                     
+                     custom = {
+                       
+                       custom.fnc = switch(tools.bgcorrect,
+                                          
+                                           mas = {
+                                             
+                                           },
+                                           rma = {
+                                             
+                                           },
+                                           stop("ojktdjyrs")
+                                           )
+                       
+                       custom2.fnc = switch(tools.normalize,
+                                            )
+                     }
+                     
+                     
+                     
+                     
+                     
+                     stop("Enter something that switches me!") 
+                     
+                     
+                     )
+  
+  exprSet = exprs(eset)
+  return(exprSet)
+}
+methods = c("rma","gcrma","mas5", "custom")

@@ -9,7 +9,8 @@ Upset.Binary.Dataframe(data.to.comp, threshold)
 \arguments{
 \item{data.to.comp}{Dataframe of DEG pvalues with genes in columns, and methods in rows.}
 
-\item{threshold}{Threshold value to fill the dataframe with binary values. By default threshold = 0.05}
+\item{threshold}{Integer. 
+For the whole dataframe, if value <= threshold, value = 1, else value = 0.}
 }
 \value{
 dataframe filled with binary values

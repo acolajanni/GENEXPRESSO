@@ -1,8 +1,9 @@
-packages.cran <- c("madsim","FactoMineR","factoextra","UpSetR","igraph","reshape2","devtools","data.table","NanoStringNorm","pheatmap","nanostringr","ggrepel")
+packages.cran <- c("madsim","factoextra","FactoMineR","UpSetR","igraph","reshape2","devtools","data.table","NanoStringNorm","pheatmap","nanostringr","ggrepel")
 packages.bioC <- c("limma","GEOquery","DESeq2","DESeq","vsn","WGCNA","RankProd","edgeR","DEFormats")
 # Indisponible sur R 4.0 :
-packages = c("DESeq2","DESeq","RankProd","edgeR", "DEFormats")
-
+packages = c("DESeq2","DESeq","RankProd","edgeR", "DEFormats", "WGCNA")
+pkgs = c("DEFormats", "madsim", "edgeR", "DESeq", "DESeq2", "RankProd", "limma", "nanostringr", "NanoStringNorm", "reshape2", "WGCNA", "factoextra", "FactoMineR", "UpSetR", "data.table", "dplyr")
+#problème : vsn doit être installé avant NanostringNorm
 installed <- rownames(installed.packages())
 packages.cran <- packages.cran[!packages.cran%in%installed]
 packages.bioC <- packages.bioC[!packages.cran%in%installed]
@@ -12,18 +13,23 @@ if (length(packages.cran)>0){
 }
 
 if (!requireNamespace("nanoR", quietly = TRUE)){
-  install.packages("~/GIT/GENEXPRESSO/nanoR",repos=NULL,type="source")
+  install.packages("~/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
+# renv::install("~/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
+  
 }
-
 if (!requireNamespace("NAPPA", quietly = TRUE)){
-  install.packages("~/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz", repos = NULL, type = "source")
+  install.packages("~/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz", 
+                   lib = "/home/acolajanni/GIT/GENEXPRESSO/renv/library/R-3.6/x86_64-conda-linux-gnu",
+                   repos = NULL, type = "source")
+  #renv::install("~/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz", 
+  #              repos = NULL, type = "source")
 }
 
 if (length(packages.cran)>0){
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
   for (package in packages.bioC){
-    BiocManager::install(package, force = TRUE)
+    BiocManager::install(package, dependancies = TRUE)
   }
 }
 
@@ -31,8 +37,6 @@ if (!requireNamespace("ggbiplot", quietly = TRUE)) {
   library(devtools)
   install_github("vqv/ggbiplot")
 }
-
-
 
 
 
