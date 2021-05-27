@@ -6,7 +6,7 @@ pkgs = c("DEFormats", "madsim", "edgeR", "DESeq", "DESeq2", "RankProd", "limma",
 #problème : vsn doit être installé avant NanostringNorm
 installed <- rownames(installed.packages())
 packages.cran <- packages.cran[!packages.cran%in%installed]
-packages.bioC <- packages.bioC[!packages.cran%in%installed]
+packages.bioC <- packages.bioC[!packages.bioC%in%installed]
 
 if (length(packages.cran)>0){
   install.packages(packages.cran,dependencies=TRUE)
