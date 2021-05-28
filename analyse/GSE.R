@@ -2,6 +2,8 @@ install.packages('https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.ta
 BiocManager::install("oligoClasses", dependancies = TRUE)
 BiocManager::install("affycoretools")
 
+# à regarder : 
+# https://www.bioconductor.org/packages/devel/bioc/vignettes/AnnotationDbi/inst/doc/IntroToAnnotationPackages.pdf
 
 celpath = "/home/antonin/Bureau/Cours M1 S7/Stage/GSE31684"
 f <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
