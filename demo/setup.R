@@ -14,12 +14,14 @@ if (length(packages.cran)>0){
 
 if (!requireNamespace("nanoR", quietly = TRUE)){
   install.packages("~/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
-  renv::install("~/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
-  renv::install("C:/Users/Antonin\ COLAJANNI/Documents/GIT/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
+  
+  
+  #renv::install("~/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
+  #renv::install("C:/Users/Antonin\ COLAJANNI/Documents/GIT/GIT/GENEXPRESSO/nanoR", repos=NULL,type="source")
 }
 if (!requireNamespace("NAPPA", quietly = TRUE)){
   install.packages("~/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz", 
-                   lib = "/home/acolajanni/GIT/GENEXPRESSO/renv/library/R-3.6/x86_64-conda-linux-gnu",
+                   #lib = "/home/acolajanni/GIT/GENEXPRESSO/renv/library/R-3.6/x86_64-conda-linux-gnu",
                    repos = NULL, type = "source")
   renv::install(file.choose(), repos = NULL, type = "source")
 }
