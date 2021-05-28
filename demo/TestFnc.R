@@ -4,7 +4,9 @@ GSE32548= tools.norm.Microarray(GEOiD = "GSE32548", FetchOnGEOdb = TRUE, tools =
 GSE31684= tools.norm.Microarray(GEOiD = "GSE31684", FetchOnGEOdb = TRUE, tools = "none")
 
 
-GSE_Test = tools.norm.Microarray(GEOiD = "./data/GSE31684/", FetchOnGEOdb = F, tools = "rma")
+#GSE_Test = tools.norm.Microarray(GEOiD = "./data/GSE31684/", FetchOnGEOdb = F, tools = "rma")
+GSE_Test = tools.norm.Microarray(GEOiD = "/home/antonin/Bureau/Cours M1 S7/Stage/GSE31684", FetchOnGEOdb = F, tools = "rma")
+
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")

@@ -50,6 +50,23 @@ design
 ph@data[,1] = design
 design.matrix = as.data.frame(ph@data)
 design.matrix
+###################################
+
+celpath = "/home/antonin/Bureau/Cours M1 S7/Stage/GSE31684"
+f <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
+txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
+tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE)
+
+abatch <- ReadAffy(filenames = f)
+
+eset.mas5 = mas5(abatch)
+eset = rma(abatch)
+
+expr.val = exprs(eset)
+
+
+
+
 
 # MAS5 par défaut
 eset.mas5 = mas5(abatch1)

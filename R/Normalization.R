@@ -201,11 +201,13 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
     # Construct the AffyBatch object
     abatch <- ReadAffy(filenames = files)
   }
+  message("Switch")
   # Depending on the applied methods, different functions will be called
   tools.fnc = switch(tools,
                      # rma, gcrma and mas5 are pretty straigthforward functions
                      rma = {
                        eset = rma(abatch)
+                       return(eset)
                      },
                      
                      gcrma = {
@@ -264,3 +266,5 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
   return(exprSet)
 }
 methods = c("rma","gcrma","mas5", "custom")
+
+

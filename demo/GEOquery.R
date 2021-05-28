@@ -31,7 +31,7 @@ Columns(gds)[,1:3]
 
 ## -----------------------------------------------------------------------------
 # Again, with good network access, one would do:
-gse <- getGEO("GSE781",GSEMatrix=FALSE)
+gse <- getGEO("GSE32894",GSEMatrix=FALSE)
 #gse <- getGEO(filename=system.file("extdata/GSE781_family.soft.gz",package="GEOquery"))
 head(Meta(gse))
 # names of all the GSM objects contained in the GSE

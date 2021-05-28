@@ -327,12 +327,6 @@
       "Source": "Bioconductor",
       "Hash": "83390377cf81c4fb06f937924f8f351c"
     },
-    "affydata": {
-      "Package": "affydata",
-      "Version": "1.34.0",
-      "Source": "Bioconductor",
-      "Hash": "669f5b9d985d645177d33178f0d598ee"
-    },
     "affyio": {
       "Package": "affyio",
       "Version": "1.56.0",
@@ -738,10 +732,10 @@
     },
     "formatR": {
       "Package": "formatR",
-      "Version": "1.9",
+      "Version": "1.10",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "a24bdfd63932fc5616ae5839fa8e399b"
+      "Hash": "8c445628912fee7939563bea3c238e57"
     },
     "fs": {
       "Package": "fs",
@@ -1206,10 +1200,10 @@
     },
     "openssl": {
       "Package": "openssl",
-      "Version": "1.4.1",
+      "Version": "1.4.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "49f7258fd86ebeaea1df24d9ded00478"
+      "Hash": "f4dbc5a47fd93d3415249884d31d6791"
     },
     "openxlsx": {
       "Package": "openxlsx",

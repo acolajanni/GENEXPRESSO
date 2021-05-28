@@ -8,6 +8,6 @@ install.packages("rgdal")
 install.packages("xlsx")
 
 
-sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
-sudo apt-get install libmpfr-dev
+#sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
+#sudo apt-get install libmpfr-dev
 
