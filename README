@@ -1,5 +1,1 @@
-VOUS ÊTES ICI POUR ANALYSER L'EXPRESSION DIFFERENTIELLE OU LA CO-EXPRESSION DE GENES.
-
-Tout d'abord, installez tous les packages nécessaires en executant le script setup.R ;
-Installez ensuite le package GENEXPRESSO ;
-Importez vos données ou simulez un nouveau jeu de données et exécutez le Main.R selon vos choix de normalisation et d'analyse DEG / co-expression / visualisation.
+GENEXPRESSO est un package en R permettant de comparer les méthodes de normalisation et d'analyse statistique pour trouver des gènes différentiellement exprimés. 
