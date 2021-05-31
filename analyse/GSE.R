@@ -27,16 +27,28 @@ eset.mas5 = mas5(abatch)
 # Fonctionne : 
 eset = rma(abatch)
 
+load("./Reunion.RData")
 
 expr.val = exprs(eset)
 head(row.names(expr.val))
 
+
+
+
+############################################
+##              Avec biomaRt              ##
+############################################
+
 library(biomaRt)
+library(hgu133plus2.db)
+# Liste des ensemble de sondes dispo dans hgu133plus2 + autres packages
+ls("package:hgu133plus2.db")
+
 mart = useMart(biomart = "ensembl"
                   #, dataset = 
                   )
 # Toutes les annotations disponibles
-Dataset = listDatasets(mart)
+listDatasets(mart)
 
 # On récupère toutes les annotations pour Homo spaiens
 ensembl = useMart(biomart = "ensembl",dataset = "hsapiens_gene_ensembl")
@@ -48,16 +60,51 @@ attributes = attributes$name
 # On cherche le symbole des gènes : 
 
 ### att = str_detect(attributes$name, pattern = "symbol")
-att = grepl(pattern = "symbol", attributes, fixed = TRUE)
-test = attributes[grepl("symbol",attributes)]
-attributes = listAttributes(ensembl)
+#att = grepl(pattern = "symbol", attributes, fixed = TRUE)
+#test = attributes[grepl("symbol",attributes)]
+#attributes = listAttributes(ensembl)
 # Vérification que c'est bien ce qu'on veut :
-subset(attributes, attributes$name == test[1] | attributes$name == test[2])
+#subset(attributes, attributes$name == test[1] | attributes$name == test[2])
 # symbol human gene nomenclature comitee / uniprot symbol
 
-affy_ensembl = c("affy_hg_u133_plus_2", "ensembl_gene_id", "hgnc_symbol")
+affy_ensembl = c("affy_hg_u133_plus_2", "ensembl_gene_id", "hgnc_symbol") # regarder uniprot symbol
+# si erreur getnodeset() : https://www.ensembl.org/info/website/archives/index.html le site est down
 BM = getBM(attributes = affy_ensembl, mart = ensembl, uniqueRows = TRUE, useCache = FALSE)
 # On récupère la liste des sondes réellement présentes dans la bdd
 BM2 = subset(BM, BM$affy_hg_u133_plus_2 != "")
+
+############################################
+##              avec hgu.db               ##
+############################################
+
+library(hgu133plus2.db)
+# Liste des ensemble de sondes dispo dans hgu133plus2 + autres packages
+ls("package:hgu133plus2.db")
+# Tous les attributs du package
+columns(hgu133plus2.db)
+# description des attributs (SYMBOL nous interesse)
+help("SYMBOL")
+# L'attribut qui nous interesse est "SYMBOL"
+# On vérifie: OK
+head(keys(hgu133plus2.db, keytype="SYMBOL"))
+
+# On veut les ID des sondes : 
+# ça correcpond à nos noms de lignes
+k = keys(hgu133plus2.db,keytype="PROBEID")
+head(k)
+
+Probes = select(hgu133plus2.db, keys=k, columns="SYMBOL", keytype="PROBEID")
+
+#### Test de mapping : 
+
+# On récupère la liste des sondes de notre échantillon
+probeName = data.frame(PROBEID = row.names(expr.val))
+
+library(dplyr)
+
+test = rbind(probeName,Probes)
+
+
+
 
 

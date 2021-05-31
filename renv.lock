@@ -38,6 +38,12 @@
       "Source": "Bioconductor",
       "Hash": "ddbfe185296ede75aadb84a51724ac88"
     },
+    "BiocFileCache": {
+      "Package": "BiocFileCache",
+      "Version": "1.10.2",
+      "Source": "Bioconductor",
+      "Hash": "6b036e16fdfecc74e515a92b74983b20"
+    },
     "BiocGenerics": {
       "Package": "BiocGenerics",
       "Version": "0.32.0",
@@ -367,6 +373,12 @@
       "Repository": "CRAN",
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
     },
+    "biomaRt": {
+      "Package": "biomaRt",
+      "Version": "2.42.1",
+      "Source": "Bioconductor",
+      "Hash": "8482bfe886794fbbf64282f1484cf8a5"
+    },
     "bit": {
       "Package": "bit",
       "Version": "4.0.4",
@@ -576,6 +588,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d1b8b1a821ee564a3515fa6c6d5c52dc"
+    },
+    "dbplyr": {
+      "Package": "dbplyr",
+      "Version": "2.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1f37fa4ab2f5f7eded42f78b9a887182"
     },
     "dendextend": {
       "Package": "dendextend",
@@ -900,6 +919,12 @@
       "Repository": "CRAN",
       "Hash": "9ace652bffef34af558eb5d70903ac2f"
     },
+    "hgu133plus2.db": {
+      "Package": "hgu133plus2.db",
+      "Version": "3.2.3",
+      "Source": "Bioconductor",
+      "Hash": "c6a13a0f666ab65996f909ee58baa491"
+    },
     "highr": {
       "Package": "highr",
       "Version": "0.9",
@@ -1211,6 +1236,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2253a430965e222d11a2f9277cd34c2e"
+    },
+    "org.Hs.eg.db": {
+      "Package": "org.Hs.eg.db",
+      "Version": "3.10.0",
+      "Source": "Bioconductor",
+      "Hash": "5201dd022e5d661d2634c95fee2cea91"
     },
     "pander": {
       "Package": "pander",
