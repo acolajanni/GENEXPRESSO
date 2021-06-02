@@ -1,0 +1,124 @@
+---
+title: "Normalisation Microarray Affymetrix"
+author: "Antonin Colajanni"
+date: "02/06/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Packages 
+```{r ,message=FALSE}
+library(GEOquery)
+library(affy)
+library(hgu133plus2.db)
+library(dplyr)
+```
+
+## Chargement du jeu de données
+
+Tout d'abord, on récupère un jeu de données brutes : (exemple avec GSE31684)
+    
+Riester M, Taylor JM, Feifer A, Koppie T et al. Combination of a novel gene expression signature with a clinical nomogram improves the prediction of survival in high-risk bladder cancer. Clin Cancer Res 2012 Mar 1;18(5):1323-33. PMID: 22228636
+    
+Riester M, Werner L, Bellmunt J, Selvarajah S et al. Integrative analysis of 1q23.3 copy-number gain in metastatic urothelial carcinoma. Clin Cancer Res 2014 Apr 1;20(7):1873-83. PMID: 24486590
+
+```{r GEOquery}
+# getGEOSuppFiles("GSE31684", fetch_files = TRUE, baseDir = "/net/cremi/acolajanni/Bureau/espaces/travail/")
+# untar(tarfile = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684/GSE31684_RAW.tar", exdir = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+# gunzip(filename = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684/GSE31684_table_of_clinical_details.txt.gz" destname = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684/GSE31684_table_of_clinical_details.txt")
+```        
+
+Maintenant que tout est téléchargé, et décompressé on peut commencer l'analyse :  
+
+```{r}
+
+# Chemin d'accès des .CEL
+celpath = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684"
+f <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
+
+# Chemin d'accès du fichier de design :
+txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
+tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T)
+tab
+```
+
+
+# Récupération des échantillons intéressant : T1 vs T2
+## Comparaison de l'expression de gène chez les patients atteints de cancer de la vessie auxx stades 1 et 2 
+
+```{r affy}
+
+# Ne garder que les T1 et T2
+samples = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
+files = samples$GEO
+
+# Donner les noms exacts des fichier pour ReadAffy()
+files = paste0(celpath,"/", files,".CEL.gz")
+
+# Création de notre AffyBatch (nécessaire pour toute l'analyse)
+abatch <- ReadAffy(filenames = files)
+```
+
+
+
+# Normalisation : 
+On utilise rma() pour le besoin de la démonstration :
+```{r affy2, warning = FALSE}
+eset = rma(abatch)
+
+# Fichier d'expression : 
+expr.val = as.data.frame( exprs(eset) )
+expr.val
+```
+
+# Post processing du jeu de données : 
+```{r control}
+# Sondes marquées "AFFX" sont les sondes contrôles
+ControlProbes <- grep("AFFX",row.names(expr.val)) 
+expr.val=expr.val[-ControlProbes,]
+
+# On récupère nos noms de sondes
+probes.ALL=row.names(expr.val)
+# Les symboles qui vont avec : 
+symbol.ALL = unlist(mget(probes.ALL, hgu133plus2SYMBOL))
+
+# Formation de notre dataframe :
+table.ALL=cbind(SYMBOL = symbol.ALL,  expr.val)
+table.ALL$PROBES = row.names(expr.val)
+table.ALL = relocate(table.ALL, PROBES, SYMBOL)
+row.names(table.ALL) = NULL
+expr = table.ALL
+
+expr
+```
+
+```{r probes}
+length(probes.ALL)
+```
+On obtient donc un niveau d'expression pour 54.613 sondes. Il faut donc mapper ces sondes sur des gènes
+
+# Mapping par médiane
+```{r mapping}
+# On récupère la liste des échantillons
+samples = colnames(expr.val)
+samples = samples[!samples %in% c("PROBES","SYMBOL")]
+
+# Regroupement par les symboles de gènes
+tmp = expr %>%
+  group_by(SYMBOL) 
+
+# Regroupé par la médiane 
+Mapped = tmp %>%
+  summarise(across(all_of(samples), ~ median(.x)  ))
+
+# Nombre de gène restant : 
+dim(Mapped) #20175
+
+Mapped
+```

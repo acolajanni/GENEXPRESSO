@@ -174,7 +174,7 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
 #' @param tools.pmcorrect 
 #' @param tools.express.summary.stat 
 #' @param tools 
-#'
+#' @import "affy" "GEOquery" "gcrma"
 #' @return
 #' @export
 #'
@@ -265,6 +265,50 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
   exprSet = exprs(eset)
   return(exprSet)
 }
-methods = c("rma","gcrma","mas5", "custom")
 
 
+#' Mapping Probes ID of Affymetrix microarray chip in expression set dataframe
+#'
+#' @param exprSet Dataframe with samples in columns, probes ID in rows
+#' @param annotation function like : hgu133plus2SYMBOL if the chip is hgu 133 plus 2.0 and the wanted mapping is with the gene SYmbols
+#' 
+#' @import "affy" "dplyr"
+#' 
+#' @return Dataframe with about 20.000 rows. Gene symbols will replace the probes ID
+#' @export
+#'
+#' @examples
+mapping.affymetrix.probe <- function(exprSet, annotation){
+  
+  
+  
+  # Remove control probes from the expression set
+  ControlProbes <- grep("AFFX",row.names(exprSet)) 
+  expr = exprSet[-ControlProbes,]
+  
+  # Retrieve probe names
+  probes.ALL=row.names(expr)
+  # We want the annotation through the gene Symbol : 
+  symbol.ALL = unlist(mget(probes.ALL, annotation))
+  
+  # Recreating the dataframe with the matching probes
+  table.ALL=cbind(SYMBOL = symbol.ALL,  expr)
+  table.ALL$PROBES = row.names(exprSet)
+  table.ALL = relocate(table.ALL, PROBES, SYMBOL)
+  row.names(table.ALL) = NULL
+  expr = table.ALL
+  
+  # Retrieving sample names 
+  samples = colnames(expr.val)
+  samples = samples[!samples %in% c("PROBES","SYMBOL")]
+  
+  # grouping expr by the Gene symbols
+  tmp = expr %>%
+    group_by(SYMBOL) 
+  
+  # Summarised the group with the median 
+  Mapped = tmp %>%
+    summarise(across(all_of(samples), ~ median(.x)  ))
+  
+  return(Mapped)
+}

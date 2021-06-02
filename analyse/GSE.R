@@ -19,7 +19,6 @@ gunzip(filename = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684/GSE3168
        destname = "/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684/GSE31684_table_of_clinical_details.txt")
             
        
-
 f <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
 txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
 tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T)
@@ -32,8 +31,10 @@ samples = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2')
 files = samples$GEO
 #files
 files = paste0(celpath,"/", files,".CEL.gz")
+abatch <- ReadAffy(filenames = files, cdfname = "hgu133plus2cdf")
 
-abatch <- ReadAffy(filenames = files)
+
+
 
 # fait planter :
 eset.mas5 = mas5(abatch)
@@ -161,12 +162,6 @@ probes.ALL=row.names(expr.val)
 # save.image(file = "./GSE31684.RData")
 
 
-###############"
-hgu133plus2.annot = read.csv("./data/HG-U133_Plus_2.na36.annot.csv", skip = 25, header=T, na.strings ="---")
-
-
-ID.ALL = subset(hgu133plus2.annot, select = c("Probe.Set.ID","Gene.Symbol") )
-
 
 
 #Remove control probes
@@ -177,7 +172,7 @@ ControlProbes <- grep("AFFX",row.names(expr.val))
 
 
 #remove control : 
-Without.control.probe=expr.val[-ControlProbes,]
+expr.val=expr.val[-ControlProbes,]
 # Nb de sondes contrôles : 
 nrow(expr.val[ControlProbes,])
 
@@ -188,13 +183,10 @@ symbol.ALL = unlist(mget(probes.ALL, hgu133plus2SYMBOL))
 ID.ALL = unlist(mget(probes.ALL, hgu133plus2UNIPROT))
 ID.ALL = as.data.frame(ID.ALL)
 
-test = as.data.frame(unlist(mget(probes.ALL, hgu133plus2REFSEQ)))
 
 
 # construction du tableau contenant les Symboles des gènes + ID des sondes + les données brutes
-table.ALL=cbind(PROBES = probes.ALL,
-                #ID.ALL,
-                SYMBOL = symbol.ALL,
+table.ALL=cbind(SYMBOL = symbol.ALL,
                 expr.val)
 
 # On récupère la liste des échantillons
@@ -241,25 +233,42 @@ for (i in 1:length(samples)){
 
 # Avec la médiane :
 # on reprend la formation du tableau
+#Extract the control probes
 expr.val = as.data.frame(expr.val)
+ControlProbes <- grep("AFFX",row.names(expr.val))
+
+
+#remove control : 
+expr.val=expr.val[-ControlProbes,]
 expr.val$PROBES = row.names(expr.val)
 table.ID = data.frame(row.names = row.names(table.ALL),
                       PROBES = table.ALL$PROBES,
                       SYMBOL = table.ALL$SYMBOL)
 
 
-test = merge(table.ID,expr.val,by = "PROBES")
 
-nhit(test$PROBES)
-
-test2 = group_by(test,test$PROBES)
+expr = merge(table.ID,expr.val,by = "PROBES")
 
 
+table.ALL=cbind(SYMBOL = symbol.ALL,  expr.val)
+table.ALL = relocate(table.ALL, PROBES,SYMBOL)
+row.names(table.ALL) = NULL
+expr = table.ALL
+
+# On récupère la liste des échantillons
+samples = colnames(expr.val)
+samples = samples[!samples %in% c("PROBES","SYMBOL")]
 
 
+library("dplyr")
+test = expr %>%
+  group_by(SYMBOL) 
+
+test2 = test %>%
+  summarise(across(all_of(samples), ~ median(.x)  ))
 
 
-
+#              
 
 #############################################"""
 #############################################"""
