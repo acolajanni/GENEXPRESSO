@@ -100,21 +100,6 @@ BM2 = subset(BM, BM$affy_hg_u133_plus_2 != "")
 #################
 
 # Au final on garde le max() ==> à voir ce qu'on garde (mean, median, ...)
-Probesets=paste("a",1:200,sep="") # "fake probesets"
-Genes=sample(letters,200,replace=T)
-Genes
-Value=rnorm(200)
-
-
-
-
-
-X=data.frame(Probesets,Genes,Value)
-X=X[order(X$Value,decreasing=T),]
-Y=X[which(!duplicated(X$Genes)),]
-
-
-
 
 
 
@@ -138,12 +123,7 @@ head(keys(hgu133plus2.db, keytype="SYMBOL"))
 # ça correcpond à nos noms de lignes
 k = keys(hgu133plus2.db,keytype="PROBEID")
 
-
 Probes = select(hgu133plus2.db, keys=k, columns="SYMBOL", keytype="PROBEID")
-
-
-ls(hgu133plus2SYMBOL)[mget(ls(hgu133plus2SYMBOL), hgu133plus2SYMBOL) %in% probeName$PROBEID]
-
 
 #### Test de mapping : 
 
@@ -163,11 +143,15 @@ nhit(x)
 table(nhit(toggleProbes(hgu133plus2SYMBOL, "all")))
 table(nhit(x))
 
+test = toggleProbes(hgu133plus2SYMBOL,"multiple")
+ls(test)
+
+A = nhit(test)
+
+
 ?toggleProbes
 
 probes.ALL=row.names(expr.val)
-test = unlist(mget(probes.ALL,  ))
-
 
 
 # ALIAS2PROBE mapping
@@ -226,12 +210,13 @@ table.ID = data.frame(row.names = row.names(table.ALL),
                       PROBES = table.ALL$PROBES,
                       SYMBOL = table.ALL$SYMBOL)
 
-table.ID = data.frame(row.names = ID.ALL$Probe.Set.ID, SYMBOL = ID.ALL$Gene.Symbol, PROBES = ID.ALL$Probe.Set.ID)
+#table.ID = data.frame(row.names = ID.ALL$Probe.Set.ID, SYMBOL = ID.ALL$Gene.Symbol, PROBES = ID.ALL$Probe.Set.ID)
 
 # On enlève tous les ID dupliqués
 ID.unique = table.ID[which(!duplicated(table.ID$SYMBOL)),]
 ID.unique = ID.unique[order(ID.unique$SYMBOL),]
 
+test = merge(ID.unique,expr.val)
 
 #ID.unique = merge(ID.unique, Y)
 
@@ -254,15 +239,20 @@ for (i in 1:length(samples)){
 
 
 
+# Avec la médiane :
+# on reprend la formation du tableau
+expr.val = as.data.frame(expr.val)
+expr.val$PROBES = row.names(expr.val)
+table.ID = data.frame(row.names = row.names(table.ALL),
+                      PROBES = table.ALL$PROBES,
+                      SYMBOL = table.ALL$SYMBOL)
 
 
+test = merge(table.ID,expr.val,by = "PROBES")
 
+nhit(test$PROBES)
 
-
-
-
-
-
+test2 = group_by(test,test$PROBES)
 
 
 
@@ -274,7 +264,8 @@ for (i in 1:length(samples)){
 #############################################"""
 #############################################"""
 y = hgu133plus2UNIPROT[isNA(hgu133plus2UNIPROT)]
-Unmapped = Lkeys(y)    
+Unmapped = Lkeys(y)   
+table(Unmapped)
 ID.Unmapped = unlist(mget(Unmapped, hgu133plus2UNIPROT))
 
 ID.mapped = ID.ALL[!ID.ALL %in% ID.Unmapped]
@@ -298,6 +289,11 @@ singleOnly <- toggleProbes(hgu133plus2UNIPROT, "single")
 ## How many probes?
 dim(multi) #on a donc environ 7000 sondes qui mappent le même gene
 dim(singleOnly)
+
+count.mappedLkeys(hgu133plus2UNIPROT)
+count.mappedLkeys(multi)
+
+mapIds(multi,hgu133plus2UNIPROT)
 
 hasSingleProbes(singleOnly)
 #############################################"""
