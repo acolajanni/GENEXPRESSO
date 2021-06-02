@@ -150,8 +150,6 @@ ls(test)
 A = nhit(test)
 
 
-?toggleProbes
-
 probes.ALL=row.names(expr.val)
 
 

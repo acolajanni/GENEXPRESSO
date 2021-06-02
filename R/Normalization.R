@@ -179,13 +179,25 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
 #' @export
 #'
 #' @examples
-tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
+tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
+  
+  #########################
+  ###  Work in progress ###
+  #########################
+  
+  
   
   if (!FetchOnGEOdb){
-    # Getting the directory of .Cel files
-    celpath = celpath = file.path(GEOiD)
-    files <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
-    abatch <- ReadAffy(filenames = files)
+    # If we already have an "AffyBatch", we can skip thoses steps
+    if (class(GEOiD) != "AffyBatch") {
+      # Getting the directory of .Cel files
+      celpath = celpath = file.path(GEOiD)
+      files <- list.files(path = celpath, pattern = "CEL.gz", full.names = TRUE)
+      abatch <- ReadAffy(filenames = files)
+    }  
+    else {
+      message("Going straight to normalization step")
+    }
   }
   else {
     # Download the archive
@@ -253,7 +265,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
                        
                        # If all tools.normalize, tools.bgcorrect, .... are correct
                        # We can call the expresso() function with the four tools parameters : 
-                       eset <- expresso(abatch1, 
+                       eset <- expresso(abatch, 
                                         bgcorrect.method= tools.bgcorrect,
                                         normalize.method= tools.normalize,
                                         pmcorrect.method= tools.pmcorrect,
@@ -280,26 +292,28 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = F , tools, tools.normali
 #' @examples
 mapping.affymetrix.probe <- function(exprSet, annotation){
   
+  #########################
+  ###  Work in progress ###
+  #########################
   
   
   # Remove control probes from the expression set
   ControlProbes <- grep("AFFX",row.names(exprSet)) 
   expr = exprSet[-ControlProbes,]
-  
+
   # Retrieve probe names
   probes.ALL=row.names(expr)
   # We want the annotation through the gene Symbol : 
-  symbol.ALL = unlist(mget(probes.ALL, annotation))
+  symbol.ALL = unlist(mget(probes.ALL, hgu133plus2SYMBOL))
   
   # Recreating the dataframe with the matching probes
   table.ALL=cbind(SYMBOL = symbol.ALL,  expr)
-  table.ALL$PROBES = row.names(exprSet)
+  table.ALL$PROBES = row.names(expr)
   table.ALL = relocate(table.ALL, PROBES, SYMBOL)
   row.names(table.ALL) = NULL
   expr = table.ALL
-  
   # Retrieving sample names 
-  samples = colnames(expr.val)
+  samples = colnames(expr)
   samples = samples[!samples %in% c("PROBES","SYMBOL")]
   
   # grouping expr by the Gene symbols

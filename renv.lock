@@ -186,10 +186,10 @@
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.3-3",
+      "Version": "1.3-4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "df57c82e79600601287edfdcef92c2d6"
+      "Hash": "4ed05e9c9726267e4a5872e09c04587c"
     },
     "MatrixModels": {
       "Package": "MatrixModels",
@@ -201,9 +201,11 @@
     "NAPPA": {
       "Package": "NAPPA",
       "Version": "2.0",
-      "Source": "Repository",
+      "Source": "Local",
       "Repository": "CRAN",
-      "Hash": "6d796071276f61009a0aca267748b625"
+      "RemoteType": "local",
+      "RemoteUrl": "/autofs/unityaccount/cremi/acolajanni/GIT/GENEXPRESSO/NAPPA_2.0.tar.gz",
+      "Hash": "51ace1028a02f8fea34859eea27ca388"
     },
     "NanoStringNorm": {
       "Package": "NanoStringNorm",
@@ -824,9 +826,9 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "ggbiplot",
       "RemoteUsername": "vqv",
-      "RemoteRef": "master",
+      "RemoteRef": "HEAD",
       "RemoteSha": "7325e880485bea4c07465a0304c470608fffb5d9",
-      "Hash": "72b58923c795a7fa482b285bb6427c0c"
+      "Hash": "15a56f59159161ce6ec761f9deef8e78"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -1135,10 +1137,10 @@
     },
     "matrixStats": {
       "Package": "matrixStats",
-      "Version": "0.58.0",
+      "Version": "0.59.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c318d148056e5bb8d7de79b0876f9ae6"
+      "Hash": "45a2fee40a2f1bcad392cbe8a5f10d4f"
     },
     "memoise": {
       "Package": "memoise",
@@ -1185,8 +1187,10 @@
     "nanoR": {
       "Package": "nanoR",
       "Version": "0.1.0",
-      "Source": "unknown",
-      "Hash": "294d1a9eb0ad0d43ea4e4fc9d86c8004"
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/autofs/unityaccount/cremi/acolajanni/GIT/GENEXPRESSO/nanoR",
+      "Hash": "9bb08ab9bc91ef5f2ef5576978856236"
     },
     "nanostringr": {
       "Package": "nanostringr",
@@ -1517,10 +1521,10 @@
     },
     "rversions": {
       "Package": "rversions",
-      "Version": "2.1.0",
+      "Version": "2.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4be3f3f9f5b3c5e5faeef41e55f6d9bc"
+      "Hash": "f88fab00907b312f8b23ec13e2d437cb"
     },
     "scales": {
       "Package": "scales",
@@ -1615,10 +1619,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.31",
+      "Version": "0.32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "25b572f764f3c19fef9aac33b5724f3d"
+      "Hash": "db9a6f2cf147751322d22c9f6647c7bd"
     },
     "usethis": {
       "Package": "usethis",
@@ -1719,10 +1723,10 @@
     },
     "zip": {
       "Package": "zip",
-      "Version": "2.1.1",
+      "Version": "2.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3bc8405c637d988801ec5ea88372d0c2"
+      "Hash": "c7eef2996ac270a18c2715c997a727c5"
     },
     "zlibbioc": {
       "Package": "zlibbioc",

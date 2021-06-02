@@ -6,7 +6,7 @@
 \usage{
 tools.norm.Microarray(
   GEOiD,
-  FetchOnGEOdb = F,
+  FetchOnGEOdb = FALSE,
   tools,
   tools.normalize,
   tools.bgcorrect,
