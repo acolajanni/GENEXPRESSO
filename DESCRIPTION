@@ -30,5 +30,8 @@ Imports:
     graphics,
     stats,
     dplyr,
-    stringr
+    stringr,
+    GEOquery,
+    affy,
+    gcrma
 RoxygenNote: 7.1.1

@@ -299,8 +299,14 @@ mapping.affymetrix.probe <- function(exprSet, annotation){
   
   # Remove control probes from the expression set
   ControlProbes <- grep("AFFX",row.names(exprSet)) 
-  expr = exprSet[-ControlProbes,]
-
+  
+  if (length(ControlProbes) != 0){
+    expr = exprSet[ - ControlProbes,]
+  }
+  else {
+    expr = exprSet
+  }
+  
   # Retrieve probe names
   probes.ALL=row.names(expr)
   # We want the annotation through the gene Symbol : 
@@ -311,6 +317,7 @@ mapping.affymetrix.probe <- function(exprSet, annotation){
   table.ALL$PROBES = row.names(expr)
   table.ALL = relocate(table.ALL, PROBES, SYMBOL)
   row.names(table.ALL) = NULL
+
   expr = table.ALL
   # Retrieving sample names 
   samples = colnames(expr)
