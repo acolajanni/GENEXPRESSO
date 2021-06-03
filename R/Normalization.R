@@ -324,5 +324,10 @@ mapping.affymetrix.probe <- function(exprSet, annotation){
   Mapped = tmp %>%
     summarise(across(all_of(samples), ~ median(.x)  ))
   
+  Mapped = as.data.frame( na.omit(Mapped) )
+  row.names(Mapped) = Mapped$SYMBOL
+  Mapped$SYMBOL = NULL
+  
+  
   return(Mapped)
 }
