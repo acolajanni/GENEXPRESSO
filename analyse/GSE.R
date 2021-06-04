@@ -258,15 +258,34 @@ samples = colnames(expr.val)
 samples = samples[!samples %in% c("PROBES","SYMBOL")]
 
 
+############################ Avec dplyr
 library("dplyr")
-test = expr %>%
-  group_by(SYMBOL) 
-
-test2 = test %>%
-  summarise(across(all_of(samples), ~ median(.x)  ))
 
 
-#              
+t1<-Sys.time()
+test2 = expr %>%
+    group_by(SYMBOL) %>%
+    summarise(across(all_of(samples), ~ median(.x)  ))
+test2 = na.omit(test2)
+t2<-Sys.time()
+
+difftime(t2,t1) # 32 secondes
+
+############################ Avec aggregate
+
+test = dataset.bg$mas
+
+t3<-Sys.time()
+
+by = list(table.ALL$SYMBOL)
+test_map = aggregate.data.frame(x = table.ALL[2:75], by = by, FUN = median)
+names(test_map)[1] = "SYMBOL"
+
+t4<-Sys.time()
+difftime(t4,t3) # 34 secondes
+
+
+
 
 #############################################"""
 #############################################"""

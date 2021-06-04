@@ -4,7 +4,9 @@ library(GENEXPRESSO)
 load("./data/abatch.RData")
 ## PCFIXE
 celpath = "./data"
-##
+## Cremi
+celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+ 
 txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
 tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
 samples = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
@@ -116,6 +118,7 @@ for (n in norm){
   dataset.norm[[n]] = tmp
 }
 
+save( dataset.bg, dataset.norm, dataset.pm, dataset.sumstat, file = "./data/NormCompTotal.RData")
 
 ############################################################
 bg.mas = as.data.frame(dataset.bg$mas)
@@ -132,10 +135,6 @@ DEG.bg.rma = tools.DEG.Microarrays(map.bg.rma, DEG.method, length(T1), length(T2
 
 ############################################################
 
-test1 = bg.mas[1:100,]
-
-
-dataset = test1
 
   # un jeu de donnée + le nom de la méthode utilisée + T1 et T2 (vecteur des noms de colonnes appartenant au grp 1 / 2)
 Expresso.comp.methods = function(dataset, T1, T2, DEG.method){
@@ -148,16 +147,24 @@ Expresso.comp.methods = function(dataset, T1, T2, DEG.method){
   return(DEG)
   
 }
-test.fnc = Expresso.comp.methods(test1, T1, T2, "RankSum")
+#test.fnc = Expresso.comp.methods(test1, T1, T2, "RankSum")
 
+# Suppression of NA filled dataset
+dataset.pm$subtractmm = NULL
 # One object with all datasets
 dataset.list = list(background = dataset.bg, pm.cor = dataset.pm, sumstat = dataset.sumstat, norm = dataset.norm)
 # Counting all the existing dataset
 nb.dataset = sum(sapply(dataset.list,length))
 # listing parameters of expresso function
 params = names(dataset.list)
+params = "norm"
+
+
 # initializing the dataframe to compare methods
 data.to.comp = data.frame(NULL)
+
+library(dplyr)
+library(hgu133plus2.db)
 
 for (param in params){
   print(" ....... ")
@@ -170,7 +177,12 @@ for (param in params){
     print(tmp.param)
     
     tmp.dataset = tmp.list[[tmp.param]]
-    tmp = Expresso.comp.methods(tmp.dataset, T1, T2, "RankSum")
+    if (tmp.param == "medianpolish"){
+      tmp = Expresso.comp.methods(tmp.dataset, T1, T2, "RankSum.log")
+    }else{
+      tmp = Expresso.comp.methods(tmp.dataset, T1, T2, "RankSum")
+    }
+    
     
     method = paste(param, tmp.param)
     colnames(tmp) = c( paste(method,"Up"), paste(method,"Down"), "SYMBOL" )
@@ -184,3 +196,42 @@ for (param in params){
   }
 }
 
+row.names(data.to.comp) = data.to.comp$SYMBOL
+data.to.comp$SYMBOL = NULL
+data.to.comp = as.data.frame(t(data.to.comp))
+pca = PCA_tools(data.to.comp)
+pca
+
+load("./dataToComp.RData")
+# Séparation du jeu de données en up/down regulated
+data.to.comp = as.data.frame(t(data.to.comp))
+methods = row.names(data.to.comp)
+
+meth.bg.cor = methods[grepl("background",methods)]
+meth.bg.cor = meth.bg.cor[grepl("Up",meth.bg.cor)]
+
+meth.bg.up = data.to.comp[meth.bg.cor,]
+
+Upreg = data.to.comp[grepl("Up|less",methods)]
+Downreg = data.to.comp[grepl("Down|greater",methods)]
+
+# PCA pour UP et Down
+Upreg = as.data.frame(t(Upreg))
+Downreg = as.data.frame(t(Downreg))
+
+pca_up = PCA_tools(Upreg)
+pca_down = PCA_tools(Downreg)
+pca_down
+
+
+save(data.to.comp, file = "./dataToComp.RData")
+load("./dataToComp.RData")
+
+library(UpSetR)
+upsetDown = Upset.Binary.Dataframe(Downreg)
+methods = row.names(upsetDown)
+upset(upsetDown, 
+      sets = methods, 
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq"
+      )
