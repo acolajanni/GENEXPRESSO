@@ -10,7 +10,10 @@ output:
 ```{r setup, include=FALSE}
 library(UpSetR)
 library(GENEXPRESSO)
-
+library(FactoMineR)
+library(factoextra)
+library(ade4)
+setwd("/home/acolajanni/GIT/GENEXPRESSO")
 ```
 
 # Comparaison des méthodes de la fonction expresso() du package affy
@@ -83,5 +86,111 @@ upset(methods_pm.cor,
  - medianpolish : fait un log2() des valeurs
  - playerout : boucle infinie ?
  
+```{r sumstat, include=TRUE}
+methods_sumstat = upset[grepl("sumstat",methods)]
 
 
+upset(methods_sumstat, 
+      sets = colnames(methods_sumstat)[grepl("Up",colnames(methods_sumstat))], 
+      sets.bar.color = "#56B4E9" 
+      #,order.by = "freq", 
+      )
+
+upset(methods_sumstat, 
+      sets = colnames(methods_sumstat)[grepl("Down",colnames(methods_sumstat))], 
+      sets.bar.color = "#56B4E9"
+      #,order.by = "freq", 
+      )
+```
+
+# Méthodes de normalisation : 
+ - Quantiles / quantiles.robust : relativement rapide (10min environ)
+ - loess : 30 à 40 min environ
+ - autres méthodes : 15 à 20 min
+ - Liwong : on exclut (nécessite de fiter un modèle linéaire)
+ 
+```{r norm, include=TRUE}
+methods_norm = upset[grepl("norm",methods)]
+
+upset(methods_norm, 
+      sets = colnames(methods_norm)[grepl("Up",colnames(methods_norm))], 
+      sets.bar.color = "#56B4E9" 
+      ,order.by = "freq", 
+      )
+```
+
+```{r norm_down}
+upset(methods_norm, 
+      sets = colnames(methods_norm)[grepl("Down",colnames(methods_norm))], 
+      sets.bar.color = "#56B4E9"
+      ,order.by = "freq", 
+      )
+```
+
+# Faire un clustering sur arbre
+
+
+```{r norm2}
+# 2 jeux de données : Normalisation sur Surexprimé et SousExprimé
+Norm = as.data.frame(t(data.to.comp))
+Norm = Norm[grepl("norm",methods)]
+Up = as.data.frame(t(Norm[grepl("Up",colnames(Norm))]))
+Down = as.data.frame(t(Norm[grepl("Down",colnames(Norm))]))
+
+# PCA
+PCA_tools(Up)
+PCA_tools(Down)
+```
+
+
+# Clustering sur gènes Surexprimés
+```{r clustering_up}
+
+d <- dist(Up, method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward.D") 
+plot(fit) # display dendogram
+rect.hclust(fit, k=3, border="red") 
+```
+# Clustering sur gènes Sous-exprimés
+```{r clustering_down}
+
+d <- dist(Down, method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward.D") 
+plot(fit) # display dendogram
+rect.hclust(fit, k=3, border="red") 
+```
+
+Conclusion : n'en garder que 3 ? 
+==> quantiles / quantiles robust
+==> Invariantset
+==> Constant / loess / contrast / qspline
+
+# Vision Globale sur le jeu de données
+```{r clustering_down2}
+UpDown = as.data.frame(t(data.to.comp))
+Upreg = UpDown[grepl("Up",methods)]
+Downreg = UpDown[grepl("Down",methods)]
+
+bg = Upreg[grepl("background",names(Upreg))]
+pm = Upreg[grepl("pm.cor",names(Upreg))]
+sumstat = Upreg[grepl("sumstat",names(Upreg))]
+Norm = Upreg[grepl("norm",names(Upreg))]
+PCA_tools(t(Upreg))
+PCA_tools(t(Downreg))
+
+group = c(1,1,2,2,3,3,3,4,4,4,4,4,4,4)
+
+res.pca <- PCA(t(Upreg),graph=F)
+pca.res = dudi.pca(t(Upreg), scale= T, scannf = FALSE)
+s.class(pca.res$li,fac=as.factor(group),col = c("#00AFBB", "#E7B800", "#FC4E07", "#000000"),
+        label = c("bg.cor", "pm.cor", "sumstat","norm"),)
+
+
+
+d <- dist(t(Upreg), method = "euclidean") # distance matrix
+fit <- hclust(d, method="ward.D") 
+plot(fit) # display dendogram
+rect.hclust(fit, k=4, border="red") 
+
+
+```
