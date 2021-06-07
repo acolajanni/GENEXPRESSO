@@ -13,7 +13,7 @@ library(GENEXPRESSO)
 library(FactoMineR)
 library(factoextra)
 library(ade4)
-setwd("/home/acolajanni/GIT/GENEXPRESSO")
+#setwd("/home/acolajanni/GIT/GENEXPRESSO")
 ```
 
 # Comparaison des méthodes de la fonction expresso() du package affy
@@ -29,12 +29,11 @@ data.to.comp
 
 # On ne change qu'un paramètre à la fois : 
 paramètres par défaut : 
-sumstat = mas
-norm = "constant"
-pm.cor = "mas"
-bg.cor = "mas"
-
-DEG : Ranksum
+ - sumstat = mas
+ - norm = "constant"
+ - pm.cor = "mas"
+ - bg.cor = "mas"
+ - DEG : Ranksum
 
 ```{r BGcorrect, include=TRUE}
 # Liste de toute les méthodes
@@ -161,9 +160,9 @@ rect.hclust(fit, k=3, border="red")
 ```
 
 Conclusion : n'en garder que 3 ? 
-==> quantiles / quantiles robust
-==> Invariantset
-==> Constant / loess / contrast / qspline
+ - quantiles / quantiles robust
+ - Invariantset
+ -  Constant / loess / contrast / qspline
 
 # Vision Globale sur le jeu de données
 ```{r clustering_down2}
