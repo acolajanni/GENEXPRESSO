@@ -1,0 +1,68 @@
+---
+title: "TCGA_RNAseq"
+author: "Antonin Colajanni"
+date: "07/06/2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(GenomicDataCommons)
+
+```
+
+
+[URL_RNAseq](https://genoweb.toulouse.inra.fr/~formation/Bruxlles_RNAseq/RNAseq_Bruxelles_EurNegVec.pdf)
+
+# Import de tous les fichiers
+# Lecture du tableau de design experimental
+```{r import}
+TCGA.dir = "/autofs/unitytravail/travail/acolajanni/BLCA_TCGA/"
+TCGA.table = paste0(TCGA.dir,"gdc_sample_sheet.2021-06-04.tsv")
+counts.dir = paste0(TCGA.dir, "gdc_download_20210604_095100.950304/")
+
+
+tab = read.delim(TCGA.table,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+tab
+```
+
+```{r construct, eval=FALSE}
+# Récupération des ID et noms de fichiers
+directories = tab$`File ID`
+file.names = tab$`File Name`
+# Initialisation du dataframe de counts
+table.count = data.frame()
+for (i in 1:length(directories)){
+  file.dir = paste0(counts.dir,directories[i],"/")
+  count = paste0(file.dir,file.names[i])
+  # lecture du DF de count pour un échantillon
+  tmp = readHTSeqFile(count, samplename = directories[i])
+  
+  if(dim(table.count)[1] == 0){
+    table.count = tmp
+  }
+  # Fusion des colonnes de comptes pour chaque échantillon
+  else {
+    table.count = merge(table.count, tmp, by = "feature")
+  }
+} 
+# Certaines lignes ne correspondent pas à des comptes, on les retire :
+to.skip = c("__alignment_not_unique","__ambiguous", "__no_feature", "__not_aligned", "__too_low_aQual")
+table.count = subset(table.count, !table.count$feature %in% to.skip )
+```
+
+```{r chargement, include=FALSE}
+load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/CountTable.RData")
+```
+
+```{r printTable}
+table.count
+dim(table.count) #On obtient plus de 60.482 ID
+```
+# Problème de mapping : ENSEMBL ==> SYMBOL ?
+L'image n'est pas à jour sur le nombre de gènes, MAIS : 
+
+ - On aurait environ 20.000 ENSEMBL id qui correspondent à des protéines codantes **Garde-ton que ces ENSEMBL ID ?** ![](/autofs/unitytravail/travail/acolajanni/Stage/rnaseq.png)
+
