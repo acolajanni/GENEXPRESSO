@@ -46,9 +46,7 @@ standardise <- function(x){
   (x - median(x))
 }
 
-standardise2 <- function(x){
-  (log2(x))
-}
+
 
 test2 = log2(test)
 
@@ -56,16 +54,17 @@ my_sample_col = data.frame(sample = subset(tab$PreOpClinStage, paste0(tab$GEO,'.
 row.names(my_sample_col) <- colnames(test)
 
 test2 = t(apply(test2, 1, standardise))
-test3 = t(apply(test, 1, standardise2))
 
 my_heatmap <- pheatmap(test2,
                        annotation_col = my_sample_col,
-                       cutree_cols = 2)
+                       cutree_cols = 2,
+                       clustering_distance_cols	= "correlation",
+                       clustering_method = "average",
+                       show_rownames = FALSE,
+                       breaks = -1:1
+                       )
 
 
-my_heatmap <- pheatmap(test3,
-                       annotation_col = my_sample_col,
-                       cutree_cols = 2)
 
 
 
