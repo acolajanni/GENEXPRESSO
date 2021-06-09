@@ -37,6 +37,8 @@ data_subset
 
 ################################################################################
 ################################################################################
+load("./bgmasinter.RData")
+load("./tab.RData")
 
 test = bg.mas.inter
 
@@ -48,10 +50,12 @@ standardise2 <- function(x){
   (log2(x))
 }
 
+test2 = log2(test)
+
 my_sample_col = data.frame(sample = subset(tab$PreOpClinStage, paste0(tab$GEO,'.CEL.gz') %in% colnames(test)) )
 row.names(my_sample_col) <- colnames(test)
 
-test2 = t(apply(test, 1, standardise))
+test2 = t(apply(test2, 1, standardise))
 test3 = t(apply(test, 1, standardise2))
 
 my_heatmap <- pheatmap(test2,
