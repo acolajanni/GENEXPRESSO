@@ -219,13 +219,13 @@ Downreg = data.to.comp[grepl("Down|greater",methods)]
 Upreg = as.data.frame(t(Upreg))
 Downreg = as.data.frame(t(Downreg))
 
-pca_up = PCA_tools(Upreg)
+pca_up = PCA_tools(t(Upreg))
 pca_down = PCA_tools(Downreg)
 pca_down
 
 
-save(data.to.comp, file = "./dataToComp.RData")
-load("./dataToComp.RData")
+#save(data.to.comp, file = "./dataToComp.RData")
+#load("./dataToComp.RData")
 
 library(UpSetR)
 upsetDown = Upset.Binary.Dataframe(Downreg)
@@ -235,3 +235,102 @@ upset(upsetDown,
       sets.bar.color = "#56B4E9", 
       order.by = "freq"
       )
+
+###########################
+########  Heatmap  ########
+###########################
+library(stringr)
+load("./dataToComp.RData")
+load("./data/NormCompTotal.RData")
+data.to.comp = as.data.frame(t(data.to.comp))
+
+# Liste de toute les méthodes
+methods = row.names(data.to.comp)
+# Dataframe rempli de valeur binaire (0/1)
+upset = Upset.Binary.Dataframe(data.to.comp)
+
+upset.bg =
+
+upsetUnion = get.DEG.2(upset, alternative=TRUE, method = "union")
+upsetInter = get.DEG.2(upset, alternative=TRUE, method = "intersect")
+
+
+UpsetGenes.intersect = c(upsetInter$Upregulated, upsetInter$Downregulated)
+UpsetGenes.union = c(upsetUnion$Upregulated, upsetUnion$Downregulated)
+
+save(UpsetGenes.intersect, UpsetGenes.union, file = "./data/inter&union.RData")
+
+
+#write.csv(UpsetGenes.intersect, file = "./data/GSE31684_Intersect_genes.csv")
+
+
+
+
+
+
+Get.DEG <- function(binary.matrix, method, alternative){
+  # By default argument : 
+  # We get the results for both upregulated and down regulate genes
+  if (missing(alternative)){
+    alternative = TRUE
+  }
+  
+  if (alternative){
+    # Series of logical value wether or not the "method" argument is contained in the names of columns 
+    pattern = str_detect(colnames(binary.matrix),method)
+    if (!TRUE%in% pattern){
+      stop("Unknown method")
+    }
+    # actual colnames corresponding to the pattern of "method" is extracted
+    # example : 
+    # method = "DESeq2"
+    # method.name = "DESeq2_Up", "DESeq2_Down"
+    method.name = colnames(binary.matrix)[pattern]
+  }
+  else{
+    method.name = method[method %in% colnames(binary.matrix)]
+    
+    if (length(method.name) != length(method)){
+      notIN = method[!method %in% colnames(binary.matrix)]
+      warning("One or more method doesn't match : ", notIN)
+    }
+  }
+  
+  #######################################################
+  
+  binary.matrix = as.data.frame(binary.matrix)
+  # Removing all the other methods
+  result = binary.matrix[ , colnames(binary.matrix) %in% method.name ]
+  result$genes = row.names(result)
+  
+  
+  #return(result)
+  
+  #######################################################
+  
+  # if alternative hypothesis does not interest us
+  if (!alternative){
+    # Only one column (given in argument) is retrieved
+    DEG = subset(result, result[[method.name]] == 1)
+    DEG = list(DEG = DEG[["genes"]])
+  }
+  else{
+    # If we want alternative hypothesis, two dataframe are needed (up and downregulated)
+    DEG_up = data.frame(Upregulated = result[[ method.name[1] ]], genes = result$genes)
+    # only genes with "1" are differentially expressed, other does not interest us
+    DEG_up = filter(DEG_up, Upregulated == 1 )
+    
+    DEG_down = data.frame(Downregulated = result[[ method.name[2] ]], genes = result$genes)
+    DEG_down = filter(DEG_down, Downregulated == 1 )
+    
+    # A list of 2 vectors is returned : for both up and downregulated hypothesis
+    DEG = list(Upregulated = DEG_up$genes , Downregulated = DEG_down$genes)
+  }
+  return(DEG)
+}
+
+
+
+
+
+

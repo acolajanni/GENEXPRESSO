@@ -3,9 +3,9 @@ title: "TCGA_RNAseq"
 author: "Antonin Colajanni"
 date: "07/06/2021"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -51,6 +51,35 @@ for (i in 1:length(directories)){
 # Certaines lignes ne correspondent pas à des comptes, on les retire :
 to.skip = c("__alignment_not_unique","__ambiguous", "__no_feature", "__not_aligned", "__too_low_aQual")
 table.count = subset(table.count, !table.count$feature %in% to.skip )
+```
+
+# Autre méthode (plus rapide) : DESeq2 :
+
+```{r loadDESeq2}
+library("DESeq2")
+
+# Répertoire des fichiers qui nous intéressent
+TCGA.dir = "/autofs/unitytravail/travail/acolajanni/BLCA_TCGA/"
+TCGA.table = paste0(TCGA.dir,"gdc_sample_sheet.2021-06-04.tsv")
+counts.dir = paste0(TCGA.dir, "gdc_download_20210604_095100.950304/")
+
+#list.files(counts.dir)
+# Tableau de design expérimental
+tab = read.delim(TCGA.table,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+
+# Création des chemins pour chaque fichier en .HTseq.gz à partir des répertoire 
+file.names = paste0(tab$`File ID`,"/",tab$`File Name`)
+sampleTable <- data.frame(sampleName = tab$`File ID`,
+                          fileName = file.names,
+                          condition = tab$`Sample Type`)
+
+
+ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+                                       directory = counts.dir,
+                                       design= ~ condition)
+
+table.count = as.data.frame(counts(ddsHTSeq))
+table.count
 ```
 
 ```{r chargement, include=FALSE}

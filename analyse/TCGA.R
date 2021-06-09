@@ -45,27 +45,30 @@ TCGA.dir = "/autofs/unitytravail/travail/acolajanni/BLCA_TCGA/"
 TCGA.table = paste0(TCGA.dir,"gdc_sample_sheet.2021-06-04.tsv")
 counts.dir = paste0(TCGA.dir, "gdc_download_20210604_095100.950304/")
 
-list.files(counts.dir)
-
+#list.files(counts.dir)
 tab = read.delim(TCGA.table,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
-
 file.names = paste0(tab$`File ID`,"/",tab$`File Name`)
-
 sampleTable <- data.frame(sampleName = tab$`File ID`,
                           fileName = file.names,
                           condition = tab$`Sample Type`)
 
 
-library("DESeq2")
 ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
                                        directory = counts.dir,
                                        design= ~ condition)
 
-test = as.data.frame(counts(ddsHTSeq))
+table.count = as.data.frame(counts(ddsHTSeq))
 
 
+ens = row.names(table.count)
 
 
+############################################
+###########        ENSGR         ###########
+############################################
+library(stringr)
+ENSGR = ens[str_detect(ens, "ENSGR")]
+write.csv(ENSGR, file="./ENSGR", row.names = FALSE)
 
 ############################################
 ###########        Mapping       ###########
