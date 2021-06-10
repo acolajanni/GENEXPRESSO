@@ -37,10 +37,14 @@ data_subset
 
 ################################################################################
 ################################################################################
+library(RColorBrewer)
+library(viridis)
+
 load("./bgmasinter.RData")
 load("./tab.RData")
 
 test = bg.mas.inter
+test2 = log2(test)
 
 standardise <- function(x){
   (x - median(x))
@@ -48,7 +52,6 @@ standardise <- function(x){
 
 
 
-test2 = log2(test)
 
 my_sample_col = data.frame(sample = subset(tab$PreOpClinStage, paste0(tab$GEO,'.CEL.gz') %in% colnames(test)) )
 row.names(my_sample_col) <- colnames(test)
@@ -60,13 +63,23 @@ my_heatmap <- pheatmap(test2,
                        cutree_cols = 2,
                        clustering_distance_cols	= "correlation",
                        clustering_method = "average",
-                       show_rownames = FALSE,
-                       breaks = -1:1
+                       show_rownames = FALSE
+                       #, breaks = -20:20
+                       , magma(length(mat_breaks) - 1)
+                       , drop_levels = TRUE
                        )
 
 
+mat_breaks <- seq(min(test2), max(test2), length.out = 10)
 
+quantile_breaks <- function(xs, n = 10) {
+  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+  breaks[!duplicated(breaks)]
+}
 
+mat_breaks <- quantile_breaks(test2, n = 10)
+
+mat_breaks
 
 
 ################################################################################
