@@ -39,6 +39,9 @@ data_subset
 ################################################################################
 library(RColorBrewer)
 library(viridis)
+#install.packages("dendsort")
+library(dendsort)
+library(pheatmap)
 
 load("./bgmasinter.RData")
 load("./tab.RData")
@@ -58,8 +61,16 @@ row.names(my_sample_col) <- colnames(test)
 
 test2 = t(apply(test2, 1, standardise))
 
+quantile_breaks <- function(xs, n = 10) {
+  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+  breaks[!duplicated(breaks)]
+}
+
+mat_breaks <- quantile_breaks(test2, n = 10)
+
 my_heatmap <- pheatmap(test2,
                        annotation_col = my_sample_col,
+                       annotation_colors = ann_colors,
                        cutree_cols = 2,
                        clustering_distance_cols	= "correlation",
                        clustering_method = "average",
@@ -69,17 +80,15 @@ my_heatmap <- pheatmap(test2,
                        , drop_levels = TRUE
                        )
 
+ann_colors = list(
+  sample = c(T2 = "deeppink4", T1 = "darkturquoise")
+)
 
-mat_breaks <- seq(min(test2), max(test2), length.out = 10)
+ann_colors = list(
+  Time = c("white", "firebrick"),
+  CellType = c(CT1 = "#1B9E77", CT2 = "#D95F02"),
+  GeneClass = c(Path1 = "#7570B3", Path2 = "#E7298A", Path3 = "#66A61E"))
 
-quantile_breaks <- function(xs, n = 10) {
-  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
-  breaks[!duplicated(breaks)]
-}
-
-mat_breaks <- quantile_breaks(test2, n = 10)
-
-mat_breaks
 
 
 ################################################################################
