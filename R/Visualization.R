@@ -194,3 +194,96 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
   }
   return(g)
 }
+
+
+
+#' Produce an Heatmap with pheatmap
+#'
+#' The dataset is subsetted to only keep DE genes in rows. Then, an heatmap from those genes is produced on the two groups within the whole sample
+#' 
+#' @param DEG 
+#' Vector of SYMBOLs of DE genes
+#' @param dataset 
+#' Dataframe with sample in columns and genes in rows
+#' @param col.group1 
+#' colour for the annotation of the first group
+#' @param col.group2 
+#' colour for the annotation of the second group
+#' @param n.breaks 
+#' Number of breaks for the colour palette of the heatmap
+#' @param is.log2 
+#' Logical value. TRUE if the dataset is on log2 scale
+#' @param sample.condition
+#' Vector of the sample condition in the same order as sample names
+#' @param samples 
+#' Vector of the samples in the same order as sample conditions
+#'
+#' @return
+#' @import "pheatmap"
+#' @export
+#'
+#' @examples
+#'# Import the dataset
+#'Data = matrix(runif(5000, 10, 100), ncol=20)
+#'group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#'genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#'colnames(Data) = group
+#'row.names(Data) = genes 
+#'
+#'# Get a set of particular genes
+#'DEG = genes <- paste0(rep(LETTERS[1:25], each=5), rep(c(1:10),each = 1))
+#'
+#'# Get the samples 
+#'sample.condition = c(rep("control", times = 10), rep("case", times = 10) )
+#'samples = colnames(Data)
+#'
+#'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples )
+#'
+DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples ){
+  # By default values
+  if(missing(col.group1)){
+    col.group1 = "deeppink4"
+  }
+  if(missing(col.group2)){
+    col.group2 = "cyan"
+  } 
+  
+  if(missing(n.breaks)){
+    n.breaks = 8
+  }
+  
+  # Subsetting the dataset to keep only the DE genes in rows
+  dataset = dataset[ row.names(dataset)%in%DEG , ]
+  
+  
+  # log2 scale allows a nicer visualization on heatmaps
+  if(!is.log2){
+    dataset = log2(dataset)
+  }
+  
+  # Centering by the median
+  MedianCentering <- function(x){
+    (x - median(x))
+  }
+  dataset = t(apply(dataset, 1, MedianCentering))
+  
+  
+  # Creating sample annotation data frame
+  sample.DF = data.frame("sample" = sample.condition, row.names = samples)
+  
+  annotation_colors = list(sample = c(sample1 = col.group2, sample2 = col.group1))
+  names(annotation_colors$sample) = levels(sample.DF$sample)
+  
+  heatmap = pheatmap(dataset,
+           annotation_col = sample.DF,
+           annotation_colors = annotation_colors,
+           cutree_cols = 2,
+           clustering_distance_cols = "correlation",
+           clustering_method = "average",
+           show_rownames = FALSE
+           , inferno(n.breaks)
+           , drop_levels = TRUE
+  )
+  
+  print(annotation_colors)
+}

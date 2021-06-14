@@ -290,7 +290,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
 #' @export
 #'
 #' @examples
-mapping.affymetrix.probe <- function(exprSet, annotation){
+mapping.affymetrix.probe <- function(exprSet){
   
   #########################
   ###  Work in progress ###

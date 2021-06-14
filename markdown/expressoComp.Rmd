@@ -13,13 +13,16 @@ library(GENEXPRESSO)
 library(FactoMineR)
 library(factoextra)
 library(ade4)
+library(dplyr)
+library(stringr)
+
 #setwd("/home/acolajanni/GIT/GENEXPRESSO")
 ```
 
 # Comparaison des méthodes de la fonction expresso() du package affy
 
 ```{r load, include=TRUE}
-load("./dataToComp.RData")
+load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/DataToCompTOTAL.RData")
 # Gènes en colonnes / lignes = méthodes
 data.to.comp = as.data.frame(t(data.to.comp))
 data.to.comp
@@ -50,13 +53,11 @@ upset = Upset.Binary.Dataframe(data.to.comp)
 methods_bg.cor = upset[grepl("background",methods)]
 methods_bg.cor
 
-upset(methods_bg.cor, 
-      sets = c("background mas Up", "background rma Up"), 
-      sets.bar.color = "#56B4E9", 
-      order.by = "freq", 
-      )
-upset(methods_bg.cor, 
-      sets = c("background mas Down", "background rma Down"), 
+methods_bg.cor$`background mas` = methods_bg.cor$`background mas Up` + methods_bg.cor$`background mas Down`
+methods_bg.cor$`background rma` = methods_bg.cor$`background rma Up` + methods_bg.cor$`background rma Down`
+
+upset(methods_bg.cor,
+      sets = c("background mas", "background rma"), 
       sets.bar.color = "#56B4E9", 
       order.by = "freq", 
       )
@@ -68,17 +69,16 @@ la méthode "subtractmm" est éliminée (produit un jeu de données remplie de '
 ```{r pm, include=TRUE}
 methods_pm.cor = upset[grepl("pm.cor",methods)]
 
+methods_pm.cor$`pm.cor mas` = methods_pm.cor$`pm.cor mas Up` + methods_pm.cor$`pm.cor mas Down`
+methods_pm.cor$`pm.cor pmonly` = methods_pm.cor$`pm.cor pmonly Up` + methods_pm.cor$`pm.cor pmonly Down`
+
 upset(methods_pm.cor, 
-      sets = colnames(methods_pm.cor)[grepl("Up",colnames(methods_pm.cor))], 
+      sets = colnames(methods_pm.cor)[!grepl("Up|Down",colnames(methods_pm.cor))], 
       sets.bar.color = "#56B4E9", 
       order.by = "freq", 
       )
 
-upset(methods_pm.cor, 
-      sets = colnames(methods_pm.cor)[grepl("Down",colnames(methods_pm.cor))], 
-      sets.bar.color = "#56B4E9", 
-      order.by = "freq", 
-      )
+
 ```
 
 ## Express summary Stat :
@@ -89,71 +89,71 @@ upset(methods_pm.cor,
 methods_sumstat = upset[grepl("sumstat",methods)]
 
 
+methods_sumstat$Summary.liwong = methods_sumstat$`sumstat liwong Up` + methods_sumstat$`sumstat liwong Down`
+methods_sumstat$Summary.medianpolish = methods_sumstat$`sumstat medianpolish Up` + methods_sumstat$`sumstat medianpolish Down`
+methods_sumstat$Summary.mas = methods_sumstat$`sumstat mas Up` + methods_sumstat$`sumstat mas Down`
+methods_sumstat$Summary.avgdiff = methods_sumstat$`sumstat avgdiff Up` + methods_sumstat$`sumstat avgdiff Down`
+
+
 upset(methods_sumstat, 
-      sets = colnames(methods_sumstat)[grepl("Up",colnames(methods_sumstat))], 
-      sets.bar.color = "#56B4E9" 
+      sets = colnames(methods_sumstat)[!grepl("Up|Down",colnames(methods_sumstat))],  
+      sets.bar.color = "#56B4E9",
       #,order.by = "freq", 
       )
 
-upset(methods_sumstat, 
-      sets = colnames(methods_sumstat)[grepl("Down",colnames(methods_sumstat))], 
-      sets.bar.color = "#56B4E9"
-      #,order.by = "freq", 
-      )
 ```
+```{r pcaSUMSTAT}
+PCAsumstat = methods_sumstat[, !grepl("Up|Down",colnames(methods_sumstat))]
+
+PCA_tools(t(PCAsumstat))
+
+```
+
+
 
 # Méthodes de normalisation : 
  - Quantiles / quantiles.robust : relativement rapide (10min environ)
  - loess : 30 à 40 min environ
  - autres méthodes : 15 à 20 min
- - Liwong : on exclut (nécessite de fiter un modèle linéaire)
- 
+
 ```{r norm, include=TRUE}
 methods_norm = upset[grepl("norm",methods)]
 
-upset(methods_norm, 
-      sets = colnames(methods_norm)[grepl("Up",colnames(methods_norm))], 
+meth.norm = c("contrasts","constant","loess","quantiles","quantiles.robust","invariantset","qspline")
+
+Norm = data.frame(SYMBOL = row.names(methods_norm))
+for (meth in meth.norm){
+  tmp = methods_norm[, str_detect(colnames(methods_norm),meth)]
+  if (meth == "quantiles"){
+    tmp = tmp[!grepl("robust",colnames(tmp))]
+  }
+  tmp[[ meth ]] = rowSums(tmp)
+  Norm = cbind(Norm,tmp[3])
+} 
+Norm$SYMBOL = NULL
+
+upset(Norm, 
+      sets = colnames(Norm), 
       sets.bar.color = "#56B4E9" 
       ,order.by = "freq", 
       )
 ```
 
-```{r norm_down}
-upset(methods_norm, 
-      sets = colnames(methods_norm)[grepl("Down",colnames(methods_norm))], 
-      sets.bar.color = "#56B4E9"
-      ,order.by = "freq", 
-      )
-```
+
 
 # Faire un clustering sur arbre
 
 
 ```{r norm2}
-# 2 jeux de données : Normalisation sur Surexprimé et SousExprimé
-Norm = as.data.frame(t(data.to.comp))
-Norm = Norm[grepl("norm",methods)]
-Up = as.data.frame(t(Norm[grepl("Up",colnames(Norm))]))
-Down = as.data.frame(t(Norm[grepl("Down",colnames(Norm))]))
-
 # PCA
-PCA_tools(Up)
-PCA_tools(Down)
+PCA_tools(t(Norm))
 ```
 
 
-# Clustering sur gènes Surexprimés
+# Clustering
 ```{r clustering_up}
 
-d <- dist(Up, method = "euclidean") # distance matrix
-fit <- hclust(d, method="ward.D") 
-plot(fit) # display dendogram
-rect.hclust(fit, k=3, border="red") 
-```
-# Clustering sur gènes Sous-exprimés
-```{r clustering_down}
-
-d <- dist(Down, method = "euclidean") # distance matrix
+d <- dist(t(Norm), method = "euclidean") # distance matrix
 fit <- hclust(d, method="ward.D") 
 plot(fit) # display dendogram
 rect.hclust(fit, k=3, border="red") 
@@ -170,26 +170,18 @@ UpDown = as.data.frame(t(data.to.comp))
 Upreg = UpDown[grepl("Up",methods)]
 Downreg = UpDown[grepl("Down",methods)]
 
-bg = Upreg[grepl("background",names(Upreg))]
-pm = Upreg[grepl("pm.cor",names(Upreg))]
-sumstat = Upreg[grepl("sumstat",names(Upreg))]
-Norm = Upreg[grepl("norm",names(Upreg))]
+#bg = Upreg[grepl("background",names(Upreg))]
+#pm = Upreg[grepl("pm.cor",names(Upreg))]
+#sumstat = Upreg[grepl("sumstat",names(Upreg))]
+#Norm = Upreg[grepl("norm",names(Upreg))]
 PCA_tools(t(Upreg))
 PCA_tools(t(Downreg))
 
-group = c(1,1,2,2,3,3,3,4,4,4,4,4,4,4)
+group = c(1,1,2,2,3,3,3,4,4,4,4,4,4,4,3)
 
 res.pca <- PCA(t(Upreg),graph=F)
 pca.res = dudi.pca(t(Upreg), scale= T, scannf = FALSE)
 s.class(pca.res$li,fac=as.factor(group),col = c("#00AFBB", "#E7B800", "#FC4E07", "#000000"),
         label = c("bg.cor", "pm.cor", "sumstat","norm"),)
-
-
-
-d <- dist(t(Upreg), method = "euclidean") # distance matrix
-fit <- hclust(d, method="ward.D") 
-plot(fit) # display dendogram
-rect.hclust(fit, k=4, border="red") 
-
 
 ```

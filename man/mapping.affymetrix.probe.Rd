@@ -4,7 +4,7 @@
 \alias{mapping.affymetrix.probe}
 \title{Mapping Probes ID of Affymetrix microarray chip in expression set dataframe}
 \usage{
-mapping.affymetrix.probe(exprSet, annotation)
+mapping.affymetrix.probe(exprSet)
 }
 \arguments{
 \item{exprSet}{Dataframe with samples in columns, probes ID in rows}

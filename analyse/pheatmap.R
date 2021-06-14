@@ -64,8 +64,7 @@ my_heatmap <- pheatmap(test2,
                        clustering_distance_cols	= "correlation",
                        clustering_method = "average",
                        show_rownames = FALSE
-                       #, breaks = -20:20
-                       , magma(length(mat_breaks) - 1)
+                       , inferno(length(mat_breaks) - 1)
                        , drop_levels = TRUE
                        )
 

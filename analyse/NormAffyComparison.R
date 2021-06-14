@@ -81,7 +81,7 @@ sumstat = c("avgdiff","mas","medianpolish","playerout")
 norm = "constant"
 pm.cor = "mas"
 bg.cor = "mas"
-
+stat = "liwong"
 dataset.sumstat = NULL
 for (stat in sumstat){
   tmp = tools.norm.Microarray(GEOiD = abatch, tools = "custom", 
@@ -140,7 +140,7 @@ DEG.bg.rma = tools.DEG.Microarrays(map.bg.rma, DEG.method, length(T1), length(T2
 Expresso.comp.methods = function(dataset, T1, T2, DEG.method){
   
   data = as.data.frame(dataset)
-  data = mapping.affymetrix.probe(data, hgu133plus2SYMBOL)
+  data = mapping.affymetrix.probe(data) #, hgu133plus2SYMBOL)
   data = relocate(data, T1,T2)
   
   DEG = tools.DEG.Microarrays(data, DEG.method, length(T1), length(T2) )
@@ -166,12 +166,15 @@ data.to.comp = data.frame(NULL)
 library(dplyr)
 library(hgu133plus2.db)
 
+params="background"
+tmp.params = "rma"
+
 for (param in params){
   print(" ....... ")
   print(param)
   
   tmp.list = dataset.list[[param]]
-  tmp.params = names(tmp.list)
+  #tmp.params = names(tmp.list)
  
   for (tmp.param in tmp.params){
     print(tmp.param)
@@ -195,6 +198,7 @@ for (param in params){
     }
   }
 }
+
 
 row.names(data.to.comp) = data.to.comp$SYMBOL
 data.to.comp$SYMBOL = NULL
@@ -249,19 +253,21 @@ methods = row.names(data.to.comp)
 # Dataframe rempli de valeur binaire (0/1)
 upset = Upset.Binary.Dataframe(data.to.comp)
 
-upset.bg =
+#upset.bg =
 
-upsetUnion = get.DEG.2(upset, alternative=TRUE, method = "union")
-upsetInter = get.DEG.2(upset, alternative=TRUE, method = "intersect")
+upsetUnion = Get.DEG.2(upset, alternative=FALSE, method = "union")
+upsetInter = Get.DEG.2(upset, alternative=TRUE, method = "intersect")
 
 
 UpsetGenes.intersect = c(upsetInter$Upregulated, upsetInter$Downregulated)
+UpsetGenes.intersect = data.frame(DEG = UpsetGenes.intersect)
+
 UpsetGenes.union = c(upsetUnion$Upregulated, upsetUnion$Downregulated)
 
 save(UpsetGenes.intersect, UpsetGenes.union, file = "./data/inter&union.RData")
 
 
-#write.csv(UpsetGenes.intersect, file = "./data/GSE31684_Intersect_genes.csv")
+write.csv(UpsetGenes.intersect, file = "./data/GSE31684_Intersect_genes.csv",row.names = FALSE)
 
 
 
