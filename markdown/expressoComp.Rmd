@@ -7,7 +7,7 @@ output:
     df_print: paged
 ---
 
-```{r setup, include=FALSE}
+```{r setup, error=FALSE, warning=FALSE, message=FALSE}
 library(UpSetR)
 library(GENEXPRESSO)
 library(FactoMineR)
@@ -15,6 +15,14 @@ library(factoextra)
 library(ade4)
 library(dplyr)
 library(stringr)
+library(viridis)
+library(pheatmap)
+load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/Mapped.RData")
+
+celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
+tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
 
 #setwd("/home/acolajanni/GIT/GENEXPRESSO")
 ```
@@ -45,7 +53,9 @@ methods = row.names(data.to.comp)
 upset = Upset.Binary.Dataframe(data.to.comp)
 ```
 
+## Résumé des paramètres de expresso()
 
+![](/autofs/unitytravail/travail/acolajanni/Stage/Figures/ExpressoNorm.png)
 
 ## Background correct : 
 ```{r bg, include=TRUE}
@@ -63,6 +73,37 @@ upset(methods_bg.cor,
       )
 
 ```
+# Vérification sur heatmap
+```{r heatmap1}
+bg.cor = methods_bg.cor[!grepl("Up|Down",colnames(methods_bg.cor))]
+# Récupération des gènes DE
+bg.DEG = Get.DEG.2(bg.cor, "intersect", alternative = FALSE)
+bg.DEG[1:10]
+
+Map.bg = Mapped$background
+
+
+DEG.pheatmap(bg.DEG, 
+             Map.bg$mas, 
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "Background = mas"
+             )
+
+
+DEG.pheatmap(bg.DEG, 
+             Map.bg$rma, 
+             n.breaks = 12,
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+           , main = "Background = rma"
+
+             )
+```
+
+
 
 ## PM correction : 
 la méthode "subtractmm" est éliminée (produit un jeu de données remplie de 'NAs') 
@@ -78,6 +119,33 @@ upset(methods_pm.cor,
       order.by = "freq", 
       )
 
+
+```
+```{r heatmap2}
+pm.cor = methods_pm.cor[!grepl("Up|Down",colnames(methods_pm.cor))]
+# Récupération des gènes DE
+pm.DEG = Get.DEG.2(pm.cor, "intersect", alternative = FALSE)
+#pm.DEG[1:10]
+
+Map.pm = Mapped$pm.cor
+
+DEG.pheatmap(pm.DEG, 
+             Map.pm$mas, 
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "PM = mas"
+             )
+
+
+DEG.pheatmap(pm.DEG, 
+             Map.pm$pmonly, 
+             #n.breaks = 12,
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "PM = PMonly"
+             )
 
 ```
 
@@ -108,7 +176,51 @@ PCAsumstat = methods_sumstat[, !grepl("Up|Down",colnames(methods_sumstat))]
 PCA_tools(t(PCAsumstat))
 
 ```
+```{r heatmap3}
+summ = methods_sumstat[!grepl("Up|Down",colnames(methods_sumstat))]
+# Récupération des gènes DE
+summ.DEG = Get.DEG.2(summ, "intersect", alternative = FALSE)
+#pm.DEG[1:10]
 
+Map.summ = Mapped$sumstat
+
+DEG.pheatmap(summ.DEG, 
+             Map.summ$avgdiff, 
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "Summarization = avgdiff(MAS 4.0)"
+             )
+
+
+DEG.pheatmap(summ.DEG, 
+             Map.summ$mas, 
+             #n.breaks = 12,
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "Summarization = mas(MAS 5.0)"
+             )
+
+DEG.pheatmap(summ.DEG, 
+             Map.summ$medianpolish, 
+             #n.breaks = 12,
+             is.log2 = TRUE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "Summarization = medianpolish (RMA)"
+             )
+
+DEG.pheatmap(summ.DEG, 
+             Map.summ$liwong, 
+             #n.breaks = 12,
+             is.log2 = FALSE, 
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage
+             , main = "Summarization = liwong "
+             )
+
+```
 
 
 # Méthodes de normalisation : 
@@ -141,12 +253,20 @@ upset(Norm,
 
 
 
-# Faire un clustering sur arbre
-
-
+# Méthodes de normalisation
 ```{r norm2}
+UpDown = as.data.frame(t(data.to.comp))
+
+meth.norm = UpDown[grepl("norm",colnames(UpDown))]
+
+
+Norm.up = meth.norm[grepl("Up",colnames(meth.norm))]
+Norm.down = meth.norm[grepl("Down",colnames(meth.norm))]
+
 # PCA
-PCA_tools(t(Norm))
+PCA_tools(t(Norm.up))
+PCA_tools(t(Norm.down))
+
 ```
 
 
@@ -158,11 +278,63 @@ fit <- hclust(d, method="ward.D")
 plot(fit) # display dendogram
 rect.hclust(fit, k=3, border="red") 
 ```
+```{r upsetArbre}
 
+upset(Norm, 
+      sets = c("quantiles","quantiles.robust"), 
+      sets.bar.color = "#56B4E9" 
+      ,order.by = "freq", 
+      )
+
+upset(Norm, 
+      sets = c("constant","contrasts","qspline","loess"), 
+      sets.bar.color = "#56B4E9" 
+      ,order.by = "freq", 
+      )
+
+
+```
 Conclusion : n'en garder que 3 ? 
  - quantiles / quantiles robust
  - Invariantset
  -  Constant / loess / contrast / qspline
+
+
+```{r heatmap4}
+# Récupération des gènes DE
+norm.DEG = Get.DEG.2(Norm, "intersect", alternative = FALSE)
+
+Map.norm= Mapped$norm
+
+DEG.pheatmap(norm.DEG, 
+             Map.norm$invariantset, 
+             is.log2 = FALSE, 
+             n.breaks = 12,
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage,
+             main = "Normalisation = Invariantset (Méthode Li Wong)"
+             )
+
+
+DEG.pheatmap(norm.DEG, 
+             Map.norm$quantiles.robust, 
+             is.log2 = FALSE, 
+             n.breaks = 12,
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage,
+             main = "Normalisation = Quantiles.robust"
+             )
+
+DEG.pheatmap(norm.DEG, 
+             Map.norm$constant, 
+             is.log2 = FALSE, 
+             n.breaks = 12,
+             samples = paste0(tab$GEO,".CEL.gz"), 
+             sample.condition = tab$PreOpClinStage,
+             main = "Normalisation = constant (MAS 5.0) "
+             )
+
+```
 
 # Vision Globale sur le jeu de données
 ```{r clustering_down2}
@@ -170,18 +342,13 @@ UpDown = as.data.frame(t(data.to.comp))
 Upreg = UpDown[grepl("Up",methods)]
 Downreg = UpDown[grepl("Down",methods)]
 
-#bg = Upreg[grepl("background",names(Upreg))]
-#pm = Upreg[grepl("pm.cor",names(Upreg))]
-#sumstat = Upreg[grepl("sumstat",names(Upreg))]
-#Norm = Upreg[grepl("norm",names(Upreg))]
 PCA_tools(t(Upreg))
 PCA_tools(t(Downreg))
 
 group = c(1,1,2,2,3,3,3,4,4,4,4,4,4,4,3)
 
-res.pca <- PCA(t(Upreg),graph=F)
 pca.res = dudi.pca(t(Upreg), scale= T, scannf = FALSE)
 s.class(pca.res$li,fac=as.factor(group),col = c("#00AFBB", "#E7B800", "#FC4E07", "#000000"),
-        label = c("bg.cor", "pm.cor", "sumstat","norm"),)
+        label = c("bg.cor", "pm.cor", "summary.stat","norm"),)
 
 ```

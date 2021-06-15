@@ -1,0 +1,77 @@
+---
+title: "pheatmap"
+author: "Antonin Colajanni"
+date: "14/06/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, error=FALSE, warning=FALSE, message=FALSE}
+library(GENEXPRESSO)
+library(pheatmap)
+library(RColorBrewer)
+library(viridis)
+
+
+setwd("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/")
+load("./bgmasinter.RData")
+load("./tab.RData")
+
+
+```
+
+
+
+```{r objet}
+bg.mas.inter
+```
+
+
+```{r arg}
+# log2 des données (meilleur visualisation)
+data = bg.mas.inter
+data = log2(data)
+
+# fonction de centrage sur la médiane
+standardise <- function(x){
+  (x - median(x))
+}
+
+# Tableau de condition expérimentale des patients
+my_sample_col = data.frame(sample = subset(tab$PreOpClinStage, paste0(tab$GEO,'.CEL.gz') %in% colnames(data)) )
+row.names(my_sample_col) <- colnames(data)
+my_sample_col
+
+# centrage (colonne par colonne) sur la médiane de l'échantillon
+data = t(apply(data, 1, standardise))
+
+# Fonction de distribution des données
+quantile_breaks <- function(xs, n = 10) {
+  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+  breaks[!duplicated(breaks)]
+}
+
+# Découpage en 10 classes
+breaks <- quantile_breaks(data, n = 10)
+
+annotation_colors = list(sample = c("T1" = "cyan", "T2" = "deeppink4"))
+
+# Appel de la fonction
+my_heatmap <- pheatmap(data,
+                       annotation_col = my_sample_col,
+                       annotation_colors = annotation_colors,
+                       cutree_cols = 2,
+                       clustering_distance_cols	= "correlation",
+                       clustering_method = "average",
+                       show_rownames = FALSE
+                       , inferno(8)
+                       , drop_levels = TRUE
+                       )
+
+
+
+
+
+
+```

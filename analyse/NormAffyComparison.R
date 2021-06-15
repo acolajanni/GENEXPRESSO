@@ -141,11 +141,15 @@ Expresso.comp.methods = function(dataset, T1, T2, DEG.method){
   
   data = as.data.frame(dataset)
   data = mapping.affymetrix.probe(data) #, hgu133plus2SYMBOL)
-  data = relocate(data, T1,T2)
   
-  DEG = tools.DEG.Microarrays(data, DEG.method, length(T1), length(T2) )
-  return(DEG)
-  
+  if (!DEG.method){
+    return(data)
+  }
+  else{
+    data = relocate(data, T1,T2)
+    DEG = tools.DEG.Microarrays(data, DEG.method, length(T1), length(T2) )
+    return(DEG)
+  }
 }
 #test.fnc = Expresso.comp.methods(test1, T1, T2, "RankSum")
 
@@ -157,7 +161,6 @@ dataset.list = list(background = dataset.bg, pm.cor = dataset.pm, sumstat = data
 nb.dataset = sum(sapply(dataset.list,length))
 # listing parameters of expresso function
 params = names(dataset.list)
-params = "norm"
 
 
 # initializing the dataframe to compare methods
@@ -174,7 +177,7 @@ for (param in params){
   print(param)
   
   tmp.list = dataset.list[[param]]
-  #tmp.params = names(tmp.list)
+  tmp.params = names(tmp.list)
  
   for (tmp.param in tmp.params){
     print(tmp.param)
@@ -198,7 +201,25 @@ for (param in params){
     }
   }
 }
-
+### ### ### ### ### ### ### ### ### ### ### 
+### To obtain mapped dataset
+Mapped = list(NULL)
+for (param in params){
+  print(" ....... ")
+  print(param)
+  
+  tmp.list = dataset.list[[param]]
+  tmp.params = names(tmp.list)
+  
+  for (tmp.param in tmp.params){
+    print(tmp.param)
+    tmp.dataset = tmp.list[[tmp.param]]
+    tmp = Expresso.comp.methods(tmp.dataset, T1, T2, DEG.method = FALSE)
+    Mapped[[ param ]] [[tmp.param]] = tmp
+  }
+}
+save(Mapped, file = "./data/Mapped.RData")
+### ### ### ### ### ### ### ### ### ### ### 
 
 row.names(data.to.comp) = data.to.comp$SYMBOL
 data.to.comp$SYMBOL = NULL

@@ -217,7 +217,9 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #' Vector of the sample condition in the same order as sample names
 #' @param samples 
 #' Vector of the samples in the same order as sample conditions
-#'
+#' @param main
+#' Title of the heatmap
+#' 
 #' @return
 #' @import "pheatmap"
 #' @export
@@ -239,7 +241,7 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #'
 #'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples )
 #'
-DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples ){
+DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples,main ){
   # By default values
   if(missing(col.group1)){
     col.group1 = "deeppink4"
@@ -271,6 +273,7 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
   # Creating sample annotation data frame
   sample.DF = data.frame("sample" = sample.condition, row.names = samples)
   
+  # Configuring colors
   annotation_colors = list(sample = c(sample1 = col.group2, sample2 = col.group1))
   names(annotation_colors$sample) = levels(sample.DF$sample)
   
@@ -283,7 +286,7 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
            show_rownames = FALSE
            , inferno(n.breaks)
            , drop_levels = TRUE
+           , main = main
   )
   
-  print(annotation_colors)
 }
