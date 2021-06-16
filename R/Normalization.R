@@ -260,7 +260,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                                         normalize.method= "invariantset",
                                         pmcorrect.method= "pmonly",
                                         summary.method= "liwong")
-                     }
+                     },
                      liwong_bgRMA = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "rma",
