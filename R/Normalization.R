@@ -219,7 +219,6 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                      # rma, gcrma and mas5 are pretty straigthforward functions
                      rma = {
                        eset = rma(abatch)
-                       return(eset)
                      },
                      
                      gcrma = {
@@ -233,6 +232,135 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                      none = {
                        return(abatch)
                      },
+                     
+                     liwong = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "none",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "liwong")
+                     },
+                     RMA.robust = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "quantiles.robust",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "medianpolish")
+                     },
+                     MAS5.0 = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "constant",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "mas")
+                     },
+                     liwong_bgMAS = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "liwong")
+                     }
+                     liwong_bgRMA = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "liwong")
+                     },
+                     RMA.invariantset = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "medianpolish")
+                     },
+                     MAS.invariantset = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "mas")
+                     },
+                     MAS.quantiles = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "quantiles.robust",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "mas")
+                     },
+                     RMA.constant = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "medianpolish")
+                       
+                     },
+                     RMA.PMmas = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "quantiles.robust",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "medianpolish")
+                     },
+                     MAS.PMONLY = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "constant",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "mas")
+                     },
+                     liwong.PMmas = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "none",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "liwong")
+                     },
+                     MAS.medianpolish = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "constant",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "medianpolish")
+                     },
+                     MAS.liwong = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "constant",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "liwong")
+                     },
+                     RMA.sumMAS = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "quantiles.robust",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "mas")
+                     },
+                     RMA.sumLiwong = {
+                       eset <- expresso(abatch, 
+                                       bgcorrect.method= "rma",
+                                       normalize.method= "quantiles.robust",
+                                       pmcorrect.method= "pmonly",
+                                       summary.method= "liwong")
+                     },
+                     liwong.medianpolish = {
+                       eset <- expresso(abatch, 
+                                     bgcorrect.method= "none",
+                                     normalize.method= "invariantset",
+                                     pmcorrect.method= "pmonly",
+                                     summary.method= "medianpolish")
+                     },
+                     liwong.SummMAS = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "none",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "mas")
+                     },
+
                      
                      # Custom normalization through different method : 
                      # Normalization, background correction, pm correction, summary stat expression

@@ -33,5 +33,7 @@ Imports:
     stringr,
     GEOquery,
     affy,
-    gcrma
+    gcrma,
+    pheatmap,
+    viridis
 RoxygenNote: 7.1.1

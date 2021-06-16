@@ -219,9 +219,11 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #' Vector of the samples in the same order as sample conditions
 #' @param main
 #' Title of the heatmap
+#' @param hclust.rows 
+#' Square matrix of similarity between genes. 
 #' 
 #' @return
-#' @import "pheatmap"
+#' @import "pheatmap" "viridis"
 #' @export
 #'
 #' @examples
@@ -239,9 +241,9 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #'sample.condition = c(rep("control", times = 10), rep("case", times = 10) )
 #'samples = colnames(Data)
 #'
-#'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples )
+#'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples, main = "Heatmap on random values" )
 #'
-DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples,main ){
+DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples,main, Cluster.rows="correlation" ){
   # By default values
   if(missing(col.group1)){
     col.group1 = "deeppink4"
@@ -252,6 +254,10 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
   
   if(missing(n.breaks)){
     n.breaks = 8
+  }
+  
+  if(missing(main)){
+    main = "heatmap"
   }
   
   # Subsetting the dataset to keep only the DE genes in rows
@@ -269,6 +275,12 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
   }
   dataset = t(apply(dataset, 1, MedianCentering))
   
+  quantile_breaks <- function(xs, n = 10) {
+    breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+    breaks[!duplicated(breaks)]
+  }
+  
+  breaks = quantile_breaks(dataset,n.breaks)
   
   # Creating sample annotation data frame
   sample.DF = data.frame("sample" = sample.condition, row.names = samples)
@@ -277,16 +289,32 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
   annotation_colors = list(sample = c(sample1 = col.group2, sample2 = col.group1))
   names(annotation_colors$sample) = levels(sample.DF$sample)
   
+  if(class(Cluster.rows) == "matrix"){
+    message("Heatmap on preclusterized genes")
+    Cluster.rows = as.dist(1 - Cluster.rows)
+  }
+  else if(class(Cluster.rows) == "dist"){
+    message("Heatmap on preclusterized genes")
+  }
+  else{
+    message("Heatmap on correlation matrix clusterized by average")
+    Cluster.rows = "correlation"
+  }
+  
   heatmap = pheatmap(dataset,
-           annotation_col = sample.DF,
-           annotation_colors = annotation_colors,
-           cutree_cols = 2,
-           clustering_distance_cols = "correlation",
-           clustering_method = "average",
-           show_rownames = FALSE
-           , inferno(n.breaks)
-           , drop_levels = TRUE
-           , main = main
-  )
+                       breaks = breaks,
+                       annotation_col = sample.DF,
+                       annotation_colors = annotation_colors,
+                       cutree_cols = 2,
+                       clustering_distance_rows = Cluster.rows,
+                       clustering_distance_cols = "correlation",
+                       clustering_method = "average",
+                       show_rownames = FALSE
+                       , inferno(n.breaks-1)
+                       , drop_levels = TRUE
+                       , main = main )
+  return(heatmap)
   
 }
+  
+

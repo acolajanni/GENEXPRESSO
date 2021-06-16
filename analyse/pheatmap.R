@@ -68,25 +68,86 @@ quantile_breaks <- function(xs, n = 10) {
 
 mat_breaks <- quantile_breaks(test2, n = 10)
 
+ann_colors = list(
+  sample = c(T2 = "deeppink4", T1 = "darkturquoise")
+)
+
 my_heatmap <- pheatmap(test2,
+                       breaks = mat_breaks,
+                       annotation_col = my_sample_col,
+                       annotation_colors = ann_colors,
+                       cutree_cols = 2,
+                       clustering_distance_rows = "correlation" ,
+                       clustering_distance_cols	= "correlation",
+                       clustering_method = "average",
+                       show_rownames = FALSE
+                     
+                       , inferno(length(mat_breaks) - 1)
+                       #, brewer.pal(n = 8, name = 'Dark2')
+                       #, wes_palette("BottleRocket2", n=5, type = "discrete")
+                       #, c("#999999", "#E69F00", "#56B4E9", "#009E73",
+                        #   "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+                       , drop_levels = TRUE
+                       )
+
+
+
+
+heat(3)
+
+##############################################""""
+k.fix = 10
+mat.order <- cbind(test2[c(my_heatmap$tree_row[["order"]]),
+                         my_heatmap$tree_col[["order"]]],
+                   cluster=cutree(my_heatmap$tree_row, k=k.fix)[my_heatmap$tree_row[["order"]]])
+
+
+
+
+my_heatmap <- pheatmap(mat.order,
+                       breaks = mat_breaks,
                        annotation_col = my_sample_col,
                        annotation_colors = ann_colors,
                        cutree_cols = 2,
                        clustering_distance_cols	= "correlation",
                        clustering_method = "average",
+                       #clustering_rows = FALSE,
                        show_rownames = FALSE
-                       , inferno(length(mat_breaks) - 1)
+                       , inferno(length(mat_breaks) - 1) 
                        , drop_levels = TRUE
-                       )
-
-ann_colors = list(
-  sample = c(T2 = "deeppink4", T1 = "darkturquoise")
 )
 
-ann_colors = list(
-  Time = c("white", "firebrick"),
-  CellType = c(CT1 = "#1B9E77", CT2 = "#D95F02"),
-  GeneClass = c(Path1 = "#7570B3", Path2 = "#E7298A", Path3 = "#66A61E"))
+##############################################""""
+
+
+rows.cor <- cor(t(test2), use = "pairwise.complete.obs", method = "pearson")
+clust = as.dist(1 - rows.cor)
+
+rows.euclid <- dist(t(test2), method = "euclidean")
+
+
+
+
+pheatmap(
+  test2, 
+  clustering_distance_rows = as.dist(1 - rows.cor)
+)
+
+
+
+my_heatmap <- pheatmap(test2,
+                       breaks = mat_breaks,
+                       annotation_col = my_sample_col,
+                       annotation_colors = ann_colors,
+                       cutree_cols = 2,
+                       clustering_distance_rows = as.dist(1 - rows.cor) ,
+                       clustering_distance_cols	= "correlation",
+                       clustering_method = "average",
+                       show_rownames = FALSE
+                       , plasma(length(mat_breaks) - 1)
+                       , drop_levels = TRUE
+)
+
 
 
 
@@ -178,6 +239,12 @@ T2%in%Separe$T2
 
 bg.mas.norm <- t(apply(bg.mas.inter, 1, cal_z_score))
 pheatmap(bg.mas.norm,cutree_cols = 2)
+
+
+
+###########################################
+###########################################
+###########################################
 
 
 
