@@ -29,3 +29,42 @@ parameters = c("RMA.invariantset.medianpolish" ,
                "gcrma",
                "mas5",
                "liwong")
+
+
+## Jeu de données
+# save(abatch, file = "abatch.RData")
+load("./data/abatch.RData")
+## PCFIXE
+celpath = "./data"
+## Cremi
+celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+
+txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
+tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+samples = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
+## grp T1 :
+T1 = subset(samples, samples$PreOpClinStage == 'T1')
+T1 = T1$GEO
+T1 = paste0(T1,".CEL.gz")
+## grp T2
+T2 = subset(samples, samples$PreOpClinStage == 'T2')
+T2 = T2$GEO
+T2 = paste0(T2,".CEL.gz")
+
+
+list.expresso = NULL
+i = 0
+nb.param = length(parameters)
+for (param in parameters){
+  print(param)
+  tmp = tools.norm.Microarray(GEOiD = abatch, 
+                              tools = param)
+  
+  list.expresso[[param]] = tmp
+  i = i + 1
+  
+  message("Normalisation ", i, " sur ", nb.param)
+  }
+
+
+
