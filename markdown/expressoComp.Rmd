@@ -17,11 +17,11 @@ library(dplyr)
 library(stringr)
 library(viridis)
 library(pheatmap)
-#load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/Mapped.RData")
-load("/home/acolajanni/GIT/Mapped.RData")
+load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/Mapped.RData")
+#load("/home/acolajanni/GIT/Mapped.RData")
 
-#celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
-celpath= file.path("/home/acolajanni/GIT")
+celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+#celpath= file.path("/home/acolajanni/GIT")
 
 txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
 tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
@@ -33,8 +33,8 @@ tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2')
 # Comparaison des méthodes de la fonction expresso() du package affy
 
 ```{r load, include=TRUE}
-#load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/DataToCompTOTAL.RData")
-load("/home/acolajanni/GIT/DataToCompTOTAL.RData")
+load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/DataToCompTOTAL.RData")
+#load("/home/acolajanni/GIT/DataToCompTOTAL.RData")
 # Gènes en colonnes / lignes = méthodes
 data.to.comp = as.data.frame(t(data.to.comp))
 data.to.comp
@@ -90,6 +90,10 @@ bg.DEG[1:10]
 
 Map.bg = Mapped$background
 
+rows.cor <- cor(t(Map.bg$mas[ row.names(Map.bg$mas)%in%bg.DEG ,]), use = "pairwise.complete.obs", method = "pearson")
+
+
+
 
 DEG.pheatmap(bg.DEG, 
              Map.bg$mas, 
@@ -97,6 +101,7 @@ DEG.pheatmap(bg.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "Background = mas"
+             , Cluster.rows = rows.cor
              )
 
 
@@ -105,11 +110,12 @@ DEG.pheatmap(bg.DEG,
              n.breaks = 12,
              is.log2 = FALSE, 
              samples = paste0(tab$GEO,".CEL.gz"), 
-             sample.condition = tab$PreOpClinStage
-           , main = "Background = rma"
-
+             sample.condition = tab$PreOpClinStage,
+             main = "Background = rma",
+             Cluster.rows = rows.cor
              )
 ```
+
 
 
 
@@ -141,12 +147,17 @@ pm.DEG = Get.DEG.2(pm.cor, "intersect", alternative = FALSE)
 
 Map.pm = Mapped$pm.cor
 
+# Matrice de corrélation ou de distance euclidienne pour le cluster sur les lignes
+rows.cor <- cor(t(Map.pm$mas[ row.names(Map.pm$mas)%in%pm.DEG ,]), use = "pairwise.complete.obs", method = "pearson")
+#rows.euclid <- dist(t(Map.pm$mas[ row.names(Map.pm$mas)%in%pm.DEG ,]), method = "euclidean")
+
 DEG.pheatmap(pm.DEG, 
              Map.pm$mas, 
              is.log2 = FALSE, 
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "PM = mas"
+             ,Cluster.rows = rows.cor
              )
 
 
@@ -157,10 +168,10 @@ DEG.pheatmap(pm.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "PM = PMonly"
+             , Cluster.rows = rows.cor
              )
 
 ```
-
 ## Express summary Stat :
  - medianpolish : fait un log2() des valeurs
  - playerout : boucle infinie ?
@@ -192,6 +203,8 @@ PCAsumstat = methods_sumstat[, !grepl("Up|Down",colnames(methods_sumstat))]
 PCA_tools(t(PCAsumstat))
 
 ```
+
+
 ```{r heatmap3}
 summ = methods_sumstat[!grepl("Up|Down",colnames(methods_sumstat))]
 # Récupération des gènes DE
@@ -200,12 +213,17 @@ summ.DEG = Get.DEG.2(summ, "intersect", alternative = FALSE)
 
 Map.summ = Mapped$sumstat
 
+rows.cor <- cor(t(Map.summ$mas[ row.names(Map.summ$mas)%in%summ.DEG ,]), use = "pairwise.complete.obs", method = "pearson")
+
+
+
 DEG.pheatmap(summ.DEG, 
              Map.summ$avgdiff, 
              is.log2 = FALSE, 
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "Summarization = avgdiff(MAS 4.0)"
+             , Cluster.rows = rows.cor
              )
 
 
@@ -216,6 +234,7 @@ DEG.pheatmap(summ.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "Summarization = mas(MAS 5.0)"
+             , Cluster.rows = rows.cor
              )
 
 DEG.pheatmap(summ.DEG, 
@@ -225,6 +244,7 @@ DEG.pheatmap(summ.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "Summarization = medianpolish (RMA)"
+             , Cluster.rows = rows.cor
              )
 
 DEG.pheatmap(summ.DEG, 
@@ -234,6 +254,7 @@ DEG.pheatmap(summ.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage
              , main = "Summarization = liwong "
+             , Cluster.rows = rows.cor
              )
 
 ```
@@ -332,6 +353,8 @@ norm.DEG = Get.DEG.2(Norm, "intersect", alternative = FALSE)
 
 Map.norm= Mapped$norm
 
+rows.cor <- cor(t(Map.norm$constant[ row.names(Map.norm$constant)%in%norm.DEG ,]), use = "pairwise.complete.obs", method = "pearson")
+
 DEG.pheatmap(norm.DEG, 
              Map.norm$invariantset, 
              is.log2 = FALSE, 
@@ -339,6 +362,7 @@ DEG.pheatmap(norm.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage,
              main = "Normalisation = Invariantset (Méthode Li Wong)"
+             , Cluster.rows = rows.cor
              )
 
 
@@ -349,6 +373,7 @@ DEG.pheatmap(norm.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage,
              main = "Normalisation = Quantiles.robust"
+             , Cluster.rows = rows.cor
              )
 
 DEG.pheatmap(norm.DEG, 
@@ -358,6 +383,7 @@ DEG.pheatmap(norm.DEG,
              samples = paste0(tab$GEO,".CEL.gz"), 
              sample.condition = tab$PreOpClinStage,
              main = "Normalisation = constant (MAS 5.0) "
+             , Cluster.rows = rows.cor
              )
 
 ```
