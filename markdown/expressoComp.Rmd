@@ -17,9 +17,12 @@ library(dplyr)
 library(stringr)
 library(viridis)
 library(pheatmap)
-load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/Mapped.RData")
+#load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/Mapped.RData")
+load("/home/acolajanni/GIT/Mapped.RData")
 
-celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+#celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+celpath= file.path("/home/acolajanni/GIT")
+
 txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
 tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
 tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
@@ -30,7 +33,8 @@ tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2')
 # Comparaison des méthodes de la fonction expresso() du package affy
 
 ```{r load, include=TRUE}
-load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/DataToCompTOTAL.RData")
+#load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/DataToCompTOTAL.RData")
+load("/home/acolajanni/GIT/DataToCompTOTAL.RData")
 # Gènes en colonnes / lignes = méthodes
 data.to.comp = as.data.frame(t(data.to.comp))
 data.to.comp
@@ -70,6 +74,10 @@ upset(methods_bg.cor,
       sets = c("background mas", "background rma"), 
       sets.bar.color = "#56B4E9", 
       order.by = "freq", 
+      text.scale = 1.2,
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+
       )
 
 ```
@@ -116,7 +124,11 @@ methods_pm.cor$`pm.cor pmonly` = methods_pm.cor$`pm.cor pmonly Up` + methods_pm.
 upset(methods_pm.cor, 
       sets = colnames(methods_pm.cor)[!grepl("Up|Down",colnames(methods_pm.cor))], 
       sets.bar.color = "#56B4E9", 
-      order.by = "freq", 
+      order.by = "freq",      
+      text.scale = 1.2,
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+ 
       )
 
 
@@ -167,6 +179,10 @@ upset(methods_sumstat,
       sets = colnames(methods_sumstat)[!grepl("Up|Down",colnames(methods_sumstat))],  
       sets.bar.color = "#56B4E9",
       #,order.by = "freq", 
+      text.scale = 1.2,
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+
       )
 
 ```
@@ -248,6 +264,10 @@ upset(Norm,
       sets = colnames(Norm), 
       sets.bar.color = "#56B4E9" 
       ,order.by = "freq", 
+      text.scale = 1.15,
+      mb.ratio	= c(0.6,0.4),
+      set_size.scale_max = 1900,
+      set_size.show = TRUE
       )
 ```
 
@@ -284,12 +304,18 @@ upset(Norm,
       sets = c("quantiles","quantiles.robust"), 
       sets.bar.color = "#56B4E9" 
       ,order.by = "freq", 
+      text.scale = 1.2,
+      set_size.scale_max = 1850,
+      set_size.show = TRUE
       )
 
 upset(Norm, 
       sets = c("constant","contrasts","qspline","loess"), 
       sets.bar.color = "#56B4E9" 
       ,order.by = "freq", 
+      text.scale = 1.2,
+      set_size.scale_max = 1850,
+      set_size.show = TRUE
       )
 
 

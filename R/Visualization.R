@@ -6,8 +6,6 @@ library(factoextra)
 library(FactoMineR)
 library(UpSetR)
 library(igraph)
-### UpsetR
-#set_size.show = TRUE
 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
 #'
