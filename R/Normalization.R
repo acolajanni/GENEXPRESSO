@@ -269,6 +269,13 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                                         pmcorrect.method= "pmonly",
                                         summary.method= "medianpolish")
                      },
+                     RMA.invariantset.mas = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "rma",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "pmonly",
+                                        summary.method= "mas")
+                     },
                      MAS.invariantset= {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "mas",
@@ -371,14 +378,14 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                      MASpm.invariantset.medianpolish = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "mas",
-                                        normalize.method= "invaraintset",
+                                        normalize.method= "invariantset",
                                         pmcorrect.method= "pmonly",
                                         summary.method= "medianpolish")
                      },
                      MAS2.invariantset.medianpolish = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "mas",
-                                        normalize.method= "invaraintset",
+                                        normalize.method= "invariantset",
                                         pmcorrect.method= "mas",
                                         summary.method= "medianpolish")
                      },
@@ -470,7 +477,9 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                                         pmcorrect.method= tools.pmcorrect,
                                         summary.method= tools.express.summary.stat)
                        
-                       }
+                      },
+                     stop("Enter something that switches me!")
+                     
                      )
   
   exprSet = exprs(eset)

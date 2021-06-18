@@ -91,8 +91,48 @@ sapply(CodingProt, function(x) length(unique(x)))
 ############################################
 table.count2 = table.count
 row.names(table.count2) = table.count$feature
-table.count2$feature = NULL
+#table.count2$feature = NULL
 
-keep = rowSums(table.count2) >= (1.25*ncol(table.count2))
+keep = rowSums(table.count2) >= (10*ncol(table.count2))
 table.count2 = table.count2[keep,]
 dim(table.count2) #32.568 ID (toujours trop)
+
+
+############################################
+#  Création du sous-jeu de données (test)  #
+############################################
+
+normal.ID = tab$`File ID`[tab$`Sample Type` == "Solid Tissue Normal"]
+case.ID = tab$`File ID`[tab$`Sample Type` == "Primary Tumor"][1:19]
+
+tab.subset = tab[tab$`File ID` %in% c(normal.ID,case.ID),]
+
+table.count.subset = table.count[colnames(table.count) %in% tab.subset$`File ID`]
+table.count.subset = table.count.subset[1:2000,]
+
+save(tab.subset, table.count.subset, file="./data/RNAseqTEST.RData")
+load(file = "./data/RNAseqTEST.RData")
+
+
+library(GENEXPRESSO)
+library(edgeR)
+library(limma)
+count.matrix = table.count.subset
+
+
+
+
+nf = calcNormFactors(count.matrix, method = "TMM")
+
+voom.data = voom(count.matrix, 
+                 design = model.matrix(~factor(tab.subset$`Sample Type`)),
+                 lib.size = colSums(count.matrix) * nf)
+
+
+voom.data$genes = rownames(count.matrix)
+voom.fitlimma = lmFit(voom.data, design = model.matrix(~factor(tab.subset$`Sample Type`)))
+voom.fitbayes = eBayes(voom.fitlimma)
+voom.pvalues = voom.fitbayes$p.value[, 2]
+voom.adjpvalues = p.adjust(voom.pvalues, method = "BH")
+voom.adjpvalues
+

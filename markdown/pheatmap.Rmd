@@ -53,19 +53,20 @@ quantile_breaks <- function(xs, n = 10) {
 }
 
 # Découpage en 10 classes
-breaks <- quantile_breaks(data, n = 10)
+breaks <- quantile_breaks(data, n = 8)
 
 annotation_colors = list(sample = c("T1" = "cyan", "T2" = "deeppink4"))
 
 # Appel de la fonction
 my_heatmap <- pheatmap(data,
+                       breaks = breaks,
                        annotation_col = my_sample_col,
                        annotation_colors = annotation_colors,
                        cutree_cols = 2,
                        clustering_distance_cols	= "correlation",
                        clustering_method = "average",
                        show_rownames = FALSE
-                       , inferno(8)
+                       , inferno(7)
                        , drop_levels = TRUE
                        )
 
