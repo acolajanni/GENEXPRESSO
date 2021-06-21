@@ -4,7 +4,7 @@
 \alias{tools.DEG.Microarrays}
 \title{Compute the pvalues of genes being up- and down-regulated for Microarray datasets.}
 \usage{
-tools.DEG.Microarrays(data, tool, n1, n2)
+tools.DEG.Microarrays(data, tool, n1, n2, design)
 }
 \arguments{
 \item{data}{Dataframe of gene expression levels with sample names in columns and genes in rows}

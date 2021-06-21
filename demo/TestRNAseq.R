@@ -2,7 +2,6 @@ library(edgeR)
 library(DESeq)
 library(DESeq2)
 library(limma)
-library(voom)
 
 #########################
 #########################
@@ -117,6 +116,8 @@ Wald = Wald[1:10,]
 
 #### #### #### #### #### #### #### #### #### #### #### #### 
 #### #### #### #### #### #### #### #### #### #### #### #### 
+load("./data/RNAseqTEST.RData")
+
 
 count.matrix = table.count.subset
 
@@ -131,9 +132,38 @@ B = tools.DEG.RNAseq(table.count.subset, nf = A,
                      design = class)
 
 
+names(class) = colnames(mat)
+g1 = names(class)[class == 1]
+g2 = names(class)[class == 2]
+mat = relocate(mat,g1,g2)
+
+
+pval= wilcoxDEG(mat, length(g1), length(g2))
+
+test = RankProducts(mat, design, na.rm = TRUE )
+
+
+
+
+
+mat = as.matrix(count.matrix)
+mat = count.matrix
+
+pvals=apply(mat,1,function(x) {
+  wilcox.test(x[1:19],x[20:38], alternative="less")
+  })
+
+pval = wilcoxDEG(mat, 19, 19, hypothesis = "greater")
+pval$pvalue = p.adjust(pval$pvalue, method="BH")
+
+pval
+
+
+
+
+
+
 tools.norm.RNAseq <- function(data, tool, design){
-  
-  
   if (tool%in%c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom")){
     edgeR.dgelist = DGEList(counts = count.matrix, group = factor(class))
   }
@@ -192,7 +222,7 @@ tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
     method = "limma.voom"
   }
   else{
-    method = paste0(tool.nom,"+",tool.DEG)
+    method = paste0(tool.norm,"+",tool.DEG)
   }
   
   # Specific class is needed for edgeR analysis
@@ -297,8 +327,16 @@ tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
 
 
 
+d = c(rep(0, 15), rep(1,15))
+
+test = RankProducts(data, d)
 
 
+b = test$pfp
+b = as.data.frame(b)
+a = test$pval
+a
 
+a = p.adjust(a,method = "BH")
 
-
+a

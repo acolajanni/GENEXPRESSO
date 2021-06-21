@@ -2,9 +2,9 @@
 % Please edit documentation in R/DEG.R
 \name{wilcoxDEG}
 \alias{wilcoxDEG}
-\title{Multiple Wilcoxons tests for each row of a dataframe}
+\title{Wilcoxon test for each row of a dataframe}
 \usage{
-wilcoxDEG(data, n1, n2)
+wilcoxDEG(data, n1, n2, hypothesis)
 }
 \arguments{
 \item{data}{dataframe of gene expression levels: Gene names in rows, samples in columns.}
@@ -12,11 +12,11 @@ wilcoxDEG(data, n1, n2)
 \item{n1}{Number of samples for the first experimental condition}
 
 \item{n2}{Number of samples for the second experimental condition}
+
+\item{hypothesis}{"less", "greater" or NULL. argument of the \link[stats]{wilcox.test} function.}
 }
 \value{
-Dataframe with three columns, each corresponding to a hypothesis : 
-weak hypothesis, and two for the strong hypothesis "alternative = "less" ", and "greater"
-For the second condition has values that are less or greater than values of the first one.
+dataframe with pvalues in one column and rownames of data as rownames.
 }
 \description{
 Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.

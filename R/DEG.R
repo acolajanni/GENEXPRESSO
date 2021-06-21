@@ -133,7 +133,7 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
   # GEOlimma_probabilities.rda is a file that contains real probabilities of a gene being differentially expressed
   #data("GEOlimma_probabilities")
   prop = GENEXPRESSO::prop
-  # These datas are used to help the model fit
+  # These data are used to fit the model
   fit22  <- eBayesGEO(fit2, proportion_vector=prop[, 1, drop=F])
   # Classifying genes through their pvalue being differentially expressed
   de <- topTable(fit22, number = nrow(dataset))
@@ -193,7 +193,7 @@ DEG_alternative <- function(res.diff_limma){
 }
 
 
-#' Multiple Wilcoxons tests for each row of a dataframe
+#' Wilcoxon test for each row of a dataframe
 #'
 #' Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.
 #'
@@ -202,9 +202,7 @@ DEG_alternative <- function(res.diff_limma){
 #' @param n2 Number of samples for the second experimental condition
 #'
 #' @return
-#' Dataframe with three columns, each corresponding to a hypothesis : 
-#' weak hypothesis, and two for the strong hypothesis "alternative = "less" ", and "greater"
-#' For the second condition has values that are less or greater than values of the first one.
+#' dataframe with pvalues in one column and rownames of data as rownames.
 #' @export
 #'
 #' @examples
@@ -218,22 +216,26 @@ DEG_alternative <- function(res.diff_limma){
 #' # Compute Pvalues
 #' res.DEG = wilcoxDEG(Data,10,10)
 wilcoxDEG <- function(data, n1, n2){
-  wilcox <- data.frame()
-  # for each row in the dataset, three Wilcoxon tests are made, depending on the hypothesis.
-  for (i in 1:nrow(data)){
-    x = data[i,1:n1]
-    y = data[i,(n1+1):(n1+n2)]
-    test1 <- wilcox.test(as.numeric(x),as.numeric(y))
-    test2 <- wilcox.test(as.numeric(x),as.numeric(y),alternative = "less")
-    test3 <- wilcox.test(as.numeric(x),as.numeric(y), alternative = "greater")
-    pval <- c(test1$p.value,test2$p.value,test3$p.value)
-    wilcox <- rbind(wilcox,pval)
-  }
-  # The dataframe named "wilcox" contains 3 columns  that contains the pvalue for the three possible hypothesis
-  colnames(wilcox)[1] <- "wilcox two-sided"
-  colnames(wilcox)[2] <- "wilcox less"
-  colnames(wilcox)[3] <- "wilcox greater"
-  row.names(wilcox) = row.names(data)
+  # for each row in the dataset, one wilcoxon test is made depending on the hypothesis (strong or weak) 
+  pvals.less=apply(data,1,function(x) {
+    wilcox.test(x[1:n1],x[n1+1:length(x)], 
+                alternative="less")$`p.value`
+  })
+  
+  pvals.greater=apply(data,1,function(x) {
+    wilcox.test(x[1:n1],x[n1+1:length(x)], 
+                alternative="greater")$`p.value`
+  })
+  
+  # put it in a dataframe with gene SYMBOL as rownames
+  wilcox=data.frame(Gene.ID = row.names(data) , 
+                    less = pvals.less, 
+                    greater = pvals.greater)
+  
+  # correcting the p-values with False Direcovery Rate
+  wilcox$less = p.adjust(wilcox$less, method="BH")
+  wilcox$greater = p.adjust(wilcox$greater, method="BH")
+  row.names(wilcox) = NULL
   return(wilcox)
 }
 
@@ -255,7 +257,7 @@ wilcoxDEG <- function(data, n1, n2){
 #' @return
 #' A dataframe with genes in rows and pvalues of a gene being upregulated and downregulated in columns
 #' 
-#' @import "RankProd" "limma" 
+#' @import "RankProd" "limma" "dplyr"
 #' @export
 #'
 #' @examples
@@ -268,14 +270,23 @@ wilcoxDEG <- function(data, n1, n2){
 #' 
 #' # Compute Pvalues for the RankProduct method
 #' res.DEG = tools.DEG.Microarrays(Data,"RankProduct",10,10)
-tools.DEG.Microarrays <- function(data,tool,n1,n2){
-  if (tool == "GEOlimma" || tool == "limma"){
-    design = make_designMatrix(dataset = data)
-  } else if (tool%in%c("RankProduct","RankProduct.log","RankSum","RankSum.log")){
+tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
+  if (missing(design)){
+    if (tool == "GEOlimma" || tool == "limma"){
+      design = make_designMatrix(dataset = data)
+    } else if (tool%in%c("RankProduct","RankProduct.log","RankSum","RankSum.log")){
+      # we need a vector of 0 and 1 corresponding to the experimental condition (0 for the first, 1 for the other)
+      design = rep(c(0,1),c(n1,n2)) 
+    }
+    
+  } else if (tool%in%c("RankProduct","RankProduct.log","RankSum","RankSum.log", "Wilcox")){
     # we need a vector of 0 and 1 corresponding to the experimental condition (0 for the first, 1 for the other)
-    design = rep(c(0,1),c(n1,n2)) 
+    design = as.data.frame(design)
+    design = as.vector(ifelse(design[1] == 0, 
+                    yes = 0,
+                    no = 1))
   }
-  
+      
   DEG_Microarrays_tools.fnc <- switch(tool,
                                       GEOlimma = {
                                         # Compute the Pvalue with GEOlimma
@@ -292,13 +303,18 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
                                         colnames(res.diff) = c("limma Up","limma Down","Gene.ID")
                                         
                                       },
-                                      
                                       Wilcox = {
-                                        res.diff = wilcoxDEG(data, n1, n2)
-                                        res.diff$Gene.ID = row.names(res.diff)
-                                        # the last columns corresponds to the weak hypothesis.
-                                        # We don't need it since we have both alternative hypothesis in the first two columns
-                                        res.diff = res.diff[,-1]
+                                        
+                                        names(design) = colnames(data)
+                                        g1 = names(design)[design == 0]
+                                        g2 = names(design)[design == 1]
+                                        data = relocate(data, g1, g2)
+                                        
+                                        
+                                        res.diff = wilcoxDEG(data, length(g1), length(g2))
+                                        colnames(res.diff) = c("Gene.ID","Wilcox less","Wilcox greater")
+
+
                                       },
                                       
                                       RankProduct = {
@@ -332,13 +348,12 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2){
                                       },
                                       stop("Enter something that switches me!")
   )
-  if (!tool%in%c("limma","GEOlimma","Wilcox")){
+  if (!tool%in%c("limma","GEOlimma",)){
     # for the RanProd analysis, some changes are needed : adding row names (genes) and changing columns names
     res.diff = as.data.frame(res.diff)
     res.diff$Gene.ID = row.names(data)
     colnames(res.diff) = c(paste(tool,"Up"), paste(tool,"Down"),"Gene.ID")
-    res.diff
-  }
+
   return(res.diff)
 }
 
