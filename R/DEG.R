@@ -353,7 +353,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
     res.diff = as.data.frame(res.diff)
     res.diff$Gene.ID = row.names(data)
     colnames(res.diff) = c(paste(tool,"Up"), paste(tool,"Down"),"Gene.ID")
-
+  }
   return(res.diff)
 }
 
@@ -833,3 +833,4 @@ tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
   data_to_comp = as.data.frame(t(data_to_comp))
   return(data_to_comp)
 }
+
