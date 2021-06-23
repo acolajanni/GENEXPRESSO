@@ -1,0 +1,457 @@
+---
+title: "Expresso_31_méthodes"
+author: "Antonin Colajanni"
+date: "18/06/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, error=FALSE, warning=FALSE, message=FALSE}
+library(UpSetR)
+#library(GENEXPRESSO)
+library(FactoMineR)
+library(factoextra)
+library(dplyr)
+library(stringr)
+library(dendextend)
+library(paletteer)
+library(ade4)
+
+celpath = file.path("/net/cremi/acolajanni/Bureau/espaces/travail/GSE31684")
+#celpath= file.path("/home/acolajanni/GIT")
+
+#txt.dir = paste0(celpath,"/GSE31684_table_of_clinical_details.txt")
+#tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+#tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
+
+#setwd("/home/acolajanni/GIT/GENEXPRESSO")
+```
+
+# Chargement du jeu des résultats
+```{r load, include=TRUE}
+#load("/autofs/unitytravail/travail/acolajanni/GIT/GENEXPRESSO/data/expresso31.RData")
+load("/Users/Antonin COLAJANNI/Documents/GIT/GIT/GENEXPRESSO/data/expresso31.RData")
+#load("/home/acolajanni/GIT/DataToCompTOTAL.RData")
+# Gènes en colonnes / lignes = méthodes
+data.to.comp = as.data.frame(t(data.to.comp))
+data.to.comp
+```
+
+# Construction de la matrice binaire
+```{r BGcorrect, include=TRUE}
+# Liste de toute les méthodes
+methods = row.names(data.to.comp)
+# Dataframe rempli de valeur binaire (0/1)
+upset = Upset.Binary.Dataframe(data.to.comp)
+```
+
+# Total :
+```{r regardtotal}
+# comparaison pm
+parameters = c("RMA.invariantset.medianpolish" ,
+               "RMA.constant.medianpolish" ,
+               "RMA.robust",
+               "RMA.invariantset.mas" ,
+               "RMA.constant.mas" ,
+               "RMA.quantile.mas" ,
+               "RMA.invariantset.liwong" ,
+               "RMA.constant.liwong" ,
+               "RMA.quantile.liwong" ,
+               "MAS.quantile" ,
+               "MAS5" ,
+               "MAS.invariantset",
+               "MAS2.quantile.medianpolish" ,
+               "MAS.medianpolish" ,
+               "MAS2.invariantset.medianpolish" ,
+               "MAS2.quantile.liwong" ,
+               "MAS.liwong" ,
+               "MAS2.invariantset.liwong" ,
+               "MASpm.quantile.mas" ,
+               "MASpm.constant.mas" ,
+               "MASpm.invariantset.mas" ,
+               "MASpm.quantile.medianpolish" ,
+               "MASpm.constant.medianpolish" ,
+               "MASpm.invariantset.medianpolish" ,
+               "MASpm.quantile.liwong" ,
+               "MASpm.constant.liwong" ,
+               "MASpm.invariantset.liwong",
+               "rma",
+               "gcrma",
+               "mas5",
+               "liwong" 
+               )
+
+names = c(     "RMA.inv.med" ,
+               "RMA.const.med",
+               "RMA",
+               
+               "RMA.inv.mas" ,
+               "RMA.const.mas" ,
+               "RMA.qu.mas" ,
+               
+               "RMA.inv.liwong" ,
+               "RMA.const.liwong" ,
+               "RMA.qu.liwong" ,
+               
+               "mas.mas.qu.mas" ,
+               "mas.mas.const.mas" ,
+               "mas.mas.inv.mas",
+               
+               "mas.mas.qu.med" ,
+               "mas.mas.const.med" ,
+               "mas.mas.inv.med" ,
+               
+               "mas.mas.qu.liwong" ,
+               "mas.mas.const.liwong" ,
+               "mas.mas.inv.liwong" ,
+               
+               "mas.pm.qu.mas" ,
+               "mas.pm.const.mas" ,
+               "mas.pm.inv.mas" ,
+               
+               "mas.pm.qu.med" ,
+               "mas.pm.const.med" ,
+               "mas.pm.inv.med" ,
+               
+               "mas.pm.qu.liwong" ,
+               "mas.pm.const.liwong" ,
+               "mas.pm.inv.liwong",
+               
+               "rma",
+               "gcrma",
+               "mas5",
+               "liwong"
+               )
+
+
+Viz = data.frame(SYMBOL = row.names(upset))
+
+
+for (method in parameters){
+  tmp = upset[, str_detect(colnames(upset),method)]
+  if (method == "rma"){
+    tmp = tmp[!grepl("gcrma",colnames(tmp))]
+  }
+  if (method == "liwong"){
+    tmp = tmp[!grepl(".liwong",colnames(tmp))]
+  }
+  tmp[[ method ]] = rowSums(tmp)
+  Viz = cbind(Viz,tmp[3])
+} 
+
+row.names(Viz) = Viz$SYMBOL
+Viz$SYMBOL = NULL
+Viz[Viz == 2] = 1
+colnames(Viz) = names
+```
+
+```{r pcatotal}
+upset(Viz,
+      sets = colnames(Viz),#[!grepl("gcrma",colnames(Viz))], 
+      #sets = colnames(Viz)[!grepl("gcrma",colnames(Viz))],
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.3,0.7),
+      set_size.show = TRUE,
+      set_size.scale_max = max(colSums(Viz)) + 600
+      )
+
+Upreg = data.to.comp[grepl("Up", row.names(data.to.comp)), ]
+
+PCA_tools(Upreg)
+```
+
+```{r dendro, out.width="150%"}
+#row.names(Upreg) = str_replace(row.names(Upreg), " Up", "")
+row.names(Upreg) = names
+d <- dist(Upreg, method = "euclidean") # distance matrix
+fit <- hclust(d, method="complete") 
+fit = as.dendrogram(fit)
+subset_cluster = cutree(fit, k=5)
+
+colors = paletteer_d("yarrr::xmen")[1:5]
+bars = as.data.frame(subset_cluster)
+bars$subset_cluster[bars$subset_cluster == 1] = colors[1]
+bars$subset_cluster[bars$subset_cluster == 2] = colors[2]
+bars$subset_cluster[bars$subset_cluster == 3] = colors[3]
+bars$subset_cluster[bars$subset_cluster == 4] = colors[4]
+bars$subset_cluster[bars$subset_cluster == 5] = colors[5]
+bars = as.matrix(bars)
+
+
+# allow content to go into outer margin 
+par(mar = c(10, 4, 4, 3) + 0.1,
+    xpd = TRUE) 
+plot(fit)
+rect.dendrogram(fit, k = 5, border = c(colors[5],colors[3],colors[4],colors[2],colors[1]))
+
+colored_bars(colors = bars, dend = fit, rowLabels = "Cluster")
+
+legend("topright", 
+       legend = c('PM cor = pmonly', 'Summarization = liwong', "Bg/PM cor = mas", "Bg/PM = mas + liwong", "gcrma"), 
+       pch = 15, 
+       pt.cex = 3, 
+       cex = 1,
+       bty = "o",
+       inset = c(0, -0.49), 
+       title = "Cluster", 
+       col = colors,
+       xpd = TRUE
+       #horiz = TRUE
+       )
+
+
+```
+```{r clusterpca}
+pca.res = dudi.pca(Upreg, scale= T, scannf = FALSE)
+
+group = unname(subset_cluster)
+```
+
+```{r clusterpcaviz}
+s.class(pca.res$li,
+        fac=as.factor(group),col = colors,
+        #clabel = 0
+        ,label = c('PM cor = pmonly', 'Summarization = liwong', "Bg/PM cor = mas", "Bg/PM = mas + liwong", "gcrma")
+        )
+legend("bottomleft", 
+       legend = c('PM cor = pmonly', 'Summarization = liwong', "Bg/PM cor = mas", "Bg/PM = mas + liwong", "gcrma"), 
+       pch = 15, 
+       pt.cex = 3, 
+       cex = 1,
+       bty = "o",
+       inset = c(0, 0), 
+       title = "Cluster", 
+       col = colors,
+       xpd = TRUE
+       #horiz = TRUE
+       )
+
+```
+
+# Première conclusion : 
+
+5 clusters : (peut être réduire à 4 ?)
+
+## Exploration des clusters un par un
+
+# PMcor = pmonly (cluster bleu)
+
+```{r PmcorPmonly}
+
+pmonlyUP = names(subset_cluster)[subset_cluster == 1]
+
+
+#pmonlyUP = names(subset_cluster[subset_cluster == 1])
+#pmonly = str_replace(pmonlyUP, " Up", "")
+
+# Regard sur le cluster entier
+upset(Viz,
+      sets = pmonlyUP,
+      #sets = c("rma", "RMA.robust", "RMA.constant.mas", "RMA.invariantset.mas"),
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.5,0.5),
+      set_size.show = TRUE,
+      set_size.scale_max = 2500
+      )
+
+# Quels sont les méthodes les plus différentes ?
+PCA_tools(Upreg[pmonlyUP,])
+
+upset(Viz,
+      #sets = pmonly,
+      sets = c("RMA", "RMA.inv.mas", "mas.pm.const.med"),
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.6,0.4),
+      set_size.show = TRUE,
+      set_size.scale_max = 2200
+      )
+
+total = c("RMA", "RMA.inv.mas", "mas.pm.const.med")
+
+```
+
+#Résltats très similaires entre les méthodes : On en garde 3 pour la suite : (RMA.robust / rma) + RMA.invariantset.mas (les plus différents) + MASpm.constant.medianpolish
+
+
+## Cluster 2 : Rouge (sumstat = liwong)
+
+```{r cluster2}
+liwongUP = names(subset_cluster[subset_cluster == 2])
+
+upset(Viz,
+      sets = liwongUP,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.5,0.5),
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+      )
+
+PCA_tools(Upreg[liwongUP,])
+
+upset(Viz,
+      #sets = liwong,
+      sets = c("liwong","mas.pm.const.liwong"),
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.7,0.3),
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+      )
+
+total = c(total,"liwong","mas.pm.const.liwong")
+
+```
+
+# Garder deux paramètres : "liwong" et "MASpm.constant.liwong" 
+
+
+## Cluster 3 : 
+```{r cluster3}
+Mas2Up = names(subset_cluster[subset_cluster == 3])
+
+
+upset(Viz,
+      sets = Mas2Up,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.3,
+      mb.ratio = c(0.5,0.5),
+      nintersects = 8,
+      set_size.show = TRUE,
+      set_size.scale_max = 2000
+      )
+
+
+Select = c("left","keep","keep","left","keep","keep","left")
+names(Select) = Mas2Up
+
+Select = as.data.frame(Select)
+
+# Compute a PCA
+res.pca <- PCA(Upreg[Mas2Up,],graph=F)
+  # Display the PCA plot with different parameters
+fviz_pca_ind (res.pca, 
+              #col.ind = "cos2",
+              #habillage = res.pca,
+              #geom.ind = "point",
+              #palette =  c("red","blue"),
+              #gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE,
+              select.ind = list(name = c("mas.mas.inv.mas", "mas.mas.const.mas", "mas.mas.inv.med", "mas.mas.const.med")),
+              ggrepel.max.overlaps = 3)
+
+
+fviz_pca_ind (res.pca, 
+              col.ind = "cos2",
+              #habillage = res.pca,
+              #geom.ind = "point",
+              #palette =  c("red","blue"),
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE,
+              #select.ind = list(name = c("mas.mas.inv.mas", "mas.mas.const.mas", "mas.mas.inv.med", "mas.mas.const.med")),
+              ggrepel.max.overlaps = 3)
+
+
+PCA_tools(Upreg[Mas2Up,])
+
+# Différence entre le paramètre MAS5 et la fonction mas5() 
+upset(Viz,
+      sets = c("mas5", "mas.mas.const.mas"),
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.7,0.3),
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+      )
+
+upset(Viz,
+      sets = c("mas.mas.inv.mas", "mas.mas.const.mas", "mas.mas.inv.med", "mas.mas.const.med"),
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.3,
+      #nintersects = 13,
+      mb.ratio = c(0.7,0.3),
+      set_size.show = TRUE,
+      set_size.scale_max = 2100
+      )
+
+
+total = c(total,"mas.mas.inv.mas", "mas5", "mas.mas.inv.med", "mas.mas.const.med" )
+```
+
+# Trois paramètres permettent se démarquent par leurs différences : mas5, MAS2.invariantset.medianpolish et MAS.invariantset
+
+## Cluster 4 : Orange (liwong + background mas)
+
+```{r Cluster4}
+
+liwongMASup = names(subset_cluster[subset_cluster == 4])
+
+
+upset(Viz,
+      sets = liwongMASup,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.1,
+      mb.ratio = c(0.5,0.5),
+      set_size.show = TRUE,
+      set_size.scale_max = 1800
+      )
+
+total = c(total,"mas.mas.const.liwong","mas.mas.inv.liwong")
+
+```
+
+# N'en garder que 2 : MAS.liwong / MAS2.invariantset.liwong
+
+
+## Paramètres conservés : 
+
+```{r total}
+
+upset(Viz,
+      sets = total,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1,
+      mb.ratio = c(0.5,0.5),
+      set_size.show = TRUE,
+      set_size.scale_max = 2400
+      )
+
+PCA_tools(Upreg[total,])
+
+# On retire deux paramètres peu informatifs
+total = total[!total%in%c("mas.pm.const.liwong", "mas.pm.const.med", "mas.mas.const.med")]
+
+
+upset(Viz,
+      sets = total,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.3,
+      nintersects = 12,
+      mb.ratio = c(0.6,0.4),
+      set_size.show = TRUE,
+      set_size.scale_max = 2200
+      )
+
+```
+
+### Conclusion : Paramètres finaux
+```{r conclusion}
+# Paramètres finaux : 
+total
+
+```
