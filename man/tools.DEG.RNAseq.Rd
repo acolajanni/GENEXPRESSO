@@ -2,34 +2,49 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.RNAseq}
 \alias{tools.DEG.RNAseq}
-\title{Compute the pvalues of genes being differentially expressed for RNA-seq type data.}
+\title{Compute pvalues for a gene to be differentially expressed.}
 \usage{
-tools.DEG.RNAseq(data, tool)
+tools.DEG.RNAseq(count.matrix.raw, nf, tool.norm, tool.DEG, design)
 }
 \arguments{
-\item{data}{dataframe of gene expression levels, with genes in rows and samples in columns.}
+\item{count.matrix.raw}{Dataframe of count with samples in columns and genes SYMBOL in rows.}
 
-\item{tool}{Method to Normalize datasets and statistically analysing them
-"edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp", and "edgeR_TMM" are methods of normalization implemented in the edgeR package with the function calcNormFactors.DGEList()
-If "tool" is one of these parameters, it will compute two analysis: the exact test from the exactTest() function 
-and a Quasi-likelihood test with the glmQLFTest() function still in the edgeR package.
-"deseq2.Wald" and "deseq2.LRT' uses the same normalization methods contained in the DESeq2 package with de DESeq() function.
-The first method uses a Wald test and the second a Likelihood ratio test to determine Pvalues of differentially expressed genes.}
+\item{nf}{vector of normalisation / size factors to analyse with "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+Matrix of normalized count or "Elist" for the parameter "limma"}
+
+\item{tool.norm}{"TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2"
+Note that those character strings are just a way to rename columns for the returned pvalues}
+
+\item{tool.DEG}{Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+"ExactTest calls the \link{edgeR}{exactTest} function.
+"GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
+"nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
+"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.}
+
+\item{design}{Vector of 1 and 2 of the same length of colnames(count.matrix).
+1 for the first group and 2 for the second.}
 }
 \value{
-Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.
+
 }
 \description{
-Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
+This function calls various function to compute the pvalues for each rows of the dataframe (gene).
+It has been conceived to compute pvalues from raw count matrix with pre calculated norm factors
 }
 \examples{
-# Import the dataset
+# load a count matrix (example with a random dataset)
 Data = matrix(runif(5000, 10, 100), ncol=20)
 group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
 genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Data) = group
 row.names(Data) = genes 
 
-# computing pvalues of DEG with TMM normalization method
-res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
+# Compute design vector
+design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
+
+# Compute normalization factors
+nf = runif(min = 0.75, max = 1.25, n = 20)
+
+DEG = tools.DEG.RNAseq(Data, nf, "Random.norm", "ExactTest", design )
+
 }

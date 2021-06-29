@@ -204,6 +204,8 @@ DEG_alternative <- function(res.diff_limma){
 #' @return
 #' dataframe with pvalues in one column and rownames of data as rownames.
 #' @export
+#' 
+#' @import "dplyr"
 #'
 #' @examples
 #' # Import the dataset
@@ -236,6 +238,7 @@ wilcoxDEG <- function(data, n1, n2){
   wilcox$less = p.adjust(wilcox$less, method="BH")
   wilcox$greater = p.adjust(wilcox$greater, method="BH")
   row.names(wilcox) = NULL
+  
   return(wilcox)
 }
 
@@ -305,14 +308,17 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
                                       },
                                       Wilcox = {
                                         
+                                        message("Reordering samples")
+                                        
                                         names(design) = colnames(data)
                                         g1 = names(design)[design == 0]
                                         g2 = names(design)[design == 1]
                                         data = relocate(data, g1, g2)
                                         
-                                        
+                                        message("computing pvalues")
                                         res.diff = wilcoxDEG(data, length(g1), length(g2))
-                                        colnames(res.diff) = c("Gene.ID","Wilcox less","Wilcox greater")
+                                        colnames(res.diff) = c("Gene.ID","Wilcox Up","Wilcox Down")
+                                        return(res.diff)
 
 
                                       },
@@ -348,11 +354,17 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
                                       },
                                       stop("Enter something that switches me!")
   )
-  if (!tool%in%c("limma","GEOlimma",)){
+  if (!tool%in%c("limma","GEOlimma")){
     # for the RanProd analysis, some changes are needed : adding row names (genes) and changing columns names
     res.diff = as.data.frame(res.diff)
     res.diff$Gene.ID = row.names(data)
     colnames(res.diff) = c(paste(tool,"Up"), paste(tool,"Down"),"Gene.ID")
+    
+    if(tool %in%c("RankProduct.log", "RankProduct", "RankSum", "RankSum.log")){
+      # Compute adjusted pvalues (first for Up then for Down) for RankProducts pvalues
+      res.diff[[ colnames(res.diff)[1] ]]=p.adjust(res.diff[[ colnames(res.diff)[1] ]],method = "BH")
+      res.diff[[ colnames(res.diff)[2] ]]=p.adjust(res.diff[[ colnames(res.diff)[2] ]],method = "BH")
+    }
   }
   return(res.diff)
 }
@@ -488,150 +500,193 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
   return(res.diff)
 }
 
-#' Compute the pvalues of genes being differentially expressed for RNA-seq type data.
+
+#' Compute pvalues for a gene to be differentially expressed.
 #'
-#' Through different functions contained in several packages, this function computes pvalues of differentially expressed genes
+#' This function calls various function to compute the pvalues for each rows of the dataframe (gene).
+#' It has been conceived to compute pvalues from raw count matrix with pre calculated norm factors
 #'
-#' @param data dataframe of gene expression levels, with genes in rows and samples in columns. 
-#' @param tool Method to Normalize datasets and statistically analysing them
-#' "edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp", and "edgeR_TMM" are methods of normalization implemented in the edgeR package with the function calcNormFactors.DGEList()
-#' If "tool" is one of these parameters, it will compute two analysis: the exact test from the exactTest() function 
-#' and a Quasi-likelihood test with the glmQLFTest() function still in the edgeR package.
-#' "deseq2.Wald" and "deseq2.LRT' uses the same normalization methods contained in the DESeq2 package with de DESeq() function.
-#' The first method uses a Wald test and the second a Likelihood ratio test to determine Pvalues of differentially expressed genes.
-#'
-#' @return
-#' Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene. 
+#' @param count.matrix.raw 
+#' Dataframe of count with samples in columns and genes SYMBOL in rows.
 #' 
-#' @import "DESeq2" "DESeq" "edgeR"
+#' @param nf 
+#' vector of normalisation / size factors to analyse with "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+#' Matrix of normalized count or "Elist" for the parameter "limma"
+#' 
+#' @param tool.norm 
+#' "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2"
+#' Note that those character strings are just a way to rename columns for the returned pvalues 
+#' 
+#' 
+#' @param tool.DEG 
+#' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+#' "ExactTest calls the \link{edgeR}{exactTest} function.
+#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
+#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
+#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
+#' 
+#' @param design 
+#' Vector of 1 and 2 of the same length of colnames(count.matrix).
+#' 1 for the first group and 2 for the second.
+#'
+#' @import "DEFormats" "edgeR" "DESeq2" "DESeq" "limma"
+#' 
+#' @return
 #' @export
 #'
 #' @examples
-#' # Import the dataset
+#' # load a count matrix (example with a random dataset)
 #' Data = matrix(runif(5000, 10, 100), ncol=20)
 #' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
 #' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 #' colnames(Data) = group
 #' row.names(Data) = genes 
 #' 
-#' # computing pvalues of DEG with TMM normalization method
-#' res.DEG = tools.DEG.RNAseq(data = Data, tool = "edgeR_TMM")
-tools.DEG.RNAseq <- function(data,tool){
-  data = as.matrix(data)
-  # One column dataframe with genes inside
-  res.diff = data.frame("genes" = row.names(data))
-  
-  tools_norm_RNAseq.fnc <- switch(tool,
-                                  
-                                  edgeR_TMM = {
-                                    # Dataset into DEGlist (edgeR class)
-                                    DGE = DGEList(count = data, 
-                                                  group = rep(1:2,each=ncol(data)/2)) # functions for model with n1 = n2 
-                                    # Normalization 
-                                    res.norm <- calcNormFactors.DGEList(DGE, method = "TMM")
-                                    tool_name = "TMM"
-                                  },
-                                  
-                                  edgeR_RLE = {
-                                    DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-                                    res.norm <- calcNormFactors.DGEList(DGE, method = "RLE")
-                                    tool_name = "RLE"
-                                  },
-                                  
-                                  edgeR_TMMwsp = {
-                                    DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-                                    res.norm <- calcNormFactors.DGEList(DGE, method = "TMMwsp")
-                                    tool_name = "TMMwsp"
-                                  },
-                                  
-                                  edgeR_upperquartile = {
-                                    DGE = DGEList(count = data, group = rep(1:2,each=ncol(data)/2))
-                                    res.norm <- calcNormFactors.DGEList(DGE, method = "upperquartile")
-                                    tool_name = "Upperquartile"
-                                  },
-                                  
-                                  deseq2.Wald = {
-                                    # data into DESeqDataSet (DESeq2 class) :
-                                    condition <-factor( rep(c("control","case"),each = (ncol(data)/2)) )
-                                    type = factor(rep("single-read",ncol(data)))
-                                    colData = data.frame(condition,type,row.names=colnames(data))
-                                    dds<-DESeqDataSetFromMatrix(data,colData,design=~condition)
-                                    
-                                    # Retrieve DEG analysis (test Wald)
-                                    DEG <- DESeq(dds, test = "Wald")
-                                    DEG <- results(DEG)
-
-                                    # adding a column with the pvalues
-                                    res.diff <- data.frame(deseq2_Wald=(DEG$padj),genes=row.names(DEG))
-                                    
-                                  },
-                                  
-                                  deseq2.LRT = {
-                                    condition <-factor( rep(c("control","case"),each = (ncol(data)/2)) )
-                                    type = factor(rep("single-read",ncol(data)))
-                                    colData = data.frame(condition,type,row.names=colnames(data))
-                                    dds<-DESeqDataSetFromMatrix(data,colData,design=~condition)
-                                    
-                                    DEG <- DESeq(dds, test = "LRT",reduced = ~1)
-                                    DEG <- results(DEG)
-                                    
-                                    res.diff <- data.frame(deseq2_LRT=(DEG$padj),genes=row.names(DEG))
-                                  },
-                                  
-                                  deseq = {
-                                    condition <- rep(c("control","case"),each = (ncol(data)/2) )
-                                    type = factor(rep("single-read",ncol(data)))
-                                    design = data.frame(condition,type,row.names=colnames(data))
-                                    singleSamples = design$type == 'single-read'
-                                    countTable = data[,singleSamples]
-                                    conds = design$condition[singleSamples]
-                                    
-                                    cds <- newCountDataSet(data, conds)
-                                    cds = estimateSizeFactors(cds)
-                                    cds = estimateDispersions(cds)
-                                    DEG = nbinomTest(cds, condA = "control", condB = "case")
-                                    res.diff <- data.frame(deseq = (DEG$padj),genes= (DEG$id))
-                                    
-                                  },
-                                  stop("Enter something that switches me!") 
-                                  
-  )
-  # DEG analysis for data that hasn't been treated yet (only edgeR methods)
-  if (!tool%in%c("deseq2.Wald","deseq2.LRT", "deseq")){
-    # Exact Test (edgeR)
-    colname1 = paste(tool_name,"ExactTest")
-    # Dispersions 
-    Disp = estimateCommonDisp(res.norm)
-    Disp = estimateTagwiseDisp(Disp)
-    # Retrieving pvalues
-    pvalue = exactTest(Disp)$table[3]
+#' # Compute design vector
+#' design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
+#' 
+#' # Compute normalization factors
+#' nf = runif(min = 0.75, max = 1.25, n = 20)
+#' 
+#' DEG = tools.DEG.RNAseq(Data, nf, "Random.norm", "ExactTest", design )
+#' 
+tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
+  storage.mode(count.matrix.raw) = "integer"
+  # limma only apply for voom normalization
+  if (class(nf) == "EList"){
+    # Elist are class object for the voom normalization
+    tool.norm = "voom"
+    tool.DEG = "limma"
+    data = nf 
+    method = "voom.limma"
     
-    # 2 columns dataframe : Pvalues + genes
-    res.diff1 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
-    
-    # GLM (edgeR)
-    colname2 = paste(tool_name,"GLM")
-    # design matrix : 
-    design = model.matrix(~0+group, data = res.norm$samples)
-    colnames(design) <- c("Control","Test")
-    # Dispersions
-    y = estimateDisp(res.norm,design)
-    # fitting model
-    fit <- glmQLFit(y, design)
-    BvsA <- makeContrasts(Control-Test, levels=design)
-    # DEG analysis
-    qlf <- glmQLFTest(fit, contrast=BvsA)
-    # genes + pvalues are retrieved
-    pvalue = qlf[["table"]][4]
-    res.diff2 = data.frame(genes = row.names(pvalue),pvalue = pvalue$PValue)
-    res.diff = merge(res.diff1,res.diff2,by = "genes",all=T)
-    
-    # Renaming the last two columns
-    names(res.diff)[-1][-2] = colname1
-    names(res.diff)[-1][-1] = colname2
   }
-  return(res.diff)
+  
+  else if(class(nf) == "matrix"){
+    # Matrix are the output for vst normalization
+    tool.norm = "vst"
+    tool.DEG = "limma"
+    data = nf
+    method = "vst.limma"
+  }
+  
+  else{
+    method = paste0(tool.norm,".",tool.DEG)
+  }
+  
+  # Specific class is needed for edgeR analysis
+  if (tool.DEG %in% c("ExactTest","GLM")){
+    edgeR.dgelist = DGEList(counts = count.matrix.raw, group = factor(design))
+    
+    # Estimating dispersion, retrieve and apply normalization factors
+    edgeR.dgelist[["samples"]][["norm.factors"]] = nf
+    edgeR.dgelist = estimateCommonDisp(edgeR.dgelist)
+    edgeR.dgelist = estimateTagwiseDisp(edgeR.dgelist,
+                                        trend = "movingave")
+    
+  }
+  # Same for DESeq2
+  else if (tool.DEG%in%c("nbinom.Wald","nbinom.LRT")){
+    design = data.frame(design,row.names=colnames(count.matrix.raw))
+    design$design = as.factor(design$design)
+    dds<-DESeqDataSetFromMatrix(count.matrix.raw,
+                                colData = design,
+                                design= ~design)
+    sizeFactors(dds) = nf
+    
+    
+    dds = estimateDispersions(dds, 
+                              fitType = "local")
+    
+  }
+  # Same again for DESeq
+  else if (tool.DEG == "nbinom"){
+    DESeq.cds = newCountDataSet(countData = count.matrix.raw,
+                                conditions = factor(design))
+    # Initializing size factors
+    sizeFactors(DESeq.cds) = nf
+  }
+  
+  tools_norm_RNAseq.fnc <- switch(tool.DEG,
+                                  # EdgeR exact test
+                                  ExactTest = {
+                                    
+                                    DEG = exactTest(edgeR.dgelist)
+                                    DEG.pval = DEG$table$PValue
+                                    
+                                    
+                                  },
+                                  
+                                  # EdgeR General linear model
+                                  GLM = {
+                                    design = model.matrix(~0+group, data = edgeR.dgelist$samples)
+                                    colnames(design) <- levels(edgeR.dgelist$samples$group)
+                                    
+                                    # Fitting the GLM model
+                                    fit <- glmQLFit(edgeR.dgelist, design)
+                                    # Testing outliers
+                                    qlf <- glmQLFTest(fit, contrast=c(-1,1))
+                                    # Retrieving pvalues
+                                    DEG.pval = qlf[["table"]]$PValue
+                                    
+                                  },
+                                  
+                                  # DESeq analysis
+                                  nbinom = {
+                                    # Dispersions
+                                    DESeq.cds = estimateDispersions(DESeq.cds, sharingMode = "maximum",     
+                                                                    method = "pooled", 
+                                                                    fitType = "local")
+                                    
+                                    # Searching for DE genes
+                                    DESeq.test = nbinomTest(DESeq.cds, "1", "2")
+                                    DEG.pval = DESeq.test$pval
+                                    
+                                  },
+                                  
+                                  # DESeq2 Wald Test
+                                  nbinom.Wald = {
+                                    DEG <- DESeq(dds, test = "Wald")
+                                    
+                                  },
+                                  
+                                  # DESeq2 Likelihood ratio test for GLMs
+                                  nbinom.LRT = {
+                                    DEG <- DESeq(dds, test = "LRT",reduced = ~1)
+                                    
+                                  },
+                                  
+                                  
+                                  limma = {
+                                    # Fitting model and computing pvalues
+                                    fitlimma = lmFit(data, design = model.matrix(~factor(design)))
+                                    fitbayes = eBayes(fitlimma)
+                                    DEG.pval = fitbayes$p.value[, 2]
+                                    
+                                    # Dataframe with adjusted pvalues
+                                    DEG = data.frame( pval = p.adjust(DEG.pval, method = "BH"),
+                                                      Gene.ID = row.names(count.matrix.raw)
+                                    )
+                                    colnames(DEG) = c(method,"SYMBOL")
+                                    return(DEG)
+                                    
+                                  },
+                                  stop("Enter something that switches me !")
+  )
+  
+  if (tool.DEG%in% c("nbinom.Wald","nbinom.LRT")){
+    DEG.pval = results(DEG)$pvalue
+  }
+  # Recompute pvalues with the false discovery method
+  DEG.padj = p.adjust(DEG.pval, method = "BH")
+  
+  DEG = data.frame(SYMBOL = row.names(count.matrix.raw), DEG.padj)
+  colnames(DEG) = c("SYMBOL", method)
+  
+  return(DEG)
 }
+
+
 
 #' Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
 #'

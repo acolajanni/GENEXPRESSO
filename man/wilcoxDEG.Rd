@@ -4,7 +4,7 @@
 \alias{wilcoxDEG}
 \title{Wilcoxon test for each row of a dataframe}
 \usage{
-wilcoxDEG(data, n1, n2, hypothesis)
+wilcoxDEG(data, n1, n2)
 }
 \arguments{
 \item{data}{dataframe of gene expression levels: Gene names in rows, samples in columns.}
@@ -12,8 +12,6 @@ wilcoxDEG(data, n1, n2, hypothesis)
 \item{n1}{Number of samples for the first experimental condition}
 
 \item{n2}{Number of samples for the second experimental condition}
-
-\item{hypothesis}{"less", "greater" or NULL. argument of the \link[stats]{wilcox.test} function.}
 }
 \value{
 dataframe with pvalues in one column and rownames of data as rownames.

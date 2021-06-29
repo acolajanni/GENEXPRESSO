@@ -242,7 +242,7 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #'
 #'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples, main = "Heatmap on random values" )
 #'
-DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples,main, Cluster.rows="correlation" ){
+DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples, main, Cluster.rows="correlation" ){
   # By default values
   if(missing(col.group1)){
     col.group1 = "deeppink4"
@@ -281,10 +281,11 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
   
   breaks = quantile_breaks(dataset,n.breaks)
   
-  # Creating sample annotation data frame
+  # Creating sample annotation data frame for columns
   sample.DF = data.frame("sample" = sample.condition, row.names = samples)
   
-  # Configuring colors
+
+  # Configuring colors for columns
   annotation_colors = list(sample = c(sample1 = col.group2, sample2 = col.group1))
   names(annotation_colors$sample) = levels(sample.DF$sample)
   
@@ -308,6 +309,7 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
                        clustering_distance_rows = Cluster.rows,
                        clustering_distance_cols = "correlation",
                        clustering_method = "average",
+                       #cluster_cols = FALSE,
                        show_rownames = FALSE
                        , inferno(n.breaks-1)
                        , drop_levels = TRUE

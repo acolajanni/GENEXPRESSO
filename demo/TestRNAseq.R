@@ -2,6 +2,7 @@ library(edgeR)
 library(DESeq)
 library(DESeq2)
 library(limma)
+library(RankProd)
 
 #########################
 #########################
@@ -116,227 +117,259 @@ Wald = Wald[1:10,]
 
 #### #### #### #### #### #### #### #### #### #### #### #### 
 #### #### #### #### #### #### #### #### #### #### #### #### 
-load("./data/RNAseqTEST.RData")
+#load("./data/RNAseqTEST.RData")
+
+## Load data
+load("./data/CountTable.RData")
+TCGA.dir = "/autofs/unitytravail/travail/acolajanni/BLCA_TCGA/"
+TCGA.table = paste0(TCGA.dir,"gdc_sample_sheet.2021-06-04.tsv")
+
+tab = read.delim(TCGA.table,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
 
 
-count.matrix = table.count.subset
 
-design = factor(tab.subset$`Sample Type`)
+
+keep = rowSums(table.count) >= (1*ncol(table.count))
+table.count = table.count[keep,]
+
+
+
+
+#count.matrix = table.count.subset
+
+design = factor(tab$`Sample Type`)
 class = ifelse(design == "Primary Tumor", yes = 1, no = 2)
-class = design
+#class = design
 
-A = tools.norm.RNAseq(table.count.subset, tool = "TMM", design = class)
-B = tools.DEG.RNAseq(table.count.subset, nf = A,
-                     tool.norm = "TMM", 
-                     tool.DEG = "GLM", 
-                     design = class)
-
-
-names(class) = colnames(mat)
-g1 = names(class)[class == 1]
-g2 = names(class)[class == 2]
-mat = relocate(mat,g1,g2)
-
-
-pval= wilcoxDEG(mat, length(g1), length(g2))
-
-test = RankProducts(mat, design, na.rm = TRUE )
+#Norm = tools.norm.RNAseq(table.count, tool = "voom", design = class)
+#DEG = tools.DEG.RNAseq(table.count, nf = Norm,
+#                     tool.norm = "vst", 
+#                     tool.DEG = "limma", 
+#                     design = class)
 
 
 
-
-
-mat = as.matrix(count.matrix)
-mat = count.matrix
-
-pvals=apply(mat,1,function(x) {
-  wilcox.test(x[1:19],x[20:38], alternative="less")
-  })
-
-pval = wilcoxDEG(mat, 19, 19, hypothesis = "greater")
-pval$pvalue = p.adjust(pval$pvalue, method="BH")
-
-pval
+A = tools.norm.RNAseq(table.count, tool = "TMM" , design = class)
+tmp = tools.DEG.RNAseq(table.count, nf = A,
+                       tool.norm = "TMM", 
+                       tool.DEG = "nbinom", 
+                       design = class)
 
 
 
+tools.norm = c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2")
+tools.DEG = c("ExactTest","GLM",
+              #"nbinom",
+              "nbinom.Wald","nbinom.LRT")
 
 
+data.to.comp = data.frame(NULL)
 
-tools.norm.RNAseq <- function(data, tool, design){
-  if (tool%in%c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom")){
-    edgeR.dgelist = DGEList(counts = count.matrix, group = factor(class))
-  }
+for (norm in tools.norm){
   
+  Norm = tools.norm.RNAseq(table.count, tool = norm , design = class)
   
-  tools_norm_RNAseq.fnc <- switch(tool,
-                                  TMM = {
-                                    nf = calcNormFactors(edgeR.dgelist, method = "TMM")
-                                  },
-                                  
-                                  TMMwsp = {
-                                    nf = calcNormFactors(edgeR.dgelist, method = "TMMwsp")
-                                  },
-                                  
-                                  RLE = {
-                                    nf = calcNormFactors(edgeR.dgelist, method = "RLE")
-                                  },
-                                  
-                                  Upperquartile = {
-                                    nf = calcNormFactors(edgeR.dgelist, method = "upperquartile")
-                                  },
-                                  
-                                  vst = {
-                                    DESeq.cds = newCountDataSet(countData = count.matrix,
-                                                                conditions = factor(class))
-                                    DESeq.cds = estimateSizeFactors(DESeq.cds)
-                                    nf = sizeFactors(DESeq.cds)
-                                    
-                                  },
-                                  
-                                  voom = {
-                                    nf = calcNormFactors(count.matrix, method = "TMM")
-                                    voom.data = voom(count.matrix, 
-                                                     design = model.matrix(~factor(class)),
-                                                     lib.size = colSums(count.matrix) * nf)
-                                    return(voom.data)
-                                  },
-                                  stop("Enter a normalization method that switches me !")
-              
-                                  
-  )
-  if (tool%in%c("TMM", "TMMwsp", "RLE", "Upperquartile")){
-    nf = nf[["samples"]][["norm.factors"]]
-    names(nf) = colnames(count.matrix)
-  }
-  return(nf)
-}
-
-tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
-  # limma only apply for voom normalization
-  if (class(nf) == "EList"){
-    tool.norm = "voom"
-    tool.DEG = "limma"
-    voom.data = nf 
+  print(norm)
+  
+  if (norm %in% c("vst2","voom")){
+    tmp = tools.DEG.RNAseq(table.count, nf = Norm,
+                           tool.norm = norm, 
+                           tool.DEG = "limma", 
+                           design = class)
     
-    method = "limma.voom"
+    data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
   }
   else{
-    method = paste0(tool.norm,"+",tool.DEG)
-  }
-  
-  # Specific class is needed for edgeR analysis
-  if (tool.DEG %in% c("ExactTest","GLM")){
-    edgeR.dgelist = DGEList(counts = count.matrix.raw, group = factor(design))
     
-    # Estimating dispersion, retrieve and apply normalization factors
-    edgeR.dgelist[["samples"]][["norm.factors"]] = nf
-    edgeR.dgelist = estimateCommonDisp(edgeR.dgelist)
-    edgeR.dgelist = estimateTagwiseDisp(edgeR.dgelist,
-                                        trend = "movingave")
-    
-  }
-  # Same for DESeq2
-  else if (tool.DEG%in%c("nbinom.Wald","nbinom.LRT")){
-    design = data.frame(design,row.names=colnames(count.matrix.raw))
-    design$design = as.factor(design$design)
-    dds<-DESeqDataSetFromMatrix(count.matrix.raw,
-                                colData = design,
-                                design= ~design)
-    sizeFactors(dds) = nf
-    
-    
-    dds = estimateDispersions(dds, sharingMode = "maximum", 
-                              method = "pooled",
-                              fitType = "local")
-    
-  }
-  # Same again for DESeq
-  else if (tool.DEG == "nbinom"){
-    DESeq.cds = newCountDataSet(countData = count.matrix.raw,
-                                conditions = factor(design))
-    # Initializing size factors
-    sizeFactors(DESeq.cds) = nf
-  }
-  
-  tools_norm_RNAseq.fnc <- switch(tool.DEG,
-                                  # EdgeR exact test
-                                  ExactTest = {
-                                    
-                                    DEG = exactTest(edgeR.dgelist)
-                                    DEG.pval = DEG$table$PValue
-                                    
-                                    
-                                  },
-                                  # EdgeR General linear model
-                                  GLM = {
-                                    design = model.matrix(~0+group, data = edgeR.dgelist$samples)
-                                    colnames(design) <- levels(edgeR.dgelist$samples$group)
-                                    
-                                    # Fitting the GLM model
-                                    fit <- glmQLFit(edgeR.dgelist, design)
-                                    # Testing outliers
-                                    qlf <- glmQLFTest(fit, contrast=c(-1,1))
-                                    # Retrieving pvalues
-                                    DEG.pval = qlf[["table"]]$PValue
+    for (deg in tools.DEG){
+      
+      print(deg)
+      tmp = tools.DEG.RNAseq(table.count, nf = Norm,
+                             tool.norm = norm, 
+                             tool.DEG = deg, 
+                             design = class)
+      
+      if (dim(data.to.comp)[1] == 0){
+        data.to.comp = tmp
+      }
+      else{
+        data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
+      }
+      
+    }
 
-                                  },
-                                  # DESeq analysis
-                                  nbinom = {
-                                    # Dispersions
-                                    DESeq.cds = estimateDispersions(DESeq.cds, sharingMode = "maximum",     
-                                                                    method = "pooled", 
-                                                                    fitType = "local")
-                                    
-                                    # Searching for DE genes
-                                    DESeq.test = nbinomTest(DESeq.cds, "1", "2")
-                                    DEG.pval = DESeq.test$pval
-                                    
-                                  },
-                                  # DESeq2 Wald Test
-                                  nbinom.Wald = {
-                                    DEG <- DESeq(dds, test = "Wald")
-                                    
-                                  },
-                                  # DESeq2 Likelihood ratio test for GLMs
-                                  nbinom.LRT = {
-                                    DEG <- DESeq(dds, test = "LRT")
-                                    
-                                  },
-                                  limma = {
-                                    voom.fitlimma = lmFit(voom.data, design = model.matrix(~factor(design)))
-                                    voom.fitbayes = eBayes(voom.fitlimma)
-                                    DEG.pval = voom.fitbayes$p.value[, 2]
-                                    #voom.adjpvalues = p.adjust(voom.pvalues, method = "BH")
-                                    #return(voom.fitbayes)
-                                  },
-                                  stop("Enter something that switches me !")
-  )
+  }
+}  
   
-  if (tool.DEG%in% c("nbinom.Wald","nbinom.LRT")){
-    DEG.pval = results(DEG)$pvalue
+  
+row.names(data.to.comp) = data.to.comp$SYMBOL
+data.to.comp$SYMBOL = NULL  
+  
+save(data.to.comp, file = "./data/RNAseqDataToComp.RData")
+load(file = "./data/RNAseqDataToComp.RData")
+
+data.to.comp = as.data.frame(t(data.to.comp))
+
+PCA_tools(data.to.comp)
+    
+# Liste de toute les méthodes
+methods = row.names(data.to.comp)
+# Dataframe rempli de valeur binaire (0/1)
+upset = Upset.Binary.Dataframe(data.to.comp)
+
+
+upset(upset,
+      sets = methods,
+      sets.bar.color = "#56B4E9", 
+      order.by = "freq", 
+      text.scale = 1.2,
+      mb.ratio = c(0.6,0.4),
+      set_size.show = TRUE,
+      set_size.scale_max = 25000
+      )
+
+
+d <- dist(data.to.comp, method = "euclidean") # distance matrix
+fit <- hclust(d, method="complete") 
+
+subset_cluster = cutree(fit, k=3)
+
+colors = paletteer_d("yarrr::xmen")[1:3]
+bars = as.data.frame(subset_cluster)
+bars$subset_cluster[bars$subset_cluster == 1] = colors[1]
+bars$subset_cluster[bars$subset_cluster == 2] = colors[2]
+bars$subset_cluster[bars$subset_cluster == 3] = colors[3]
+bars$subset_cluster[bars$subset_cluster == 4] = colors[4]
+bars$subset_cluster[bars$subset_cluster == 5] = colors[5]
+bars = as.matrix(bars)
+
+
+# allow content to go into outer margin 
+par(mar = c(15, 4, 4, 3) + 0.1,
+    xpd = TRUE) 
+plot(fit)
+fit = as.dendrogram(fit)
+rect.dendrogram(fit, k = 3, border = c(colors[3],colors[1],colors[2]))
+
+colored_bars(colors = bars, dend = fit, rowLabels = "Cluster")
+
+legend("topright", 
+       legend = c('edgeR', "DESeq2" ,"limma"), 
+       pch = 15, 
+       pt.cex = 3, 
+       cex = 1,
+       bty = "o",
+       inset = c(0, -0.49), 
+       title = "Cluster", 
+       col = colors,
+       xpd = TRUE
+       #horiz = TRUE
+)
+
+
+
+
+
+
+
+#' Combine Normalization with DEG analysis
+#'
+#' @param count.matrix 
+#' Dataframe of count with samples in columns and genes SYMBOL in rows.
+#' @param tools.norm 
+#' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
+#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
+#' "voom" calls the \link{limma}{voom} function.
+#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
+#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
+#' 
+#' @param tools.DEG 
+#' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+#' "ExactTest calls the \link{edgeR}{exactTest} function.
+#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
+#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
+#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
+#' 
+#' @param design 
+#' Vector of 1 and 2 of the same length of colnames(count.matrix).
+#' 1 for the first group and 2 for the second.
+#'
+#' @import "DEFormats" "edgeR" "DESeq2" "DESeq" "limma"
+#' @return
+#' @export
+#'
+#' @examples
+#' # load a count matrix (example with a random dataset)
+#' Data = matrix(runif(5000, 10, 100), ncol=20)
+#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#' colnames(Data) = group
+#' row.names(Data) = genes 
+#' 
+#' # Compute design vector
+#' design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
+#' 
+#' DEG = tools.DEG.RNAseq.merge(Data,"all","all",design)
+tools.DEG.RNAseq.merge <- function(count.matrix,tools.norm,tools.DEG,design){
+
+  
+  if (missing(tools.norm) || tools.norm == "all") {
+    tools.norm = c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2")
+  }
+  if (missing(tools.DEG) || tools.DEG == "all") {
+    tools.DEG = c("ExactTest","GLM","nbinom","nbinom.Wald","nbinom.LRT")
+  }
+
+  if (!tools.norm %in% c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2") ){
+    stop("Enter a normalization technique that switches me !")
+  }
+  if (!tools.DEG %in% c("ExactTest","GLM","nbinom","nbinom.Wald","nbinom.LRT") ){
+    stop("Enter a statistcal test for DEG detection that switches me !")
   }
   
-  DEG.padj = p.adjust(DEG.pval, method = "BH")
   
-  DEG = data.frame(SYMBOL = row.names(count.matrix.raw), DEG.padj)
-  colnames(DEG) = c("SYMBOL", method)
-  
-  return(DEG)
+  data.to.comp = data.frame(NULL)
+
+  for (norm in tools.norm){
+    print("chercher l'erreur 1")  
+    Norm = tools.norm.RNAseq(count.matrix, tool = norm , design = design)
+    print("chercher l'erreur 2")
+
+    if (norm %in% c("vst2","voom")){
+      message("normalization : ",norm,"\n DEG analysis : limma")
+      tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
+                           tool.norm = norm, 
+                           tool.DEG = "limma", 
+                           design = design)
+    
+      data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
+    }
+    else{
+    
+      for (deg in tools.DEG){
+      
+        message("normalization : ",norm,"\n DEG analysis : ", deg)
+        tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
+                             tool.norm = norm, 
+                             tool.DEG = deg, 
+                             design = design)
+      
+        if (dim(data.to.comp)[1] == 0){
+          data.to.comp = tmp
+        }
+        else{
+          data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
+        }
+      
+      }
+    
+    }
+  }  
+
+  return(data.to.comp)
 }
 
+A = tools.DEG.RNAseq.merge(Data,tools.norm = c("TMM","TMMwsp"),  tools.DEG = "all", design = design)
 
 
-d = c(rep(0, 15), rep(1,15))
 
-test = RankProducts(data, d)
-
-
-b = test$pfp
-b = as.data.frame(b)
-a = test$pval
-a
-
-a = p.adjust(a,method = "BH")
-
-a

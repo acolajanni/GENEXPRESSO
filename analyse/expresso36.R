@@ -74,6 +74,7 @@ for (param in parameters){
   }
 
 save(list.expresso, file = "./data/listexpresso.RData")
+#load(file = "./data/listexpresso.RData")
 ### log 2 transform values :
 
 methods = names(list.expresso)
@@ -88,6 +89,15 @@ for (method in need.log2){
 }
 
 save(list.expresso, file = "./data/listexpressoLOGGED.RData")
+
+gcrma = as.data.frame(list.expresso$gcrma)
+gcrma = mapping.affymetrix.probe(gcrma)
+
+rma = as.data.frame(list.expresso$rma)
+rma = mapping.affymetrix.probe(rma)
+
+save(gcrma, file = "./data/gcrmaMAPPED.RData")
+save(rma, file = "./data/rmaMAPPED.RData")
 
 ### Mapping + DEG
 Expresso.comp.methods = function(dataset, T1, T2, DEG.method){

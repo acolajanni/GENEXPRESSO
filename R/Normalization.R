@@ -164,6 +164,131 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
   return(res.norm)
 }
 
+
+
+#' Compute normalization / size factors for RNAseq count matrix
+#' 
+#' This function calls various function to compute normalization, size factors, or normalized dataset 
+#' to call another function that analyses differentially expressed genes
+#' 
+#' @param count.matrix 
+#' Dataframe of count with samples in columns and genes SYMBOL in rows.
+#' 
+#' @param tool 
+#' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
+#' 
+#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
+#' "voom" calls the \link{limma}{voom} function.
+#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
+#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
+#' 
+#' @param design 
+#' Vector of 1 and 2 of the same length of colnames(count.matrix).
+#' 1 for the first group and 2 for the second.
+#'
+#' @import "DEFormats" "edgeR" "DESeq2" "DESeq" "limma"
+#'
+#' @return 
+#' "TMM","TMMwsp", "RLE", "Upperquartile" and "vst" returns a vector of the same size as colnames(count.matrix)
+#' "voom" returns an "Elist" class object.
+#' "vst2" returns the normalized count.matrix with the variance stabilizing transformation
+#' 
+#' @export
+#'
+#' @examples
+#' # load a count matrix (example with a random dataset)
+#' Data = matrix(runif(5000, 10, 100), ncol=20)
+#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
+#' colnames(Data) = group
+#' row.names(Data) = genes 
+#' 
+#' # Compute design vector
+#' design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
+#' 
+#' Norm = tools.norm.RNAseq(Data, "TMM", design)
+#' 
+tools.norm.RNAseq <- function(count.matrix, tool, design){
+  # EdgeR normalisation need a DGElist :
+  if (tool%in%c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom")){
+    edgeR.dgelist = DGEList(counts = count.matrix, group = factor(design))
+  }
+  storage.mode(count.matrix) = "integer"
+  
+  
+  tools_norm_RNAseq.fnc <- switch(tool,
+                                  ##################################### edgeR
+                                  TMM = {
+                                    nf = calcNormFactors(edgeR.dgelist, method = "TMM")
+                                  },
+                                  
+                                  TMMwsp = {
+                                    nf = calcNormFactors(edgeR.dgelist, method = "TMMwsp")
+                                  },
+                                  
+                                  RLE = {
+                                    nf = calcNormFactors(edgeR.dgelist, method = "RLE")
+                                  },
+                                  
+                                  Upperquartile = {
+                                    nf = calcNormFactors(edgeR.dgelist, method = "upperquartile")
+                                  },
+                                  #####################################
+                                  
+                                  ##################################### DESeq
+                                  vst = {
+                                    # CountDataSet object
+                                    DESeq.cds = newCountDataSet(countData = count.matrix,
+                                                                conditions = factor(design))
+                                    
+                                    # Computing size factors (normalization factors)
+                                    DESeq.cds = estimateSizeFactors(DESeq.cds)
+                                    nf = sizeFactors(DESeq.cds)
+                                    
+                                  },
+                                  ##################################### DESeq2
+                                  vst2 = {
+                                    design = data.frame(design,row.names=colnames(count.matrix))
+                                    design$design = as.factor(design$design)
+                                    # DESeqDataSet (deseq2) object
+                                    dds<-DESeqDataSetFromMatrix(count.matrix,
+                                                                colData = design,
+                                                                design= ~design)
+                                    
+                                    # Size factors + dispersions
+                                    dds = estimateSizeFactors(dds)
+                                    dds = estimateDispersions(dds)
+                                    
+                                    # Returning normalized data
+                                    DESeq.vst = getVarianceStabilizedData(dds)
+                                    # Returns a matrix
+                                    return(DESeq.vst)
+                                    
+                                  },
+                                  ##################################### limma
+                                  voom = {
+                                    #limma - voom needs a DGElist to normalize
+                                    nf = calcNormFactors(count.matrix, method = "TMM")
+                                    voom.data = voom(count.matrix, 
+                                                     design = model.matrix(~factor(design)),
+                                                     lib.size = colSums(count.matrix) * nf)
+                                    
+                                    # Returns an "Elist" (voom format)
+                                    return(voom.data)
+                                  },
+                                  stop("Enter a normalization method that switches me !")     )
+  
+  
+  if (tool%in%c("TMM", "TMMwsp", "RLE", "Upperquartile")){
+    # adding sample names to normalization factors 
+    nf = nf[["samples"]][["norm.factors"]]
+    names(nf) = colnames(count.matrix)
+  } 
+  return(nf)
+  
+}
+
+
 #' Normalize a Nanostring dataset
 #'
 #' @param GEOiD GEO accession number or directory. 
@@ -181,12 +306,7 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
 #'
 #' @examples
 tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
-  
-  #########################
-  ###  Work in progress ###
-  #########################
-  
-  
+
   
   if (!FetchOnGEOdb){
     # If we already have an "AffyBatch", we can skip thoses steps
@@ -241,243 +361,57 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                                         pmcorrect.method= "pmonly",
                                         summary.method= "liwong")
                      },
-                     RMA.robust = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "quantiles.robust",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
-                     },
-                     MAS5 = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "mas")
-                     },
-                     RMA.invariantset.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "liwong")
-                     },
-                     RMA.invariantset.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
-                     },
-                     RMA.invariantset.mas = {
+
+                     RMA.inv.mas = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "rma",
                                         normalize.method= "invariantset",
                                         pmcorrect.method= "pmonly",
                                         summary.method= "mas")
-                     },
-                     MAS.invariantset= {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "mas")
-                     },
-                     MAS.quantile = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles.robust",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "mas")
-                     },
-                     RMA.constant.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
+                       
                        
                      },
-                     MASpm.constant.mas = {
+                     mas.mas.inv.mas= {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "mas",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "mas",
                                         summary.method= "mas")
                      },
-                     MAS.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "medianpolish")
-                     },
-                     MAS.liwong = {
+
+                     mas.mas.const.liwong = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "mas",
                                         normalize.method= "constant",
                                         pmcorrect.method= "mas",
                                         summary.method= "liwong")
                      },
-                     RMA.quantile.mas = {
+                     
+    
+                     RMA.inv.mas = {
                        eset <- expresso(abatch, 
                                         bgcorrect.method= "rma",
-                                        normalize.method= "quantiles.robust",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "mas")
-                     },
-                     RMA.quantile.liwong = {
-                       eset <- expresso(abatch, 
-                                       bgcorrect.method= "rma",
-                                       normalize.method= "quantiles.robust",
-                                       pmcorrect.method= "pmonly",
-                                       summary.method= "liwong")
-                     },
-                     RMA.invarianset.mas = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "mas")
-                     },
-                     RMA.constant.mas = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "mas")
-                     },
-                     RMA.constant.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "liwong")
-                     },
-                     MAS2.quantile.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles.robust",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "medianpolish")
-                     },
-                     MASpm.quantile.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles.robust",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
-                     },
-                     MASpm.constant.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
-                     },
-                     MASpm.invariantset.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "medianpolish")
-                     },
-                     MAS2.invariantset.medianpolish = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "medianpolish")
-                     },
-                     MAS2.quantile.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "liwong")
-                     },
-                     MAS2.invariantset.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "mas",
-                                        summary.method= "liwong")
-                     },
-                     MASpm.quantile.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "liwong")
-                     },
-                     MASpm.constant.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "constant",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "liwong")
-                     },
-                     MASpm.invariantset.liwong = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "liwong")
-                     },
-                     MASpm.quantile.mas = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
-                                        normalize.method= "quantiles",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "mas")
-                     },
-                     MASpm.invariantset.mas = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "mas",
                                         normalize.method= "invariantset",
                                         pmcorrect.method= "pmonly",
                                         summary.method= "mas")
                      },
 
-                     
-                     # Custom normalization through different method : 
-                     # Normalization, background correction, pm correction, summary stat expression
-                     custom = {
-                       
-                       # Error management for each tool method given in argument
-                       bgcorrect.methods = bgcorrect.methods()
-                       bgcorrect.methods = bgcorrect.methods[bgcorrect.methods == "rma" | bgcorrect.methods == "mas" ]
-                       if (!tools.bgcorrect%in%bgcorrect.methods){
-                         stop("Enter a background correction method that switches me!")
-                       }
-                       
-                       
-                       norm.methods = normalize.AffyBatch.methods()
-                       norm.methods = norm.methods [norm.methods != "methods" & norm.methods != "vsn" ]
-                       if (!tools.normalize%in%norm.methods){
-                         stop("Enter a normalization method that switches me!")
-                       }
-                       
-                       pmcorrect.methods = pmcorrect.methods()
-                       pmcorrect.methods = pmcorrect.methods[pmcorrect.methods != "methods"]
-                       if (!tools.pmcorrect%in%pmcorrect.methods){
-                         stop("Enter a pm correction method that switches me!")
-                       }
-                       
-                       sum.stat = express.summary.stat.methods()
-                       if (!tools.express.summary.stat%in% sum.stat){
-                         stop("Enter a summary stat method that switches me!")
-                       }
-                       
-                       # If all tools.normalize, tools.bgcorrect, .... are correct
-                       # We can call the expresso() function with the four tools parameters : 
+                     mas.mas.inv.med = {
                        eset <- expresso(abatch, 
-                                        bgcorrect.method= tools.bgcorrect,
-                                        normalize.method= tools.normalize,
-                                        pmcorrect.method= tools.pmcorrect,
-                                        summary.method= tools.express.summary.stat)
-                       
-                      },
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "medianpolish")
+                     },
+
+                     mas.mas.inv.liwong = {
+                       eset <- expresso(abatch, 
+                                        bgcorrect.method= "mas",
+                                        normalize.method= "invariantset",
+                                        pmcorrect.method= "mas",
+                                        summary.method= "liwong")
+                     },
+
                      stop("Enter something that switches me!")
                      
                      )
