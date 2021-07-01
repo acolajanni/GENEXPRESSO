@@ -2,36 +2,48 @@
 % Please edit documentation in R/DEG.R
 \name{tools.DEG.RNAseq.merge}
 \alias{tools.DEG.RNAseq.merge}
-\title{Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe}
+\title{Combine Normalization with DEG analysis}
 \usage{
-tools.DEG.RNAseq.merge(data, tools)
+tools.DEG.RNAseq.merge(count.matrix, tools.norm, tools.DEG, design)
 }
 \arguments{
-\item{data}{Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.}
+\item{count.matrix}{Dataframe of count with samples in columns and genes SYMBOL in rows.}
 
-\item{tools}{list character string.
-By default all the methods present in tools.DEG.RNAseq() are used.
-Any tools given in this list could be passed as argument : 
-"edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq"}
+\item{tools.norm}{Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
+"TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
+"voom" calls the \link{limma}{voom} function.
+"vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
+"vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.}
+
+\item{tools.DEG}{Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+"ExactTest calls the \link{edgeR}{exactTest} function.
+"GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
+"nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
+"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.}
+
+\item{design}{Vector of 1 and 2 of the same length of colnames(count.matrix).
+1 for the first group and 2 for the second.}
 }
 \value{
-Dataframe of DEG pvalues with genes in columns and tools in rows.
+
 }
 \description{
-Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
+Combine Normalization with DEG analysis
 }
 \examples{
-# Import the dataset
+# load a count matrix (example with a random dataset)
 Data = matrix(runif(5000, 10, 100), ncol=20)
 group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
 genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Data) = group
 row.names(Data) = genes 
 
-# Compute all the possible pvalues
-# res.DEG = tools.DEG.RNAseq.merge(Data)
+# Compute design vector
+design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
 
-# Compute the pvalues, only with edgeR methods
-tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMM")
-res.DEG = tools.DEG.RNAseq.merge(data = Data, tools = tools)
+# Test all combinations :
+#DEG = tools.DEG.RNAseq.merge(Data,"all","all",design)
+
+# Test only a few :
+DEG = tools.DEG.RNAseq.merge(Data,c("TMM","voom","vst"),c("ExactTest","nbinom.Wald"),design)
 }

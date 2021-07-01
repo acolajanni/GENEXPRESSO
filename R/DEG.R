@@ -121,8 +121,6 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 #' #get the results of limma analysis
 #' #res.diff = DEG_GEOlimma(dataset = Data,design)
 DEG_GEOlimma <- function(dataset,design, contrast.matrix){
-  source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
-  source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
   
   if(missing(contrast.matrix)){
     cm <- makeContrasts(diff = B-A, levels=design)
@@ -254,8 +252,8 @@ wilcoxDEG <- function(data, n1, n2){
 #' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 #' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 #' 
-#' @param n1 Number of samples for the first experimental condition
-#' @param n2 Number of samples for the second experimental condition
+#' @param n1 Number of samples for the first experimental condition. (Optionnal)
+#' @param n2 Number of samples for the second experimental condition. (Optionnal)
 #'
 #' @return
 #' A dataframe with genes in rows and pvalues of a gene being upregulated and downregulated in columns
@@ -271,9 +269,14 @@ wilcoxDEG <- function(data, n1, n2){
 #' colnames(Data) = group
 #' row.names(Data) = genes 
 #' 
+#' # Creating a model matrix :
+#' status = c(rep("control",10),rep("case",10))
+#' design = model.matrix(~0+status) 
+#' 
+#' 
 #' # Compute Pvalues for the RankProduct method
-#' res.DEG = tools.DEG.Microarrays(Data,"RankProduct",10,10)
-tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
+#' res.DEG = tools.DEG.Microarray(Data,"RankProduct",design = design)
+tools.DEG.Microarray <- function(data,tool,n1,n2, design){
   if (missing(design)){
     if (tool == "GEOlimma" || tool == "limma"){
       design = make_designMatrix(dataset = data)
@@ -289,6 +292,7 @@ tools.DEG.Microarrays <- function(data,tool,n1,n2, design){
                     yes = 0,
                     no = 1))
   }
+  
       
   DEG_Microarrays_tools.fnc <- switch(tool,
                                       GEOlimma = {
@@ -548,7 +552,7 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #' # Compute normalization factors
 #' nf = runif(min = 0.75, max = 1.25, n = 20)
 #' 
-#' DEG = tools.DEG.RNAseq(Data, nf, "Random.norm", "ExactTest", design )
+#' DEG = tools.DEG.RNAseq(Data, nf, tool.norm = "Random.norm", tool.DEG = "ExactTest", design = design )
 #' 
 tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
   storage.mode(count.matrix.raw) = "integer"
@@ -687,52 +691,122 @@ tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
 }
 
 
-
-#' Merge the DEG Pvalues for each tool used by tools.DEG.RNAseq in one dataframe
+#' Combine Normalization with DEG analysis
 #'
-#' @param data 
-#' Dataframe with genes in row, and methods used in columns. In contains the differentially expressed p-values for each gene.
-#' @param tools list character string.
-#' By default all the methods present in tools.DEG.RNAseq() are used.
-#' Any tools given in this list could be passed as argument : 
-#' "edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq"
-#' @return 
-#' Dataframe of DEG pvalues with genes in columns and tools in rows.
+#' @param count.matrix 
+#' Dataframe of count with samples in columns and genes SYMBOL in rows.
+#' @param tools.norm 
+#' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
+#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
+#' "voom" calls the \link{limma}{voom} function.
+#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
+#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
+#' 
+#' @param tools.DEG 
+#' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
+#' "ExactTest calls the \link{edgeR}{exactTest} function.
+#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
+#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
+#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
+#' 
+#' @param design 
+#' Vector of 1 and 2 of the same length of colnames(count.matrix).
+#' 1 for the first group and 2 for the second.
+#'
+#' @import "DEFormats" "edgeR" "DESeq2" "DESeq" "limma"
+#' @return
 #' @export
 #'
 #' @examples
-#' # Import the dataset
+#' # load a count matrix (example with a random dataset)
 #' Data = matrix(runif(5000, 10, 100), ncol=20)
 #' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
 #' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 #' colnames(Data) = group
 #' row.names(Data) = genes 
 #' 
-#' # Compute all the possible pvalues
-#' # res.DEG = tools.DEG.RNAseq.merge(Data)
+#' # Compute design vector
+#' design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
 #' 
-#' # Compute the pvalues, only with edgeR methods
-#' tools = c("edgeR_RLE","edgeR_upperquartile","edgeR_TMM")
-#' res.DEG = tools.DEG.RNAseq.merge(data = Data, tools = tools)
-tools.DEG.RNAseq.merge <- function(data,tools){
-  if(missing(tools)){
-    tools = c("edgeR_TMM","edgeR_RLE","edgeR_upperquartile","edgeR_TMMwsp","deseq2.Wald","deseq2.LRT", "deseq")
+#' # Test all combinations :
+#' #DEG = tools.DEG.RNAseq.merge(Data,"all","all",design)
+#' 
+#' # Test only a few :
+#' DEG = tools.DEG.RNAseq.merge(Data,c("TMM","voom","vst"),c("ExactTest","nbinom.Wald"),design)
+tools.DEG.RNAseq.merge <- function(count.matrix,tools.norm,tools.DEG,design){
+  
+  method.norm =  c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2")
+  method.DEG = c("ExactTest","GLM","nbinom","nbinom.Wald","nbinom.LRT")
+  
+  if (length(tools.norm) == 1){ 
+    if (tools.norm == "all") {
+      tools.norm = method.norm
+    }
+  } 
+  
+  if (length(tools.DEG) == 1){ 
+    if (tools.DEG == "all") {
+      tools.DEG = method.DEG
+    }
   }
-
-  data_to_comp = data.frame(genes = row.names(data))
-  for (tool in tools){
-    # for each tool, the corresponding analysis is computed
-    print(tool)
-    tmp = tools.DEG.RNAseq(data,tool)
-    # the pvalue column associated to the tool is added
-    data_to_comp = merge(data_to_comp,tmp,by = "genes",all=T)  
+  
+  # Verification of errors
+  if (any(!tools.norm %in%  method.norm) ){
+    message(tools.norm[(!tools.norm %in% method.norm)], " is not an known normalization")
+    stop("Enter a normalization technique that switches me !")
   }
-  # The gene column is placed as row names
-  row.names(data_to_comp) <- data_to_comp$genes
-  data_to_comp <- data_to_comp[,-1]
-  # we obtain a dataframe with genes in columns and methods in rows
-  data_to_comp = as.data.frame(t(data_to_comp))
-  return(data_to_comp)
+  if (any(!tools.DEG %in% method.DEG ) ){
+    message(tools.DEG[(!tools.DEG %in%  method.DEG )], " is not an known method")
+    stop("Enter a statistcal test for DEG detection that switches me !")
+  }
+  
+  
+  data.to.comp = data.frame(NULL)
+  # Loop in different existing method
+  for (norm in tools.norm){
+    # Normalizing data
+    Norm = tools.norm.RNAseq(count.matrix, tool = norm , design = design)
+    
+    # vst and voom are analyzable with limma and limma can only analyze "vst2" and voom normalization
+    if (norm %in% c("vst2","voom")){
+      message("normalization : ",norm,"\n DEG analysis : limma")
+      tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
+                             tool.norm = norm, 
+                             tool.DEG = "limma", 
+                             design = design)
+      
+      # If there is no line in data.to.comp :
+      if (dim(data.to.comp)[1] == 0){
+        data.to.comp = tmp
+      }
+      else{
+        data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
+      }
+    }
+    
+    else{
+      # Same thing for other DEG methods
+      for (deg in tools.DEG){
+        
+        message("normalization : ",norm,"\n DEG analysis : ", deg)
+        tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
+                               tool.norm = norm, 
+                               tool.DEG = deg, 
+                               design = design)
+        
+        if (dim(data.to.comp)[1] == 0){
+          data.to.comp = tmp
+        }
+        else{
+          data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
+        }
+        
+      }
+      
+    }
+  }  
+  
+  return(data.to.comp)
 }
 
 #' Merge the DEG Pvalues for each tool used by tools.DEG.Nanostring in one dataframe
@@ -836,56 +910,149 @@ tools.DEG.Nanostring.merge <- function(raw.data,tools_DEG,tools_norm,DESeq=T,dir
   return(data.to.comp)
 }
 
-#' Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
-#'
-#' @param data Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.
-#' @param tools Different methods are used to compute pvalues of differentially expressed genes for microarrays
-#' "Wilcox" uses the wilcoxDEG() function implemented in this very same package 
-#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that come from the limma package
-#' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
-#' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
 
-#' @param n1 Number of samples for the first experimental condition
-#' @param n2 Number of samples for the second experimental condition
+
+
+#' Merge normalization step with statistical methods to analyse DE genes
 #'
-#' @return Dataframe of pvalues of genes being differentially expressed with genes in columns and methods in rows
+#' @param dataset 
+#' AffyBatch or GEO id (e.g. "GSE31684" )
+#' @param design 
+#' design matrix produce by the function \link[stats]{model.matrix}
+#' @param tools.norm 
+#' Character string among : 
+#' "rma", "gcrma", "mas5","none", "liwong", "RMA.inv.mas", "mas.mas.inv.mas", 
+#' "mas.mas.const.liwong", "mas.mas.inv.med", "mas.mas.inv.liwong"
+#' "rma" calls \link[affy]{rma}.
+#' "mas5" calls \link[affy]{mas5}.
+#' "gcrma" calls \link[gcrma]{gcrma}.
+#' The other methods calls \link[affy]{expresso}.
+#' "liwong" has the following parameters : (bgcorrect.method= "none", 
+#' normalize.method= "invariantset", pmcorrect.method= "pmonly", summary.method= "liwong")
+#' Methods that start with "RMA." has the parameters : 
+#' bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+#' Those that starts with "mas.mas" have the following parameters : 
+#' bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+#' ".inv" is for  normalize.method = "invariantset", 
+#' ".const" is for normalize.method = "constant" 
+#' ".liwong" is for summary.method= "liwong"
+#' ".med" is for summary.method= "medianpolish"
+#' ".mas" is for summary.method= "mas"
+#' 
+#' @param tools.DEG 
+#' Different methods used to compute pvalues of differentially expressed genes for microarrays
+#' "Wilcox" uses the \link[GENEXPRESSO]{wilcoxDEG} function 
+#' "limma" and "GEOlimma" calls \link[limma]{eBayes} and \link[limma]{lmFit} 
+#' "RankProduct" calls \link[RankProd]{RankProducts} with calculateProduct = TRUE,
+#' "RankSum" calls \link[RankProd]{RankProducts} with calculateProduct = FALSE
+#' @return
+#' a dataframe with pvalues of genes being DE depending on the used methods
+#' 
+#' @import "RankProd" "limma" "dplyr" "affy" "GEOquery" "gcrma"
+#' 
 #' @export
 #'
 #' @examples
-#' # Import the dataset
-#' Data = matrix(runif(5000, 10, 100), ncol=20)
-#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
-#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
-#' colnames(Data) = group
-#' row.names(Data) = genes 
+#' # Import the experimental condition dataframe
+#' #celpath = file.path("Insert/your/path/to/.CEL/files")
+#' #txt.dir = paste0(celpath,"/tab.txt")
+#' #tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
 #' 
-#' # Compute Pvalues for all the methods 
-#' tools = c("limma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
-#' res.DEG = tools.DEG.Microarrays.merge(Data,tools,10,10)
-tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
-  # By default, all the implemented methods are used
-  if (missing(tools)){
-    tools = c("limma", "GEOlimma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
-  }
-  if (missing(n1)){
-    n1=ncol(data)/2
-  }
-  if (missing(n2)){
-    n2=ncol(data)/2
-  }
-  # Creating the dataframe with only genes in it to merge further results with it
-  data_to_comp = data.frame(Gene.ID = row.names(data))
+#' # Here to compare T1 vs T2 patients
+#' #tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
+#' #creating the model matrix
+#' #design = model.matrix(~0 + tab$PreOpClinStage)
+#' 
+#' # computing pvalues for DE genes with one normalization in combination with 
+#' # 3 different statistical analysis
+#' #DEG = tools.DEG.Microarray.merge(dataset = abatch, 
+#' #                                 design = design, 
+#' #                                 tools.norm = c("rma"), 
+#' #                                 tools.DEG = c("GEOlimma","limma","RankProduct") )
+tools.DEG.Microarray.merge <- function(dataset, design, tools.norm, tools.DEG){
   
-  for (tool in tools){
-    print(tool)
-    tmp = tools.DEG.Microarrays(data,tool,n1, n2)
-    data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
+  method.norm =  c("rma", "gcrma", "mas5","liwong","RMA.inv.mas","mas.mas.inv.mas", 
+                   "mas.mas.const.liwong", "mas.mas.inv.med", "mas.mas.inv.liwong")
+  
+  
+  method.DEG = c("limma","GEOlimma","Wilcox","RankProduct","RankSum")
+  
+  
+  # parameters for "all" choice
+  if (length(tools.norm) == 1){ 
+    if (tools.norm == "all") {
+      tools.norm = method.norm
+    }
+  } 
+  
+  if (length(tools.DEG) == 1){ 
+    if (tools.DEG == "all") {
+      tools.DEG = method.DEG
+    }
   }
-  # adding the genes as row names
-  row.names(data_to_comp) <- data_to_comp$Gene.ID
-  data_to_comp <- data_to_comp[,-1]
-  # Genes in columns, methods in rows
-  data_to_comp = as.data.frame(t(data_to_comp))
-  return(data_to_comp)
+  
+  # If we don't have an affybatch we should get one
+  if(!class(dataset) == "AffyBatch"){
+    # getting an affybatch object from the GEO id
+    dataset = tools.norm.Microarray(dataset, FetchOnGEOdb = TRUE, tools = "none")
+  }
+  
+  # Error management
+  if (any(!tools.DEG %in% method.DEG ) ){
+    message(tools.DEG[(!tools.DEG %in%  method.DEG )], " is not an known method")
+    stop("Enter a statistcal test for DEG detection that switches me !")
+  }
+  
+  if (any(!tools.norm %in% method.norm ) ){
+    message(tools.norm[(!tools.norm %in%  method.norm )], " is not an known method")
+    stop("Enter a normalization method that switches me !")
+  }
+  
+  # limma analysis needs specific colnames for design matrix
+  colnames(design) = c("A","B")
+  
+  
+  data.to.comp = data.frame(NULL)
+  
+  # Normalizing data in each possible way
+  for (norm in tools.norm){
+    
+    Norm = tools.norm.Microarray(dataset, tools = norm, FetchOnGEOdb = FALSE)
+    
+    # Those three methods returns log2 transformed values
+    # The other methods should also return log2 values
+    if (!norm %in% c("rma","gcrma","mas.mas.inv.med") ){
+      Norm = log2(Norm)
+    }
+    
+    message("Mapping probe ID to genes")
+    Norm = mapping.affymetrix.probe(Norm)
+    
+    for (deg in tools.DEG){
+      
+      
+      message("normalization : ",norm,"\n DEG analysis : ", deg)
+      if (deg == "RankSum"){
+        deg = "RankSum.log"
+      }
+      
+      else if (deg == "RankProduct"){
+        deg = "RankProduct.log"
+      }
+      
+      tmp = tools.DEG.Microarray(data = Norm,
+                                 tool = deg,
+                                 design = design)
+      
+      if (dim(data.to.comp)[1] == 0){
+        data.to.comp = tmp
+      }
+      else{
+        data.to.comp = merge(data.to.comp, tmp, by = "Gene.ID")
+      }
+    }
+    
+    
+  }
+  return(data.to.comp)
 }
-

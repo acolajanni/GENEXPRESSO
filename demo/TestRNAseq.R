@@ -272,104 +272,61 @@ legend("topright",
 
 
 
-#' Combine Normalization with DEG analysis
+
+
+A = tools.DEG.RNAseq.merge(Data,tools.norm = c("TMM","TMMwsp"),  tools.DEG = "all", design = design)
+
+
+
+#' Merge the DEG Pvalues for each tool used by tools.DEG.Microarrays in one dataframe
 #'
-#' @param count.matrix 
-#' Dataframe of count with samples in columns and genes SYMBOL in rows.
-#' @param tools.norm 
-#' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
-#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
-#' "voom" calls the \link{limma}{voom} function.
-#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
-#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
-#' 
-#' @param tools.DEG 
-#' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
-#' "ExactTest calls the \link{edgeR}{exactTest} function.
-#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
-#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
-#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
-#' 
-#' @param design 
-#' Vector of 1 and 2 of the same length of colnames(count.matrix).
-#' 1 for the first group and 2 for the second.
+#' @param data Dataframe with genes in row, and methods used in columns. It contains the differentially expressed p-values for each gene.
+#' @param tools Different methods are used to compute pvalues of differentially expressed genes for microarrays
+#' "Wilcox" uses the wilcoxDEG() function implemented in this very same package 
+#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that come from the limma package
+#' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+#' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+
+#' @param n1 Number of samples for the first experimental condition
+#' @param n2 Number of samples for the second experimental condition
 #'
-#' @import "DEFormats" "edgeR" "DESeq2" "DESeq" "limma"
-#' @return
+#' @return Dataframe of pvalues of genes being differentially expressed with genes in columns and methods in rows
 #' @export
 #'
 #' @examples
-#' # load a count matrix (example with a random dataset)
+#' # Import the dataset
 #' Data = matrix(runif(5000, 10, 100), ncol=20)
 #' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
 #' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 #' colnames(Data) = group
 #' row.names(Data) = genes 
 #' 
-#' # Compute design vector
-#' design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
-#' 
-#' DEG = tools.DEG.RNAseq.merge(Data,"all","all",design)
-tools.DEG.RNAseq.merge <- function(count.matrix,tools.norm,tools.DEG,design){
-
+#' # Compute Pvalues for all the methods 
+#' tools = c("limma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
+#' res.DEG = tools.DEG.Microarrays.merge(Data,tools,10,10)
+tools.DEG.Microarrays.merge <-function(data,tools,n1,n2){
+  # By default, all the implemented methods are used
+  if (missing(tools)){
+    tools = c("limma", "GEOlimma", "Wilcox","RankProduct","RankProduct.log","RankSum","RankSum.log")
+  }
+  if (missing(n1)){
+    n1=ncol(data)/2
+  }
+  if (missing(n2)){
+    n2=ncol(data)/2
+  }
+  # Creating the dataframe with only genes in it to merge further results with it
+  data_to_comp = data.frame(Gene.ID = row.names(data))
   
-  if (missing(tools.norm) || tools.norm == "all") {
-    tools.norm = c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2")
+  for (tool in tools){
+    print(tool)
+    tmp = tools.DEG.Microarrays(data,tool,n1, n2)
+    data_to_comp = merge(data_to_comp,tmp,by = "Gene.ID",all=T)  
   }
-  if (missing(tools.DEG) || tools.DEG == "all") {
-    tools.DEG = c("ExactTest","GLM","nbinom","nbinom.Wald","nbinom.LRT")
-  }
-
-  if (!tools.norm %in% c("TMM", "TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2") ){
-    stop("Enter a normalization technique that switches me !")
-  }
-  if (!tools.DEG %in% c("ExactTest","GLM","nbinom","nbinom.Wald","nbinom.LRT") ){
-    stop("Enter a statistcal test for DEG detection that switches me !")
-  }
-  
-  
-  data.to.comp = data.frame(NULL)
-
-  for (norm in tools.norm){
-    print("chercher l'erreur 1")  
-    Norm = tools.norm.RNAseq(count.matrix, tool = norm , design = design)
-    print("chercher l'erreur 2")
-
-    if (norm %in% c("vst2","voom")){
-      message("normalization : ",norm,"\n DEG analysis : limma")
-      tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
-                           tool.norm = norm, 
-                           tool.DEG = "limma", 
-                           design = design)
-    
-      data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
-    }
-    else{
-    
-      for (deg in tools.DEG){
-      
-        message("normalization : ",norm,"\n DEG analysis : ", deg)
-        tmp = tools.DEG.RNAseq(count.matrix, nf = Norm,
-                             tool.norm = norm, 
-                             tool.DEG = deg, 
-                             design = design)
-      
-        if (dim(data.to.comp)[1] == 0){
-          data.to.comp = tmp
-        }
-        else{
-          data.to.comp = merge(data.to.comp, tmp, by = "SYMBOL")
-        }
-      
-      }
-    
-    }
-  }  
-
-  return(data.to.comp)
+  # adding the genes as row names
+  row.names(data_to_comp) <- data_to_comp$Gene.ID
+  data_to_comp <- data_to_comp[,-1]
+  # Genes in columns, methods in rows
+  data_to_comp = as.data.frame(t(data_to_comp))
+  return(data_to_comp)
 }
-
-A = tools.DEG.RNAseq.merge(Data,tools.norm = c("TMM","TMMwsp"),  tools.DEG = "all", design = design)
-
-
-

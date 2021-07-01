@@ -36,7 +36,9 @@ DEG.pheatmap(
 
 \item{main}{Title of the heatmap}
 
-\item{hclust.rows}{Square matrix of similarity between genes.}
+\item{Cluster.rows}{Default values is "correlation" and produce a clustering based on correlation.
+A matrix of correlation or a dist class object produced by \link[stats]{dist}
+could be pass in argument to replace the default clustering.}
 }
 \value{
 
@@ -59,6 +61,37 @@ DEG = genes <- paste0(rep(LETTERS[1:25], each=5), rep(c(1:10),each = 1))
 sample.condition = c(rep("control", times = 10), rep("case", times = 10) )
 samples = colnames(Data)
 
-DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples, main = "Heatmap on random values" )
+DEG.pheatmap(DEG, Data, is.log = FALSE, 
+ sample.condition = sample.condition, 
+ samples = samples, 
+ main = "Heatmap on random values" )
 
+
+
+
+# Heatmap on preclusterized genes(rows)
+# based on correlation : 
+# With a Correlation matrix
+clust.rows = cor(t(Data[row.names(Data)\%in\%DEG , ]),
+                 use = "pairwise.complete.obs",
+                 method = "pearson")
+
+
+DEG.pheatmap(DEG, Data, is.log = FALSE, 
+ sample.condition = sample.condition, 
+ samples = samples, 
+ Cluster.rows = clust.rows,
+ main = "Heatmap on random values" )
+
+
+# With dist class object
+
+dist.rows = as.dist(1 - clust.rows)
+
+DEG.pheatmap(DEG, Data, is.log = FALSE, 
+ sample.condition = sample.condition, 
+ samples = samples, 
+ Cluster.rows = clust.rows,
+ main = "Heatmap on random values" )
+ 
 }

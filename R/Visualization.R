@@ -218,8 +218,11 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #' Vector of the samples in the same order as sample conditions
 #' @param main
 #' Title of the heatmap
-#' @param hclust.rows 
-#' Square matrix of similarity between genes. 
+#' @param Cluster.rows 
+#' Default values is "correlation" and produce a clustering based on correlation.
+#' A matrix of correlation or a dist class object produced by \link[stats]{dist}
+#' could be pass in argument to replace the default clustering.
+#' 
 #' 
 #' @return
 #' @import "pheatmap" "viridis"
@@ -240,9 +243,42 @@ relations.comparison <- function(g1,g2,g1.name,g2.name, display, color.g1, color
 #'sample.condition = c(rep("control", times = 10), rep("case", times = 10) )
 #'samples = colnames(Data)
 #'
-#'DEG.pheatmap(DEG, Data, is.log = FALSE, sample.condition = sample.condition, samples = samples, main = "Heatmap on random values" )
+#'DEG.pheatmap(DEG, Data, is.log = FALSE, 
+#'  sample.condition = sample.condition, 
+#'  samples = samples, 
+#'  main = "Heatmap on random values" )
 #'
-DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", n.breaks, is.log2, sample.condition,samples, main, Cluster.rows="correlation" ){
+#'
+#' 
+#'
+#'# Heatmap on preclusterized genes(rows)
+#'# based on correlation : 
+#'# With a Correlation matrix
+#' clust.rows = cor(t(Data[row.names(Data)%in%DEG , ]),
+#'                  use = "pairwise.complete.obs",
+#'                  method = "pearson")
+#'
+#' 
+#' DEG.pheatmap(DEG, Data, is.log = FALSE, 
+#'  sample.condition = sample.condition, 
+#'  samples = samples, 
+#'  Cluster.rows = clust.rows,
+#'  main = "Heatmap on random values" )
+#' 
+#' 
+#' # With dist class object
+#' 
+#' dist.rows = as.dist(1 - clust.rows)
+#'
+#' DEG.pheatmap(DEG, Data, is.log = FALSE, 
+#'  sample.condition = sample.condition, 
+#'  samples = samples, 
+#'  Cluster.rows = clust.rows,
+#'  main = "Heatmap on random values" )
+#'  
+DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppink4", 
+                        n.breaks, is.log2, sample.condition,samples, main, 
+                        Cluster.rows="correlation" ){
   # By default values
   if(missing(col.group1)){
     col.group1 = "deeppink4"
@@ -309,7 +345,6 @@ DEG.pheatmap = function(DEG, dataset, col.group1 = "cyan", col.group2 = "deeppin
                        clustering_distance_rows = Cluster.rows,
                        clustering_distance_cols = "correlation",
                        clustering_method = "average",
-                       #cluster_cols = FALSE,
                        show_rownames = FALSE
                        , inferno(n.breaks-1)
                        , drop_levels = TRUE

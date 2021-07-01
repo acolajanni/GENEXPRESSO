@@ -45,6 +45,6 @@ design = c(rep(1,10), rep(2,10)) # 10 from group 1, 10 from group 2
 # Compute normalization factors
 nf = runif(min = 0.75, max = 1.25, n = 20)
 
-DEG = tools.DEG.RNAseq(Data, nf, "Random.norm", "ExactTest", design )
+DEG = tools.DEG.RNAseq(Data, nf, tool.norm = "Random.norm", tool.DEG = "ExactTest", design = design )
 
 }

@@ -4,36 +4,49 @@
 \alias{tools.norm.Microarray}
 \title{Normalize a Nanostring dataset}
 \usage{
-tools.norm.Microarray(
-  GEOiD,
-  FetchOnGEOdb = FALSE,
-  tools,
-  tools.normalize,
-  tools.bgcorrect,
-  tools.pmcorrect,
-  tools.express.summary.stat
-)
+tools.norm.Microarray(GEOiD, FetchOnGEOdb, tools)
 }
 \arguments{
 \item{GEOiD}{GEO accession number or directory. 
 If you give a GEO accession number, then set FetchOnGEOdb = TRUE.
-Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. Note that if the data are stored localy, it should be inside a .tar archive.}
+Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. 
+Note that if the data are stored localy, it should be inside a .tar archive.}
 
 \item{FetchOnGEOdb}{logical value. if TRUE, GEOiD parameter should be a GEO accession number.}
 
-\item{tools}{}
-
-\item{tools.normalize}{}
-
-\item{tools.bgcorrect}{}
-
-\item{tools.pmcorrect}{}
-
-\item{tools.express.summary.stat}{}
+\item{tools}{Character string among : 
+"rma", "gcrma", "mas5","none", "liwong", "RMA.inv.mas", "mas.mas.inv.mas", 
+"mas.mas.const.liwong", "mas.mas.inv.med", "mas.mas.inv.liwong"
+"rma" calls \link[affy]{rma}.
+"mas5" calls \link[affy]{mas5}.
+"gcrma" calls \link[gcrma]{gcrma}.
+The other methods calls \link[affy]{expresso}.
+"liwong" has the following parameters : (bgcorrect.method= "none", 
+normalize.method= "invariantset", pmcorrect.method= "pmonly", summary.method= "liwong")
+Methods that start with "RMA." has the parameters : 
+bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+Those that starts with "mas.mas" have the following parameters : 
+bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+".inv" is for  normalize.method = "invariantset", 
+".const" is for normalize.method = "constant" 
+".liwong" is for summary.method= "liwong"
+".med" is for summary.method= "medianpolish"
+".mas" is for summary.method= "mas"}
 }
 \value{
-
+"none" returns an "affybatch" object
+Other methods returns a matrix of normalized data : Probe ID in rows sample in columns.
 }
 \description{
-Normalize a Nanostring dataset
+Import a dataset in GEOdatabase and normalize it with several methods
+}
+\examples{
+# giving a GSE ID
+GEO = "GSE31684"
+
+# Need to fetch those data on GEO: (returns an affybatch)
+# Abatch = tools.norm.Microarray(GEOiD = GEO, FetchOnGEOdb = TRUE, tools = "none")
+
+# Normalizing it : 
+# norm = tools.norm.Microarray(GEOiD = Abatch, FetchOnGEOdb = FALSE, tools = "rma" ) 
 }

@@ -27,7 +27,7 @@ library(madsim)
 #' # To get Microarray type data with 1000 genes and 2 groups of 15 samples
 #' Data = Simul.data(type = "Microarrays", n.cond1 = 15, n.cond2 = 15, nb.genes = 1000)
 #' # To get the non simulated Nanostring data
-#' Data = Simul.data(type = "Nanostring")
+#' #Data = Simul.data(type = "Nanostring")
 Simul.data <-function(type,n.cond1,n.cond2,nb.genes){
   
   Choose.type<-switch(type,

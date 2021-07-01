@@ -361,3 +361,21 @@ Get.DEG <- function(binary.matrix, method, alternative){
 
 
 
+
+celpath = file.path("Insert/your/path/to/.CEL/files")
+txt.dir = paste0(celpath,"/tab.txt")
+tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
+
+# Here to compare T1 vs T2 patients
+tab = subset(tab, tab$PreOpClinStage == 'T1' | tab$PreOpClinStage == 'T2') 
+#creating the model matrix
+design = model.matrix(~0 + tab$PreOpClinStage)
+
+# computing pvalues for DE genes with one normalization in combination with 
+# 3 different statistical analysis
+DEG = tools.DEG.Microarray.merge(dataset = abatch, 
+                                 design = design, 
+                                 tools.norm = c("rma"), 
+                                 tools.DEG = c("GEOlimma","limma","RankProduct") )
+
+

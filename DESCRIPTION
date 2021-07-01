@@ -35,5 +35,6 @@ Imports:
     affy,
     gcrma,
     pheatmap,
-    viridis
+    viridis,
+    hgu133plus2.db
 RoxygenNote: 7.1.1

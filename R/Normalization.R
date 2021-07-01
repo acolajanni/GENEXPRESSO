@@ -290,24 +290,56 @@ tools.norm.RNAseq <- function(count.matrix, tool, design){
 
 
 #' Normalize a Nanostring dataset
-#'
+#' 
+#' Import a dataset in GEOdatabase and normalize it with several methods
+#' 
 #' @param GEOiD GEO accession number or directory. 
 #' If you give a GEO accession number, then set FetchOnGEOdb = TRUE.
-#' Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. Note that if the data are stored localy, it should be inside a .tar archive.
-#' @param FetchOnGEOdb logical value. if TRUE, GEOiD parameter should be a GEO accession number.
-#' @param tools.normalize 
-#' @param tools.bgcorrect 
-#' @param tools.pmcorrect 
-#' @param tools.express.summary.stat 
+#' Otherwise, if it is a directory, ignore the FetchOnGEOdb parameter. 
+#' Note that if the data are stored localy, it should be inside a .tar archive.
+#' 
+#' @param FetchOnGEOdb 
+#' logical value. if TRUE, GEOiD parameter should be a GEO accession number.
+#' 
 #' @param tools 
+#' Character string among : 
+#' "rma", "gcrma", "mas5","none", "liwong", "RMA.inv.mas", "mas.mas.inv.mas", 
+#' "mas.mas.const.liwong", "mas.mas.inv.med", "mas.mas.inv.liwong"
+#' "rma" calls \link[affy]{rma}.
+#' "mas5" calls \link[affy]{mas5}.
+#' "gcrma" calls \link[gcrma]{gcrma}.
+#' The other methods calls \link[affy]{expresso}.
+#' "liwong" has the following parameters : (bgcorrect.method= "none", 
+#' normalize.method= "invariantset", pmcorrect.method= "pmonly", summary.method= "liwong")
+#' Methods that start with "RMA." has the parameters : 
+#' bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+#' Those that starts with "mas.mas" have the following parameters : 
+#' bgcorrect.method = "rma" , pmcorrect.method = "pmonly" 
+#' ".inv" is for  normalize.method = "invariantset", 
+#' ".const" is for normalize.method = "constant" 
+#' ".liwong" is for summary.method= "liwong"
+#' ".med" is for summary.method= "medianpolish"
+#' ".mas" is for summary.method= "mas"
+#' 
+#' 
 #' @import "affy" "GEOquery" "gcrma"
 #' @return
+#' "none" returns an "affybatch" object
+#' Other methods returns a matrix of normalized data : Probe ID in rows sample in columns.
+#' 
 #' @export
 #'
 #' @examples
-tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.normalize, tools.bgcorrect, tools.pmcorrect, tools.express.summary.stat){
+#' # giving a GSE ID
+#' GEO = "GSE31684"
+#' 
+#' # Need to fetch those data on GEO: (returns an affybatch)
+#' # Abatch = tools.norm.Microarray(GEOiD = GEO, FetchOnGEOdb = TRUE, tools = "none")
+#' 
+#' # Normalizing it : 
+#' # norm = tools.norm.Microarray(GEOiD = Abatch, FetchOnGEOdb = FALSE, tools = "rma" ) 
+tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb , tools){
 
-  
   if (!FetchOnGEOdb){
     # If we already have an "AffyBatch", we can skip thoses steps
     if (class(GEOiD) != "AffyBatch") {
@@ -322,6 +354,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
   }
   else {
     # Download the archive
+    message("Downloading data")
     getGEOSuppFiles(GEOiD, fetch_files = TRUE, baseDir = "./data")  
     # get the directory
     celpath = paste0("./data/",GEOiD,"/")
@@ -387,14 +420,6 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                                         summary.method= "liwong")
                      },
                      
-    
-                     RMA.inv.mas = {
-                       eset <- expresso(abatch, 
-                                        bgcorrect.method= "rma",
-                                        normalize.method= "invariantset",
-                                        pmcorrect.method= "pmonly",
-                                        summary.method= "mas")
-                     },
 
                      mas.mas.inv.med = {
                        eset <- expresso(abatch, 
@@ -415,7 +440,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
                      stop("Enter something that switches me!")
                      
                      )
-  
+  # Returning an "expression set" = Matrix of expression values
   exprSet = exprs(eset)
   return(exprSet)
 }
@@ -426,7 +451,7 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb = FALSE , tools, tools.nor
 #' @param exprSet Dataframe with samples in columns, probes ID in rows
 #' @param annotation function like : hgu133plus2SYMBOL if the chip is hgu 133 plus 2.0 and the wanted mapping is with the gene SYmbols
 #' 
-#' @import "affy" "dplyr"
+#' @import "affy" "dplyr" "hgu133plus2.db"
 #' 
 #' @return Dataframe with about 20.000 rows. Gene symbols will replace the probes ID
 #' @export
@@ -452,31 +477,34 @@ mapping.affymetrix.probe <- function(exprSet){
   # Retrieve probe names
   probes.ALL=row.names(expr)
   # We want the annotation through the gene Symbol : 
-  symbol.ALL = unlist(mget(probes.ALL, hgu133plus2SYMBOL))
-  
+  symbol.ALL = unlist(mget(probes.ALL, hgu133plus2.db::hgu133plus2SYMBOL))
   # Recreating the dataframe with the matching probes
-  table.ALL=cbind(SYMBOL = symbol.ALL,  expr)
-  table.ALL$PROBES = row.names(expr)
-  table.ALL = relocate(table.ALL, PROBES, SYMBOL)
-  row.names(table.ALL) = NULL
-
-  expr = table.ALL
+  SYMBOL = unname(symbol.ALL)
+  expr = cbind(SYMBOL,expr)
+  
+  expr <- as.data.frame(apply(expr, 2, as.numeric))
+  expr$SYMBOL = SYMBOL
+  
+  
+  
   # Retrieving sample names 
   samples = colnames(expr)
   samples = samples[!samples %in% c("PROBES","SYMBOL")]
   
+
   # grouping expr by the Gene symbols
   tmp = expr %>%
-    group_by(SYMBOL) 
-  
+    group_by(SYMBOL)
+    
+
   # Summarised the group with the median 
   Mapped = tmp %>%
-    summarise(across(all_of(samples), ~ median(.x)  ))
+    summarise(across(all_of(samples), ~ median(.x , na.rm = TRUE)  ))
   
+
   Mapped = as.data.frame( na.omit(Mapped) )
   row.names(Mapped) = Mapped$SYMBOL
   Mapped$SYMBOL = NULL
-  
   
   return(Mapped)
 }
