@@ -2,12 +2,12 @@
 ########    DEG   #########
 ###########################
 
-library(edgeR)
-library(DESeq)
-library(DESeq2)
-library(RankProd)
-library(limma)
-library(data.table)
+#library(edgeR)
+#library(DESeq)
+#library(DESeq2)
+#library(RankProd)
+#library(limma)
+#library(data.table)
 #source(file.path("~/GIT/CPRD/GEOlimma/","DE_source.R"))
 #source(file.path("~/GIT/CPRD/GEOlimma/","ebayesGEO.R"))
 

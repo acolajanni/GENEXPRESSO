@@ -2,10 +2,10 @@
 #####  Normalization ######
 ###########################
 
-library(nanostringr)
-library(NanoStringNorm)
-library(NAPPA)
-library(nanoR)
+#library(nanostringr)
+#library(NanoStringNorm)
+#library(NAPPA)
+#library(nanoR)
 
 
 #' Normalize a Nanostring dataset
@@ -447,9 +447,10 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb , tools){
 
 
 #' Mapping Probes ID of Affymetrix microarray chip in expression set dataframe
+#' 
+#' This function works only for microarray chip "hgu133plus2"
 #'
 #' @param exprSet Dataframe with samples in columns, probes ID in rows
-#' @param annotation function like : hgu133plus2SYMBOL if the chip is hgu 133 plus 2.0 and the wanted mapping is with the gene SYmbols
 #' 
 #' @import "affy" "dplyr" "hgu133plus2.db"
 #' 
@@ -458,11 +459,6 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb , tools){
 #'
 #' @examples
 mapping.affymetrix.probe <- function(exprSet){
-  
-  #########################
-  ###  Work in progress ###
-  #########################
-  
   
   # Remove control probes from the expression set
   ControlProbes <- grep("AFFX",row.names(exprSet)) 

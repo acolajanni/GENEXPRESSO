@@ -3,7 +3,7 @@ Type: Package
 Title: Comparison of DEG and coexpression tools
 Version: 1.1.0
 Authors@R: c(person("Antonin", "Colajanni", role = c("aut","cre"), email = "antonin.colajanni@gmail.com") )
-Description: Comparison of DEG and coexpression tools for Nanostring, Microarrays and RNA-seq.
+Description: Comparison of DEG and coexpression tools for Nanostring, Microarray and RNA-seq.
 Encoding: UTF-8
 License: GPL-3 
 LazyData: true

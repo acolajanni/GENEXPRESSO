@@ -2,9 +2,9 @@
 ###### CoExpression #######
 ###########################
 
-library(reshape2)
-library(WGCNA)
-library(igraph)
+#library(reshape2)
+#library(WGCNA)
+#library(igraph)
 
 
 #' Computing a square matrix of correlation coefficients

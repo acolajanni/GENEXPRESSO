@@ -4,23 +4,26 @@
 \alias{Get.DEG}
 \title{Extract DEG from a binary matrix.}
 \usage{
-Get.DEG(binary.matrix, method, alternative)
+Get.DEG(binary.matrix, sets, method, alternative)
 }
 \arguments{
-\item{binary.matrix}{Dataframe or matrix containing only 0 and 1 values}
+\item{binary.matrix}{Dataframe or matrix containing only 0 and 1 values, with genes in rows and methods in columns}
 
-\item{method}{Character string that corresponds to any columns of the binary matrix.}
+\item{sets}{Specific sets to look at (Include as combinations. Ex: c("Name1", "Name2") 
+where Name1 and Name2 are two columns of the binary.matrix .}
+
+\item{method}{Character string 
+"union" or "intersect", "union" to get all the predicted DEG and "intersect" for the intersection of predicted DEG among the set of methods}
 
 \item{alternative}{Logical value. 
-If TRUE, Alternative hypothesis will be searched : for both up and downregulated. 
-In this case, the method argument should be the name of the analysis (DESeq2 to extract up and downregulated genes).
-If FALSE, only the method given in argument is analyzed.}
+TRUE to compute the union or intersection of predicted DEG if the binary matrix is composed of strong hypothesis prediction (for Upregulated and Downregulated genes)
+FALSE if the dataframe contains no such information, just weak hypothesis prediction}
 }
 \value{
-A list of one vector if alternative = FALSE, 2 vectors if alternative = TRUE
+A list of two vectors of character string is returned for alternative = TRUE : for upregulated and downregulated genes. Otherwise, only a vector of DEG is returned
 }
 \description{
-Analyze the output of Upset.Binary.Dataframe() to obtain DEG for one method
+Analyze the output of Upset.Binary.Dataframe() to obtain Dthe union or the intersection of predicted DEG of each method.
 }
 \examples{
 # Getting a binary matrix, DEG are designed by "1" 
@@ -32,6 +35,10 @@ genes = paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
 colnames(Binary.matrix) = methods
 row.names(Binary.matrix) = genes
 
-# Retriving both up and down regulated genes for the "method5"
-DEG = Get.DEG(Binary.matrix,alternative = TRUE, method = "method5")
+# Retrieving all the non redundant predicted down and upregulated genes  
+DEG = Get.DEG(Binary.matrix,alternative = TRUE, method = "union")
+
+# Retrieving common DE genes for a set of method 
+subset.DEG = Get.DEG(Binary.matrix,sets = methods[1:4],alternative = TRUE, method = "intersect")
+
 }

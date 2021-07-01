@@ -8,12 +8,10 @@ mapping.affymetrix.probe(exprSet)
 }
 \arguments{
 \item{exprSet}{Dataframe with samples in columns, probes ID in rows}
-
-\item{annotation}{function like : hgu133plus2SYMBOL if the chip is hgu 133 plus 2.0 and the wanted mapping is with the gene SYmbols}
 }
 \value{
 Dataframe with about 20.000 rows. Gene symbols will replace the probes ID
 }
 \description{
-Mapping Probes ID of Affymetrix microarray chip in expression set dataframe
+This function works only for microarray chip "hgu133plus2"
 }

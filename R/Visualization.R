@@ -2,10 +2,10 @@
 ###### Visualization #######
 ############################
 
-library(factoextra)
-library(FactoMineR)
-library(UpSetR)
-library(igraph)
+#library(factoextra)
+#library(FactoMineR)
+#library(UpSetR)
+#library(igraph)
 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
 #'

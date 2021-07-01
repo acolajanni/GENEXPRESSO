@@ -43,6 +43,7 @@ a dataframe with pvalues of genes being DE depending on the used methods
 Merge normalization step with statistical methods to analyse DE genes
 }
 \examples{
+# Import the experimental condition dataframe
 #celpath = file.path("Insert/your/path/to/.CEL/files")
 #txt.dir = paste0(celpath,"/tab.txt")
 #tab = read.delim(txt.dir,check.names=FALSE,as.is=TRUE, header = T, fill = TRUE)
