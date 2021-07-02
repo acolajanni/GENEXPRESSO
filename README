@@ -1,1 +1,1 @@
-GENEXPRESSO est un package en R permettant de comparer les méthodes de normalisation et d'analyse statistique pour trouver des gènes différentiellement exprimés. 
+GENEXPRESSO is an R package allowing you to compare different methods of normalization in combination with various statistical analysis to discover differentially expressed genes in a microarray (affymetrix hgu 133 plus 2.0), RNAseq, and one example of Nanostring nCounter dataset. 
