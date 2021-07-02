@@ -9,13 +9,13 @@ License: GPL-3
 LazyData: true
 Depends: R (>= 3.6)
 Imports: 
+    limma,
     DEFormats,
     madsim,
     edgeR,
     DESeq,
     DESeq2,
     RankProd,
-    limma,
     nanostringr,
     NanoStringNorm,
     NAPPA,
