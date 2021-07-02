@@ -3,5 +3,12 @@ Few methods based on correlation are also implemented to analyse coexpression ne
 
 Installation : 
 
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("limma")
+
+
 library("devtools")
 install_github("acolajanni/GENEXPRESSO")
