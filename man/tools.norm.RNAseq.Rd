@@ -11,10 +11,10 @@ tools.norm.RNAseq(count.matrix, tool, design)
 
 \item{tool}{Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
 
-"TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
-"voom" calls the \link{limma}{voom} function.
-"vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
-"vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.}
+"TMM","TMMwsp", "RLE", "Upperquartile" calls the \link[edgeR]{calcNormFactors} function.
+"voom" calls the \link[limma]{voom} function.
+"vst" calls the \link[DESeq]{estimateSizeFactors} function on a CountDataSet.
+"vst2" does the same but also calls the \link[DESeq2]{varianceStabilizingTransformation} function.}
 
 \item{design}{Vector of 1 and 2 of the same length of colnames(count.matrix).
 1 for the first group and 2 for the second.}

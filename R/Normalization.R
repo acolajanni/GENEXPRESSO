@@ -177,10 +177,10 @@ tools.norm.Nanostring <- function(raw.data,tool,nanoR=F,dir = NULL){
 #' @param tool 
 #' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
 #' 
-#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
-#' "voom" calls the \link{limma}{voom} function.
-#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
-#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
+#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link[edgeR]{calcNormFactors} function.
+#' "voom" calls the \link[limma]{voom} function.
+#' "vst" calls the \link[DESeq]{estimateSizeFactors} function on a CountDataSet.
+#' "vst2" does the same but also calls the \link[DESeq2]{varianceStabilizingTransformation} function.
 #' 
 #' @param design 
 #' Vector of 1 and 2 of the same length of colnames(count.matrix).
@@ -448,7 +448,8 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb , tools){
 
 #' Mapping Probes ID of Affymetrix microarray chip in expression set dataframe
 #' 
-#' This function works only for microarray chip "hgu133plus2"
+#' This function works only for microarray chip "hgu133plus2". It takes the median expression
+#' value for each symbol that matches several probe ID, for every samples.
 #'
 #' @param exprSet Dataframe with samples in columns, probes ID in rows
 #' 
@@ -458,6 +459,12 @@ tools.norm.Microarray <-function(GEOiD , FetchOnGEOdb , tools){
 #' @export
 #'
 #' @examples
+#' # Retrieving an expression set (e.g. normalized with rma): 
+#' # exprSet = tools.norm.Microarray("GSE31684", TRUE, tools = "rma")
+#' # a dataframe with about 60.000 rows of probe ID is produced
+#' 
+#' # Producing a dataframe of about 20.000 rows with gene Symbol
+#' #EXPR = mapping.affymetrix.probe(exprSet)
 mapping.affymetrix.probe <- function(exprSet){
   
   # Remove control probes from the expression set

@@ -8,7 +8,9 @@
 
 
 #' Computing a square matrix of correlation coefficients
-#'
+#' 
+#' 
+#' 
 #' @param data Dataset of gene expression levels with genes in row and samples in columns
 #' @param method Methods to compute the correlation coefficients.
 #' "spearman" computes the Spearman's rho, 
@@ -44,9 +46,9 @@ Cor.square.matrix <- function(data, method){
 
 #' Computing a square matrix of Topological Overlap
 #' 
-#' Uses the TOMsimilarityFromExpr() function from the WGCNA package
+#' Uses the \link[WGCNA]{TOMsimilarityFromExpr} function from the WGCNA package
 #'
-#' @param data Dataset of gene expression levels with genes in row and samples in columns
+#' @param data Dataset of gene expression levels with genes in rows and samples in columns
 #' 
 #' @return square matrix of TOM similarity measurements for each genes
 #' 
@@ -81,7 +83,8 @@ TOM.square.matrix <- function(data){
 
 #' Computing an adjacency table
 #'
-#' This function is similar to Cor.square.matrix() and TOM.square.matrix() as it converts the square matrix into a 
+#' This function is similar to \link[GENEXPRESSO]{Cor.square.matrix} and \link[GENEXPRESSO]{TOM.square.matrix}
+#' as it converts the square matrix into a 
 #' 3 columns dataframe with no repeated pair of variables. 
 #'
 #' @param data 
@@ -91,8 +94,8 @@ TOM.square.matrix <- function(data){
 #' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' "pearson" the Pearson's product moment correlation coefficient.
-#' These functions are called via the cor() function in the stats package.
-#' "TOM" uses the TOMsimilarityFromExpr() function from the WGCNA package. 
+#' These functions are called via the \link[stats]{cor} function in the stats package.
+#' "TOM" uses the \link[WGCNA]{TOMsimilarityFromExpr} function from the WGCNA package. 
 #' 
 #' @return 
 #' Datraframe of three columns. Two first contains pair of genes, and the third one the correlation coefficient or the TOM similarity.
@@ -145,7 +148,7 @@ Make.adjacency.table <- function(data, method){
 
 #' Computing an adjacency table with Pvalues associated to a coefficient of correlation 
 #'
-#' This function is similar to Cor.square.matrix() and TOM.square.matrix() as it converts the square matrix into a 
+#' This function is similar to \link[GENEXPRESSO]{Cor.square.matrix} and \link[GENEXPRESSO]{TOM.square.matrix} as it converts the square matrix into a 
 #' 4 columns dataframe with no repeated pair of variables and Pvalue associated with a correlation coefficient.
 #'
 #' @param data 
@@ -160,7 +163,7 @@ Make.adjacency.table <- function(data, method){
 #' "spearman" computes the Spearman's rho, 
 #' "kendall" uses the Kendall's tau and
 #' "pearson" the Pearson's product moment correlation coefficient.
-#' These functions are called via the cor() function in the stats package.
+#' These functions are called via the \link[stats]{cor} function in the stats package.
 #'
 #' @return 
 #' Dataframe with 4 columns. the two first are the pairs of genes,
@@ -232,9 +235,9 @@ Make.adjacencyPVal <-function(data, Fast = FALSE, method){
   return(interaction)
 }
 
-#' Computing an adjacency table with or without Pvalues, with Spearman, Kendall correlation coefficient and TOM similarity.
+#' Computing an adjacency table with or without P-values, with Spearman, Kendall correlation coefficient and TOM similarity.
 #'
-#' Calling Make.adjacencyPVal() with all the implemented methods. 
+#' Calling \link[GENEXPRESSO]{Make.adjacencyPVal} with all the implemented methods. 
 #'
 #' @param data 
 #' Dataset of gene expression levels with genes in row and samples in columns

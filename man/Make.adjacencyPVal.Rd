@@ -18,14 +18,14 @@ Careful, if Fast = F, it may take a while depending on the number of genes in th
 "spearman" computes the Spearman's rho, 
 "kendall" uses the Kendall's tau and
 "pearson" the Pearson's product moment correlation coefficient.
-These functions are called via the cor() function in the stats package.}
+These functions are called via the \link[stats]{cor} function in the stats package.}
 }
 \value{
 Dataframe with 4 columns. the two first are the pairs of genes,
 the other two are the correlation coefficients and the associated pvalue.
 }
 \description{
-This function is similar to Cor.square.matrix() and TOM.square.matrix() as it converts the square matrix into a 
+This function is similar to \link[GENEXPRESSO]{Cor.square.matrix} and \link[GENEXPRESSO]{TOM.square.matrix} as it converts the square matrix into a 
 4 columns dataframe with no repeated pair of variables and Pvalue associated with a correlation coefficient.
 }
 \examples{

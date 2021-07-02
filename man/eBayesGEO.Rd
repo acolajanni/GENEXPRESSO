@@ -15,5 +15,9 @@ eBayesGEO(
 )
 }
 \description{
-ebayesGEO
+Functions from supplementary files of Lu et al.2016. For more informations see : 
+Lu L., Townsend K.A., et Daigle B.J.GEOlimma  :  differential  expression  
+analysis and feature selection using pre-existing microarray data.BMC 
+Bioinformatics 22, n 1(3 f ́evrier 2021) : 44.
+https ://doi.org/10.1186/s12859-020-03932-5.
 }

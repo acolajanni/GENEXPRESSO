@@ -48,7 +48,7 @@ make_designMatrix <- function(dataset,cond1 = "A", cond2 = "B",ncond1=(ncol(data
 
 #' Differentially expressed genes analysis through the limma package.
 #'
-#' Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the steps of the analysis.
+#' Uses the \link[limma]{lmFit} and \link[limma]{eBayes} from the limma package to automate the steps of the analysis.
 #'
 #' @param dataset dataframe of expression values with samples in columns and genes in row.
 #' @param design vector of 0 and 1 values. 0 for the first experimental condition, 1 for the second one.
@@ -93,7 +93,7 @@ DEG_limma <- function(dataset,design, contrast.matrix){
 
 #' Differentially expressed genes analysis through the limma package, with the GEOlimma method.
 #'
-#' Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the steps of the analysis.
+#' Uses the \link[limma]{lmFit} and \link[limma]{eBayes} from the limma package to automate the steps of the analysis.
 #'
 #' @param dataset dataframe of expression values with samples in columns and genes in row.
 #' @param design vector of 0 and 1 values. 0 for the first experimental condition, 1 for the second one.
@@ -142,7 +142,10 @@ DEG_GEOlimma <- function(dataset,design, contrast.matrix){
   return(res.diff_geolimma)
 }
 
-#' Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.
+#' Produce alternative hypothesis for limma analysis of DE genes.
+#' 
+#' Takes the results of \link[GENEXPRESSO]{DEG_GEOlimma] or \link[GENEXPRESSO]{DEG_limma} and extracts the 
+#' pvalues of alternative hypothesis.
 #'
 #' @param res.diff_limma 
 #' A dataframe with 3 columns is returned. It contains the Log Fold change value (logFC),
@@ -193,7 +196,8 @@ DEG_alternative <- function(res.diff_limma){
 
 #' Wilcoxon test for each row of a dataframe
 #'
-#' Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.
+#' Testing, for one row at the time, if the first series of values are different, greater or less than the values 
+#' of the second condition with the \link[stats]{wilcox.test}
 #'
 #' @param data dataframe of gene expression levels: Gene names in rows, samples in columns.
 #' @param n1 Number of samples for the first experimental condition
@@ -247,10 +251,10 @@ wilcoxDEG <- function(data, n1, n2){
 #' @param data Dataframe of gene expression levels with sample names in columns and genes in rows
 #' 
 #' @param tool Different methods used to compute pvalues of differentially expressed genes for microarrays
-#' "Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-#' "limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
-#' "RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
-#' "RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
+#' "Wilcox" uses the \link[GENEXPRESSO]{WilcoxDEG} function implemented in this very same pacakge 
+#' "limma" and "GEOlimma uses respectively the functions \link[GENEXPRESSO]{DEG_limma} and \link[GENEXPRESSO]{DEG_GEOlimma} that comes from the limma pacakge
+#' "RankProduct","RankProduct.log" perform a Rank Product analysis with the \link[RankProd]{RankProducts} function from the RankProd package for normal and logged values respectively 
+#' "RankSum","RankSum.log" perform a Rank Sum analysis with the \link[RankProd]{RankProducts} function from the RankProd package for normal and logged values respectively 
 #' 
 #' @param n1 Number of samples for the first experimental condition. (Optionnal)
 #' @param n2 Number of samples for the second experimental condition. (Optionnal)
@@ -524,10 +528,10 @@ tools.DEG.Nanostring <- function(raw.data, tool, data, tool_norm) {
 #' 
 #' @param tool.DEG 
 #' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
-#' "ExactTest calls the \link{edgeR}{exactTest} function.
-#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
-#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
-#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
+#' "ExactTest calls the \link[edgeR]{exactTest} function.
+#' "GLM" uses a linear model with the \link[edgeR]{glmQLFit} and \link[edgeR]{glmQLFTest} functions.
+#' "nbinom" is the DESeq equivalent with the \link[DESeq]{nbinomTest} function.
+#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link[DESeq2]{DESeq}.
 #' 
 #' @param design 
 #' Vector of 1 and 2 of the same length of colnames(count.matrix).
@@ -692,22 +696,24 @@ tools.DEG.RNAseq <- function(count.matrix.raw, nf, tool.norm, tool.DEG, design){
 
 
 #' Combine Normalization with DEG analysis
+#' 
+#' Calls the normalization then, a set of DEG analysis to create several combinations.
 #'
 #' @param count.matrix 
 #' Dataframe of count with samples in columns and genes SYMBOL in rows.
 #' @param tools.norm 
 #' Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
-#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
-#' "voom" calls the \link{limma}{voom} function.
-#' "vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
-#' "vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.
+#' "TMM","TMMwsp", "RLE", "Upperquartile" calls the \link[edgeR]{calcNormFactors} function.
+#' "voom" calls the \link[limma]{voom} function.
+#' "vst" calls the \link[DESeq]{estimateSizeFactors} function on a CountDataSet.
+#' "vst2" does the same but also calls the \link[DESeq2]{varianceStabilizingTransformation} function.
 #' 
 #' @param tools.DEG 
 #' Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
-#' "ExactTest calls the \link{edgeR}{exactTest} function.
-#' "GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
-#' "nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
-#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.
+#' "ExactTest calls the \link[edgeR]{exactTest} function.
+#' "GLM" uses a linear model with the \link[edgeR]{glmQLFit} and \link[edgeR]{glmQLFTest} functions.
+#' "nbinom" is the DESeq equivalent with the \link[DESeq]{nbinomTest} function.
+#' "nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link[DESeq2]{DESeq}.
 #' 
 #' @param design 
 #' Vector of 1 and 2 of the same length of colnames(count.matrix).

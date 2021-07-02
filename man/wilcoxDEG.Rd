@@ -17,7 +17,8 @@ wilcoxDEG(data, n1, n2)
 dataframe with pvalues in one column and rownames of data as rownames.
 }
 \description{
-Testing, for one row at the time, if the first series of values are different, greater or less than the values of the second condition.
+Testing, for one row at the time, if the first series of values are different, greater or less than the values 
+of the second condition with the \link[stats]{wilcox.test}
 }
 \examples{
 # Import the dataset

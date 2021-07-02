@@ -23,7 +23,7 @@ FALSE if the dataframe contains no such information, just weak hypothesis predic
 A list of two vectors of character string is returned for alternative = TRUE : for upregulated and downregulated genes. Otherwise, only a vector of DEG is returned
 }
 \description{
-Analyze the output of Upset.Binary.Dataframe() to obtain Dthe union or the intersection of predicted DEG of each method.
+Analyze the output of \link[GENEXPRESSO]{Upset.Binary.Dataframe} to obtain the union or the intersection of predicted DEG of each method.
 }
 \examples{
 # Getting a binary matrix, DEG are designed by "1" 

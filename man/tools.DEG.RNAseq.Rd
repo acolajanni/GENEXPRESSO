@@ -16,10 +16,10 @@ Matrix of normalized count or "Elist" for the parameter "limma"}
 Note that those character strings are just a way to rename columns for the returned pvalues}
 
 \item{tool.DEG}{Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
-"ExactTest calls the \link{edgeR}{exactTest} function.
-"GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
-"nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
-"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.}
+"ExactTest calls the \link[edgeR]{exactTest} function.
+"GLM" uses a linear model with the \link[edgeR]{glmQLFit} and \link[edgeR]{glmQLFTest} functions.
+"nbinom" is the DESeq equivalent with the \link[DESeq]{nbinomTest} function.
+"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link[DESeq2]{DESeq}.}
 
 \item{design}{Vector of 1 and 2 of the same length of colnames(count.matrix).
 1 for the first group and 2 for the second.}

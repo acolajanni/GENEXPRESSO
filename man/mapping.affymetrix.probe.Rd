@@ -13,5 +13,14 @@ mapping.affymetrix.probe(exprSet)
 Dataframe with about 20.000 rows. Gene symbols will replace the probes ID
 }
 \description{
-This function works only for microarray chip "hgu133plus2"
+This function works only for microarray chip "hgu133plus2". It takes the median expression
+value for each symbol that matches several probe ID, for every samples.
+}
+\examples{
+# Retrieving an expression set (e.g. normalized with rma): 
+# exprSet = tools.norm.Microarray("GSE31684", TRUE, tools = "rma")
+# a dataframe with about 60.000 rows of probe ID is produced
+
+# Producing a dataframe of about 20.000 rows with gene Symbol
+#EXPR = mapping.affymetrix.probe(exprSet)
 }

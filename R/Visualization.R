@@ -7,7 +7,10 @@
 #library(UpSetR)
 #library(igraph)
 
+#' Compute a PCA of the individuals of a dataframe.
+#' 
 #' Compute a PCA of the different tool used in normalization and DEG analysis step to discriminate each methods by their found p-values on each genes 
+#' The function calls \link[FactoMineR]{PCA} then \link[factoextra]{fviz_pca}.
 #'
 #' @param data.to.comp dataframe containing pvalues of genes being differentially expressed, 
 #' with tools used in row, and genes in columns
@@ -18,17 +21,16 @@
 #' @export
 #'
 #' @examples
-#' # Import the dataset
-#' Data = matrix(runif(5000, 10, 100), ncol=20)
-#' group = paste0(rep(c("control", "case"), each = 10),rep(c(1:10),each = 1))
-#' genes <- paste0(rep(LETTERS[1:25], each=10), rep(c(1:10),each = 1))
-#' colnames(Data) = group
-#' row.names(Data) = genes 
+#' # Import the Pvalues dataframe for each method
+#' Pvalues = matrix(runif(5000, 10, 100), ncol=10)
 #' 
-#' # Compute Pvalues for all the methods 
-#' # res.DEG = tools.DEG.RNAseq.merge(Data)
+#' method = paste0(rep(c("method"), each = 10),rep(c(1:10),each = 1))
+#' genes <- paste0(rep(LETTERS[1:25], each=20), rep(c(1:10),each = 1))
+#' colnames(Pvalues) = method
+#' row.names(Pvalues) = genes 
+#' 
 #' # Plotting PCA on methods
-#' # PCA_tools(res.DEG)
+#' PCA_tools(t(Pvalues))
 PCA_tools <- function(data.to.comp){
   # Compute a PCA
   res.pca <- PCA(data.to.comp,graph=F)

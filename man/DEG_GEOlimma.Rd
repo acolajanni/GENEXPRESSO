@@ -20,7 +20,7 @@ The Pvalue associated with this Pvalue (PValue)
 the last column corresponds to the gene names given in the dataset (SYMBOL)
 }
 \description{
-Uses the lm.fit(),eBayes() and topTable() from the limma package to automate the steps of the analysis.
+Uses the \link[limma]{lmFit} and \link[limma]{eBayes} from the limma package to automate the steps of the analysis.
 }
 \examples{
 # Import the dataset

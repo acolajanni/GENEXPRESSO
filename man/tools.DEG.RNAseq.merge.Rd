@@ -10,16 +10,16 @@ tools.DEG.RNAseq.merge(count.matrix, tools.norm, tools.DEG, design)
 \item{count.matrix}{Dataframe of count with samples in columns and genes SYMBOL in rows.}
 
 \item{tools.norm}{Character string among "TMM","TMMwsp", "RLE", "Upperquartile", "voom", "vst", "vst2".
-"TMM","TMMwsp", "RLE", "Upperquartile" calls the \link{edgeR}{calcNormFactors} function.
-"voom" calls the \link{limma}{voom} function.
-"vst" calls the \link{DESeq}{estimateSizeFactors} function on a CountDataSet.
-"vst2" does the same but also calls the \link{DESeq2}{varianceStabilizingTransformation} function.}
+"TMM","TMMwsp", "RLE", "Upperquartile" calls the \link[edgeR]{calcNormFactors} function.
+"voom" calls the \link[limma]{voom} function.
+"vst" calls the \link[DESeq]{estimateSizeFactors} function on a CountDataSet.
+"vst2" does the same but also calls the \link[DESeq2]{varianceStabilizingTransformation} function.}
 
 \item{tools.DEG}{Character string among : "ExactTest", "GLM", "nbinom", "nbinom.Wad", "nbinom.LRT"
-"ExactTest calls the \link{edgeR}{exactTest} function.
-"GLM" uses a linear model with the \link{edgeR}{glmQLFit} and \link{edgeR}{glmQLFTest} functions.
-"nbinom" is the DESeq equivalent with the \link{DESeq}{nbinomTest} function.
-"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link{DESeq2}{DESeq}.}
+"ExactTest calls the \link[edgeR]{exactTest} function.
+"GLM" uses a linear model with the \link[edgeR]{glmQLFit} and \link[edgeR]{glmQLFTest} functions.
+"nbinom" is the DESeq equivalent with the \link[DESeq]{nbinomTest} function.
+"nbinom.Wald" and "nbinom.LRT" calls the same function with different parameters : \link[DESeq2]{DESeq}.}
 
 \item{design}{Vector of 1 and 2 of the same length of colnames(count.matrix).
 1 for the first group and 2 for the second.}
@@ -28,7 +28,7 @@ tools.DEG.RNAseq.merge(count.matrix, tools.norm, tools.DEG, design)
 
 }
 \description{
-Combine Normalization with DEG analysis
+Calls the normalization then, a set of DEG analysis to create several combinations.
 }
 \examples{
 # load a count matrix (example with a random dataset)

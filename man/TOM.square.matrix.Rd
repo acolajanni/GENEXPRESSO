@@ -7,13 +7,13 @@
 TOM.square.matrix(data)
 }
 \arguments{
-\item{data}{Dataset of gene expression levels with genes in row and samples in columns}
+\item{data}{Dataset of gene expression levels with genes in rows and samples in columns}
 }
 \value{
 square matrix of TOM similarity measurements for each genes
 }
 \description{
-Uses the TOMsimilarityFromExpr() function from the WGCNA package
+Uses the \link[WGCNA]{TOMsimilarityFromExpr} function from the WGCNA package
 }
 \examples{
 # Creating a dataset

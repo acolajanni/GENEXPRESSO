@@ -10,10 +10,10 @@ tools.DEG.Microarray(data, tool, n1, n2, design)
 \item{data}{Dataframe of gene expression levels with sample names in columns and genes in rows}
 
 \item{tool}{Different methods used to compute pvalues of differentially expressed genes for microarrays
-"Wilcox" uses the wilcoxDEG() function implemented in this very same pacakge 
-"limma" and "GEOlimma uses respectively the functions DEG_limma() and DEG_GEOlimma() that comes from the limma pacakge
-"RankProduct","RankProduct.log" perform a Rank Product analysis with the RankProducts() function from the RankProd package for normal and logged values respectively 
-"RankSum","RankSum.log" perform a Rank Sum analysis with the RankProducts() function from the RankProd package for normal and logged values respectively}
+"Wilcox" uses the \link[GENEXPRESSO]{WilcoxDEG} function implemented in this very same pacakge 
+"limma" and "GEOlimma uses respectively the functions \link[GENEXPRESSO]{DEG_limma} and \link[GENEXPRESSO]{DEG_GEOlimma} that comes from the limma pacakge
+"RankProduct","RankProduct.log" perform a Rank Product analysis with the \link[RankProd]{RankProducts} function from the RankProd package for normal and logged values respectively 
+"RankSum","RankSum.log" perform a Rank Sum analysis with the \link[RankProd]{RankProducts} function from the RankProd package for normal and logged values respectively}
 
 \item{n1}{Number of samples for the first experimental condition. (Optionnal)}
 

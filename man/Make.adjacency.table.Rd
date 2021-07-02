@@ -13,14 +13,15 @@ Make.adjacency.table(data, method)
 "spearman" computes the Spearman's rho, 
 "kendall" uses the Kendall's tau and
 "pearson" the Pearson's product moment correlation coefficient.
-These functions are called via the cor() function in the stats package.
-"TOM" uses the TOMsimilarityFromExpr() function from the WGCNA package.}
+These functions are called via the \link[stats]{cor} function in the stats package.
+"TOM" uses the \link[WGCNA]{TOMsimilarityFromExpr} function from the WGCNA package.}
 }
 \value{
 Datraframe of three columns. Two first contains pair of genes, and the third one the correlation coefficient or the TOM similarity.
 }
 \description{
-This function is similar to Cor.square.matrix() and TOM.square.matrix() as it converts the square matrix into a 
+This function is similar to \link[GENEXPRESSO]{Cor.square.matrix} and \link[GENEXPRESSO]{TOM.square.matrix}
+as it converts the square matrix into a 
 3 columns dataframe with no repeated pair of variables.
 }
 \examples{

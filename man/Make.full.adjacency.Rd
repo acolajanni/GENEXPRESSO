@@ -2,7 +2,7 @@
 % Please edit documentation in R/CoExpression.R
 \name{Make.full.adjacency}
 \alias{Make.full.adjacency}
-\title{Computing an adjacency table with or without Pvalues, with Spearman, Kendall correlation coefficient and TOM similarity.}
+\title{Computing an adjacency table with or without P-values, with Spearman, Kendall correlation coefficient and TOM similarity.}
 \usage{
 Make.full.adjacency(data, PValue = T)
 }
@@ -18,7 +18,7 @@ Dataframe with several columns. The two firsts are the pair of genes,
 the others are the coefficient of correlation depending on the used method, and maybe the PValues depending on the argument.
 }
 \description{
-Calling Make.adjacencyPVal() with all the implemented methods.
+Calling \link[GENEXPRESSO]{Make.adjacencyPVal} with all the implemented methods.
 }
 \examples{
 # Creating a dataset

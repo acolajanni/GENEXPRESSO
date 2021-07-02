@@ -2,7 +2,7 @@
 % Please edit documentation in R/DEG.R
 \name{DEG_alternative}
 \alias{DEG_alternative}
-\title{Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.}
+\title{Produce alternative hypothesis for limma analysis of DE genes.}
 \usage{
 DEG_alternative(res.diff_limma)
 }
@@ -16,7 +16,7 @@ A dataframe with 3 columns is returned. The two columns corresponds to the pvalu
 of a gene being more expressed and less expressed, in the second condition
 }
 \description{
-Takes the results of DEG_GEOlimma and DEG_limma and extracts the pvalues of alternative hypothesis.
+
 }
 \examples{
 # Import the dataset

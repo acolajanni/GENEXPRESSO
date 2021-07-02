@@ -1,6 +1,6 @@
 #' Extract DEG from a binary matrix.
 #'
-#' Analyze the output of Upset.Binary.Dataframe() to obtain Dthe union or the intersection of predicted DEG of each method.
+#' Analyze the output of \link[GENEXPRESSO]{Upset.Binary.Dataframe} to obtain the union or the intersection of predicted DEG of each method.
 #'
 #' @param binary.matrix Dataframe or matrix containing only 0 and 1 values, with genes in rows and methods in columns
 #' @param method Character string 
