@@ -1,1 +1,7 @@
 GENEXPRESSO is an R package allowing you to compare different methods of normalization in combination with various statistical analysis to discover differentially expressed genes in a microarray (affymetrix hgu 133 plus 2.0), RNAseq, and one example of Nanostring nCounter dataset. 
+
+
+Installation : 
+
+library("devtools")
+install_github("acolajanni/GENEXPRESSO")
