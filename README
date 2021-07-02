@@ -3,12 +3,19 @@ Few methods based on correlation are also implemented to analyse coexpression ne
 
 Installation : 
 
-
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("limma")
-
-
 library("devtools")
 install_github("acolajanni/GENEXPRESSO")
+
+If it doesn't work, make sure the project is launch with GENEXPRESSO.Rproj, and this line is printed :
+
+'/path/to/file/GENEXPRESSO' loaded. [renv 0.13.2]
+
+If not you may need to install "Renv" :
+install.packages("renv")
+
+
+Then, make : 
+
+renv::hydrate()
+
+Everything should work.
